@@ -389,7 +389,7 @@ const HOT = t => t.priority === "immediate" || t.priority === "urgent";
 const ST = { new:"بانتظار التوزيع", assigned:"تم التوزيع", in_progress:"جاري التنفيذ", pending_approval:"بانتظار الاعتماد", closed:"مغلقة" };
 const TYPES = [["حجز فندق","hotel"],["طيران","flight"],["تأشيرة","visa"],["نقل ومواصلات","transport"],["برنامج سياحي","program"],["عمرة / حج","umrah"],["تحصيل فلوس","money"],["متابعة عميل","follow"],["أخرى","other"]];
 const typeCls = t => (TYPES.find(x => x[0] === t) || [0,"other"])[1];
-const ROLE = { supervisor:"مدير التشغيل", manager:"المدير الأعلى", employee:"موظف" };
+const ROLE = { supervisor:"مدير التشغيل", manager:"المدير العام", employee:"موظف" };
 const AVC = ["hotel","flight","visa","transport","program","umrah","follow"];
 const NOW = { __now:true };
 const MIN = 60e3, HOUR = 3600e3, DAY = 864e5;
@@ -1391,7 +1391,7 @@ function openTeam(){
     <h3 class="sub-h">إضافة حساب</h3>
     <form class="form" id="uForm" novalidate>
       <div class="field"><label for="u-name">الاسم</label><input id="u-name" required></div>
-      <div class="field"><label for="u-role">الدور</label><select id="u-role"><option value="employee">موظف</option><option value="manager">المدير الأعلى</option><option value="supervisor">مدير تشغيل</option></select></div>
+      <div class="field"><label for="u-role">الدور</label><select id="u-role"><option value="employee">موظف</option><option value="manager">المدير العام</option><option value="supervisor">مدير تشغيل</option></select></div>
       <div class="field"><label for="u-email">الإيميل</label><input id="u-email" type="email" dir="ltr" required></div>
       <div class="field"><label for="u-pass">كلمة السر (٦ حروف على الأقل)</label><input id="u-pass" type="text" dir="ltr" required></div>
       <p class="err" id="u-err" hidden></p>

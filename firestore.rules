@@ -12,7 +12,7 @@ service cloud.firestore {
     function active() { return hasProfile() && me().active == true; }
     function member() { return isOwner() || active(); }
     function isSup() { return isOwner() || (active() && me().role == 'supervisor'); }   // مدير التشغيل
-    function isMgr() { return active() && me().role == 'manager'; }                     // المدير الأعلى
+    function isMgr() { return active() && me().role == 'manager'; }                     // المدير العام
     function isEmp() { return active() && me().role == 'employee'; }
     function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
     function noteKeys() { return ['updatedAt', 'lastUpdate', 'lastUpdateBy', 'lastUpdateAt']; }
@@ -54,13 +54,13 @@ service cloud.firestore {
 
       allow read: if isSup() || isMgr() || (isEmp() && (assignee() || lender()));
 
-      // المدير الأعلى بيبعت المهمة من غير توزيع، ومدير التشغيل يقدر يوزع على طول
+      // المدير العام بيبعت المهمة من غير توزيع، ومدير التشغيل يقدر يوزع على طول
       allow create: if (isSup() || isMgr())
         && request.resource.data.createdBy == request.auth.uid
         && (isSup() || (request.resource.data.status == 'new' && request.resource.data.assignedTo == ''));
 
       allow update: if isSup()
-        // المدير الأعلى: ملاحظات وربط ملفات
+        // المدير العام: ملاحظات وربط ملفات
         || (isMgr() && changed().hasOnly(noteKeys().concat(['files'])))
         // الموظف المسؤول: يبدأ، يبعت للاعتماد، يطلب مد، يربط ملفات، يحوّل جزء أو يرجّعه
         || (isEmp() && assignee() && resource.data.status != 'closed'
