@@ -15,7 +15,7 @@
   --accent:#0b7a80; --accent-ink:#ffffff; --accent-soft:#d8eeee; --gold:#d8961a;
   --p-immediate:#a3175a; --p-urgent:#c3312a; --p-high:#c66a0c; --p-normal:#2f69a6; --p-low:#77858b;
   --ok:#25804c; --warn:#a35f00; --on-hue:#ffffff;
-  --t-hotel:#0f8a7e; --t-flight:#2f6fd1; --t-visa:#8a4fc4; --t-transport:#d46a12; --t-program:#3a943a; --t-umrah:#b0840c; --t-follow:#4b7795; --t-other:#7a868a;
+  --t-hotel:#0f8a7e; --t-flight:#2f6fd1; --t-visa:#8a4fc4; --t-transport:#d46a12; --t-program:#3a943a; --t-umrah:#b0840c; --t-follow:#4b7795; --t-other:#7a868a; --t-money:#a8327a;
   --shadow:0 14px 44px rgba(10,40,46,.2);
   --f-display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
   --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
@@ -26,7 +26,7 @@
   --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440;
   --p-immediate:#f27cb0; --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
   --ok:#62c48b; --warn:#e8b257; --on-hue:#0c1417;
-  --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3;
+  --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3; --t-money:#e58ac4;
   --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0c1417; --surface:#132025; --surface-2:#18272d; --ink:#e2ebed; --muted:#8fa3a9; --line:#243840;
@@ -34,7 +34,7 @@
   --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440;
   --p-immediate:#f27cb0; --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
   --ok:#62c48b; --warn:#e8b257; --on-hue:#0c1417;
-  --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3;
+  --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3; --t-money:#e58ac4;
   --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -49,7 +49,7 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.3
 .ic.fill{fill:currentColor;stroke:none}
 
 /* hue helpers: color per travel type / person */
-.c-hotel{--h:var(--t-hotel)}.c-flight{--h:var(--t-flight)}.c-visa{--h:var(--t-visa)}.c-transport{--h:var(--t-transport)}.c-program{--h:var(--t-program)}.c-umrah{--h:var(--t-umrah)}.c-follow{--h:var(--t-follow)}.c-other{--h:var(--t-other)}
+.c-hotel{--h:var(--t-hotel)}.c-flight{--h:var(--t-flight)}.c-visa{--h:var(--t-visa)}.c-transport{--h:var(--t-transport)}.c-program{--h:var(--t-program)}.c-umrah{--h:var(--t-umrah)}.c-follow{--h:var(--t-follow)}.c-other{--h:var(--t-other)}.c-money{--h:var(--t-money)}
 .p-immediate{--h:var(--p-immediate)}.p-urgent{--h:var(--p-urgent)}.p-high{--h:var(--p-high)}.p-normal{--h:var(--p-normal)}.p-low{--h:var(--p-low)}
 .s-new{--h:var(--p-urgent)}.s-assigned{--h:var(--p-normal)}.s-in_progress{--h:var(--accent)}.s-pending_approval{--h:var(--warn)}.s-closed{--h:var(--ok)}
 .tag,.pill,.pri{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--h);background:color-mix(in srgb,var(--h) 14%,transparent)}
@@ -295,6 +295,34 @@ main{padding-bottom:56px}
 .file-chips{display:flex;gap:6px;flex-wrap:wrap}
 .file-chips a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;color:var(--t-follow);background:color-mix(in srgb,var(--t-follow) 12%,transparent);direction:ltr}
 .check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+/* collection sheet */
+.colsec{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px}
+.col-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.col-head h3{margin-inline-end:auto}
+.col-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.col-stats div{background:var(--surface-2);border-radius:9px;padding:6px 8px;min-width:0}
+.col-stats dt{font-size:11px;color:var(--muted)}
+.col-stats dd{margin:0;font:600 15px/1.3 var(--f-display);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.col-stats .got{color:var(--ok)}.col-stats .left{color:var(--p-urgent)}
+.col-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.col-row{border:1px solid var(--line);border-inline-start:4px solid var(--h);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.col-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.col-top b{flex:1 1 140px;min-width:0;overflow-wrap:anywhere}
+.col-top a{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);color:var(--ink)}
+.col-top a.wa{color:var(--t-program)}
+.col-f{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:6px;align-items:end}
+.col-f label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted);min-width:0}
+.col-f select,.col-f input,.col-row > input{border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--surface);min-width:0;width:100%;font-size:14px}
+.col-f .rest{font-size:12px;color:var(--muted);text-align:center;padding-bottom:6px;white-space:nowrap}
+.col-f .rest b{display:block;font-size:14px;color:var(--p-urgent);font-variant-numeric:tabular-nums}
+.col-f .rest b.zero{color:var(--ok)}
+.col-meta{font-size:11px;color:var(--muted)}
+.r-none{--h:var(--line)}.r-paid{--h:var(--ok)}.r-partial{--h:var(--accent)}.r-promise{--h:var(--warn)}.r-noanswer{--h:var(--p-low)}.r-wrong,.r-refused{--h:var(--p-urgent)}
+.col-add{display:grid;grid-template-columns:1.6fr 1.2fr 1fr auto;gap:6px}
+.col-add input,.col-bulk textarea{border:1px solid var(--line);border-radius:8px;padding:6px 9px;background:var(--surface-2);min-width:0;width:100%}
+.col-bulk summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:600}
+.col-bulk{display:flex;flex-direction:column;gap:6px}
+@media (max-width:520px){ .col-f{grid-template-columns:1fr 1fr} .col-add{grid-template-columns:1fr 1fr} .col-stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
 /* deadline popup */
 .dl-modal{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:16px;background:rgba(60,8,8,.55)}
 .dl-card{width:min(520px,100%);max-height:calc(100% - 16px);overflow-y:auto;background:var(--surface);border-radius:18px;box-shadow:var(--shadow);border-top:6px solid var(--p-urgent);display:flex;flex-direction:column}
@@ -359,7 +387,7 @@ document.documentElement.dir = "rtl"; document.documentElement.lang = "ar";
 const PRI = { immediate:{l:"فوري",r:0}, urgent:{l:"عاجل جداً",r:1}, high:{l:"أولوية عالية",r:2}, normal:{l:"عادية",r:3}, low:{l:"منخفضة",r:4} };
 const HOT = t => t.priority === "immediate" || t.priority === "urgent";
 const ST = { new:"بانتظار التوزيع", assigned:"تم التوزيع", in_progress:"جاري التنفيذ", pending_approval:"بانتظار الاعتماد", closed:"مغلقة" };
-const TYPES = [["حجز فندق","hotel"],["طيران","flight"],["تأشيرة","visa"],["نقل ومواصلات","transport"],["برنامج سياحي","program"],["عمرة / حج","umrah"],["متابعة عميل","follow"],["أخرى","other"]];
+const TYPES = [["حجز فندق","hotel"],["طيران","flight"],["تأشيرة","visa"],["نقل ومواصلات","transport"],["برنامج سياحي","program"],["عمرة / حج","umrah"],["تحصيل فلوس","money"],["متابعة عميل","follow"],["أخرى","other"]];
 const typeCls = t => (TYPES.find(x => x[0] === t) || [0,"other"])[1];
 const ROLE = { supervisor:"مدير التشغيل", manager:"المدير الأعلى", employee:"موظف" };
 const AVC = ["hotel","flight","visa","transport","program","umrah","follow"];
@@ -500,7 +528,11 @@ async function makeFirebase(){
     },
     updateUser:(uid, patch) => F.updateDoc(F.doc(db,"users",uid), patch),
     resetPassword:email => A.sendPasswordResetEmail(auth, email),
-    async lookupArchive(ref){ const d = await F.getDoc(F.doc(db,"archive",ref)); return d.exists() ? d.data() : null; }
+    async lookupArchive(ref){ const d = await F.getDoc(F.doc(db,"archive",ref)); return d.exists() ? d.data() : null; },
+    watchSheet(id, cb){ return F.onSnapshot(F.query(F.collection(db,"tasks",id,"sheet"), F.orderBy("n")), s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    async addSheetRows(id, rows){ const b = F.writeBatch(db); rows.forEach(r => b.set(F.doc(F.collection(db,"tasks",id,"sheet")), r)); await b.commit(); },
+    updateSheetRow:(id, rid, patch) => F.updateDoc(F.doc(db,"tasks",id,"sheet",rid), patch),
+    deleteSheetRow:(id, rid) => F.deleteDoc(F.doc(db,"tasks",id,"sheet",rid))
   };
 }
 
@@ -559,6 +591,14 @@ function makeDemo(){
   seed({ title:"حجز فندق الإسكندرية لرحلة الموظفين آخر الشهر", type:"حجز فندق", priority:"normal", status:"assigned", client:"رحلة الشركة", assignedTo:"e1", assignedToName:"سارة", dueH:24*9 },
     [["sup","event","أنشأ المهمة ووزّعها على سارة",5]]);
 
+  const sheets = {}, shSubs = new Map();
+  const emitSh = id => (shSubs.get(id) || new Set()).forEach(cb => cb([...(sheets[id] || [])]));
+  { seed({ title:"تحصيل باقي مبالغ معتمري رحلة نوفمبر", type:"تحصيل فلوس", priority:"high", status:"in_progress", client:"رحلة عمرة نوفمبر", assignedTo:"e1", assignedToName:"سارة", dueH:20, details:"كلمي كل معتمر وسجّلي نتيجة المكالمة واللي دفعه." },
+      [["sup","event","أنشأ المهمة ووزّعها على سارة",22],["e1","event","بدأ التنفيذ",20],["e1","event","سجّل إن الحاج محمود عبد الله دفع ١٥٬٠٠٠ ج.م",3]]);
+    const id = tasks[tasks.length - 1].id, H2 = n => now - n * HOUR;
+    sheets[id] = [["الحاج محمود عبد الله","01001112233",25000,15000,"partial","هيكمّل الباقي يوم الخميس",3],["الحاجة فاطمة السيد","01112223344",25000,25000,"paid","",5],
+      ["أ. سامي رمضان","01223334455",30000,0,"promise","وعد يدفع بكرة الصبح",2],["الحاجة نادية حسن","01098887766",25000,0,"noanswer","اتصلت مرتين",1],
+      ["م. كريم فؤاد","01555666777",30000,0,"",""," "]].map(([name,phone,required,paid,result,note,h], i) => ({ id:"r"+i, n:i+1, name, phone, required, paid, result, note, byName:"سارة", at: h === " " ? null : H2(h) })); }
   let me = null, authCb = () => {};
   const tSubs = new Set(), uSubs = new Set(), upSubs = new Map();
   const visible = m => m.role === "employee" ? tasks.filter(t => t.assignedTo === m.uid || t.returnTo === m.uid) : tasks;
@@ -586,7 +626,11 @@ function makeDemo(){
     createUser({ name, email, role }){ return later(() => { users.push({ uid:"u"+Date.now(), name, email, role, active:true }); emitU(); }); },
     updateUser(uid, patch){ return later(() => { Object.assign(U(uid), patch); emitU(); }); },
     resetPassword(){ return later(() => {}); },
-    lookupArchive(ref){ return later(() => ({ ref, files:[{ name:"ملف تجريبي.pdf" }] })); }
+    lookupArchive(ref){ return later(() => ({ ref, files:[{ name:"ملف تجريبي.pdf" }] })); },
+    watchSheet(id, cb){ if (!shSubs.has(id)) shSubs.set(id, new Set()); shSubs.get(id).add(cb); cb([...(sheets[id] || [])]); return () => shSubs.get(id).delete(cb); },
+    addSheetRows(id, rows){ return later(() => { (sheets[id] ||= []).push(...rows.map(r => ({ ...r, id:"r" + Math.random().toString(36).slice(2) }))); emitSh(id); }); },
+    updateSheetRow(id, rid, patch){ return later(() => { Object.assign(sheets[id].find(r => r.id === rid), patch); emitSh(id); }); },
+    deleteSheetRow(id, rid){ return later(() => { sheets[id] = sheets[id].filter(r => r.id !== rid); emitSh(id); }); }
   };
 }
 
@@ -973,7 +1017,7 @@ document.addEventListener("keydown", e => {
 /* ---------- تفاصيل المهمة ---------- */
 function openTask(id){
   closeTask();
-  S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0; S.handOpen = false;
+  S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0; S.handOpen = false; S.colFilter = "all"; S.colArm = null;
   const qs = QUICK[S.me.role] || [];
   sheetEl = document.createElement("div");
   sheetEl.innerHTML = `<div class="backdrop" data-close></div>
@@ -987,13 +1031,15 @@ function openTask(id){
     </aside>`;
   document.body.appendChild(sheetEl);
   sheetEl.addEventListener("click", onSheetClick);
-  sheetEl.addEventListener("change", e => { if (e.target.id === "priSel") doAct("priority", null, e.target.value); });
+  sheetEl.addEventListener("change", e => { if (e.target.id === "priSel") doAct("priority", null, e.target.value); else if (e.target.dataset.sh) colChange(e.target); });
   $("#composer").addEventListener("submit", e => { e.preventDefault(); doAct("note"); });
   S.unsubUpd = api.watchUpdates(id, ups => { S.updates = ups; renderDetail(); });
+  S.sheet = []; S.unsubSheet = api.watchSheet(id, rows => { S.sheet = rows; renderDetail(); });
   renderDetail();
 }
 function closeTask(){
   if (S.unsubUpd) S.unsubUpd(); S.unsubUpd = null;
+  if (S.unsubSheet) S.unsubSheet(); S.unsubSheet = null; S.colOpen = false;
   if (sheetEl){ sheetEl.remove(); sheetEl = null; }
   S.openId = null; S.extOpen = false;
 }
@@ -1026,6 +1072,96 @@ function handHtml(t){
   }
   return "";
 }
+/* ---------- كشف التحصيل ---------- */
+const RES = [["","لسه ما اتكلمش","none"],["paid","دفع كامل","paid"],["partial","دفع جزء","partial"],["promise","وعد بالدفع","promise"],["noanswer","مردش","noanswer"],["wrong","رقم غلط","wrong"],["refused","رفض / اعتذر","refused"]];
+const resLabel = k => (RES.find(r => r[0] === (k || "")) || RES[0])[1];
+const money = n => Number(n || 0).toLocaleString("ar-EG") + " ج.م";
+const num = v => Number(String(v ?? "").replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[٬,\s]/g, "")) || 0;
+const canCol = t => S.me.role === "supervisor" || (S.me.role === "employee" && (mine(t) || lent(t)));
+function colHtml(t){
+  const rows = S.sheet || [], edit = canCol(t) && t.status !== "closed";
+  if (!rows.length && t.type !== "تحصيل فلوس" && !S.colOpen){
+    return edit ? `<div class="act-row"><button class="btn sm" data-col="open">${ic("list")}إضافة كشف تحصيل</button></div>` : "";
+  }
+  const req = rows.reduce((a,r) => a + num(r.required), 0), got = rows.reduce((a,r) => a + num(r.paid), 0);
+  const pct = req ? Math.min(100, Math.round(got / req * 100)) : 0;
+  const f = S.colFilter || "all";
+  const counts = {}; rows.forEach(r => counts[r.result || ""] = (counts[r.result || ""] || 0) + 1);
+  const shown = rows.filter(r => f === "all" || (r.result || "") === f);
+  const row = r => { const rest = num(r.required) - num(r.paid), id = esc(r.id);
+    return `<li class="col-row r-${(RES.find(x => x[0] === (r.result || "")) || RES[0])[2]}">
+      <div class="col-top"><b>${esc(r.name)}</b>${r.phone ? `<span dir="ltr" class="col-meta">${esc(r.phone)}</span><a href="tel:${esc(r.phone)}" aria-label="اتصال">${ic("phone")}</a><a class="wa" href="${waLink(r.phone)}" target="_blank" rel="noopener" aria-label="واتساب">${ic("chat")}</a>` : ""}
+        ${edit ? `<button class="btn ghost sm" data-coldel="${id}" aria-label="حذف ${esc(r.name)}">${S.colArm === r.id ? "تأكيد الحذف" : "✕"}</button>` : ""}</div>
+      ${edit ? `<div class="col-f">
+          <label>نتيجة المكالمة<select id="cr-${id}" data-sh="result" data-id="${id}">${RES.map(([k,l]) => `<option value="${k}" ${(r.result || "") === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+          <label>المطلوب<input id="cq-${id}" data-sh="required" data-id="${id}" inputmode="numeric" value="${num(r.required) || ""}"></label>
+          <label>دفع<input id="cp-${id}" data-sh="paid" data-id="${id}" inputmode="numeric" value="${num(r.paid) || ""}"></label>
+          <span class="rest">الباقي<b class="${rest <= 0 ? "zero" : ""}">${fmtNum(Math.max(rest, 0))}</b></span></div>
+        <input id="cn-${id}" data-sh="note" data-id="${id}" value="${esc(r.note)}" placeholder="ملاحظة على المكالمة">`
+      : `<div class="col-meta">${resLabel(r.result)} — المطلوب ${money(r.required)} — دفع ${money(r.paid)} — الباقي ${money(Math.max(rest,0))}${r.note ? "<br>" + esc(r.note) : ""}</div>`}
+      ${r.at ? `<span class="col-meta">آخر تحديث: ${esc(r.byName)} — ${ago(r.at)}</span>` : ""}</li>`; };
+  return `<section class="colsec" aria-label="كشف التحصيل">
+    <div class="col-head"><h3 class="timeline-h">كشف التحصيل (${fmtNum(rows.length)})</h3>${rows.length ? `<button class="btn sm" data-col="copy">نسخ الكشف لإكسل</button>` : ""}</div>
+    ${rows.length ? `<dl class="col-stats"><div><dt>المطلوب</dt><dd>${money(req)}</dd></div><div><dt>اتحصّل</dt><dd class="got">${money(got)}</dd></div><div><dt>الباقي</dt><dd class="left">${money(Math.max(req - got, 0))}</dd></div><div><dt>دفعوا كامل</dt><dd>${fmtNum(counts.paid || 0)} من ${fmtNum(rows.length)}</dd></div></dl>
+      <div><div class="bar-l"><span>نسبة التحصيل</span><span>${fmtNum(pct)}٪</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>
+      <div class="chips-row"><button class="chip ${f === "all" ? "on" : ""}" data-colf="all">الكل</button>${RES.filter(([k]) => counts[k]).map(([k,l]) => `<button class="chip ${f === k ? "on" : ""}" data-colf="${k}">${l} (${fmtNum(counts[k])})</button>`).join("")}</div>
+      <ul class="col-list">${shown.map(row).join("")}</ul>` : `<p class="hint">ضيف أسماء الحجاج أو المعتمرين، وسجّل لكل واحد نتيجة المكالمة والمبلغ اللي دفعه.</p>`}
+    ${edit ? `<div class="col-add"><input id="ca-name" placeholder="الاسم"><input id="ca-phone" dir="ltr" placeholder="التليفون"><input id="ca-req" inputmode="numeric" placeholder="المطلوب"><button class="btn primary sm" data-col="add">إضافة</button></div>
+      <details class="col-bulk"><summary>إضافة أسماء كتير مرة واحدة (لصق من إكسل)</summary>
+        <p class="hint">كل اسم في سطر: الاسم، التليفون، المبلغ المطلوب. ينفع تنسخ الأعمدة دي من إكسل وتلزقها على طول.</p>
+        <textarea id="ca-bulk" rows="5" placeholder="محمود عبد الله، 01001112233، 25000"></textarea><div class="act-row"><button class="btn sm" data-col="bulk">إضافة الكل</button></div></details>` : ""}
+  </section>`;
+}
+function parseLine(line){
+  const parts = line.split(/\t|,|،|؛|;/).map(x => x.trim()).filter(Boolean);
+  let phone = "", amount = 0; const name = [];
+  parts.forEach(p => { const d = p.replace(/[٠-٩]/g, c => "٠١٢٣٤٥٦٧٨٩".indexOf(c)).replace(/[\s-]/g, "");
+    if (!phone && /^\+?0?\d{9,14}$/.test(d) && d.replace(/\D/g,"").length >= 10) phone = d;
+    else if (!amount && /^[\d٬,.]+$/.test(d)) amount = num(d);
+    else name.push(p); });
+  return name.length ? { name:name.join(" "), phone, required:amount } : null;
+}
+async function colAdd(t, list){
+  const base = (S.sheet || []).reduce((m,r) => Math.max(m, r.n || 0), 0);
+  const rows = list.map((r, i) => ({ n:base + i + 1, name:r.name, phone:r.phone || "", required:r.required || 0, paid:0, result:"", note:"", by:S.me.uid, byName:S.me.name, at:null }));
+  try { await api.addSheetRows(t.id, rows); toast(rows.length === 1 ? "الاسم اتضاف" : "اتضاف " + fmtNum(rows.length) + " اسم"); return true; }
+  catch(x){ console.error(x); toast("الإضافة ما نجحتش. اتأكد إن قواعد Firestore الجديدة اتنشرت."); return false; }
+}
+async function colChange(el){
+  const t = S.tasks.find(x => x.id === S.openId), r = (S.sheet || []).find(x => x.id === el.dataset.id); if (!t || !r) return;
+  const f = el.dataset.sh; let v = el.value;
+  const patch = { by:S.me.uid, byName:S.me.name, at:Date.now() };
+  if (f === "paid" || f === "required") v = num(v);
+  patch[f] = v;
+  if (f === "result" && v === "paid" && !num(r.paid) && num(r.required)) patch.paid = num(r.required);
+  if (f === "paid" && !r.result && v > 0) patch.result = v >= num(r.required) ? "paid" : "partial";
+  try {
+    await api.updateSheetRow(t.id, r.id, patch);
+    const newPaid = patch.paid != null ? patch.paid : num(r.paid);
+    if (newPaid > num(r.paid)) await api.act(t.id, S.me, {}, { kind:"event", text:"سجّل إن " + r.name + " دفع " + money(newPaid - num(r.paid)) + (num(r.required) ? " (إجمالي " + money(newPaid) + " من " + money(r.required) + ")" : "") });
+  } catch(x){ console.error(x); toast("ما اتحفظش، جرّب تاني"); }
+}
+async function colClick(e){
+  const t = S.tasks.find(x => x.id === S.openId); if (!t) return false;
+  const c = e.target.closest("[data-col]"), fl = e.target.closest("[data-colf]"), del = e.target.closest("[data-coldel]");
+  if (fl){ S.colFilter = fl.dataset.colf; renderDetail(); return true; }
+  if (del){ const id = del.dataset.coldel;
+    if (S.colArm !== id){ S.colArm = id; renderDetail(); setTimeout(() => { if (S.colArm === id){ S.colArm = null; renderDetail(); } }, 4000); return true; }
+    S.colArm = null; try { await api.deleteSheetRow(t.id, id); toast("الاسم اتشال من الكشف"); } catch(x){ console.error(x); toast("الحذف ما نجحش"); } return true; }
+  if (!c) return false;
+  const k = c.dataset.col;
+  if (k === "open"){ S.colOpen = true; renderDetail(); return true; }
+  if (k === "add"){ const name = $("#ca-name").value.trim(); if (!name){ toast("اكتب الاسم الأول"); return true; }
+    c.disabled = true; if (await colAdd(t, [{ name, phone:$("#ca-phone").value.trim(), required:num($("#ca-req").value) }])){ ["ca-name","ca-phone","ca-req"].forEach(i => { const el = $("#" + i); if (el) el.value = ""; }); $("#ca-name") && $("#ca-name").focus(); } c.disabled = false; return true; }
+  if (k === "bulk"){ const list = $("#ca-bulk").value.split(/\n/).map(parseLine).filter(Boolean);
+    if (!list.length){ toast("مفيش أسماء في الخانة"); return true; }
+    c.disabled = true; if (await colAdd(t, list)) { const el = $("#ca-bulk"); if (el) el.value = ""; } c.disabled = false; return true; }
+  if (k === "copy"){ const rows = S.sheet || [];
+    const tsv = ["الاسم\tالتليفون\tالنتيجة\tالمطلوب\tالمدفوع\tالباقي\tملاحظة", ...rows.map(r => [r.name, r.phone, resLabel(r.result), num(r.required), num(r.paid), Math.max(num(r.required) - num(r.paid), 0), (r.note || "").replace(/\s+/g, " ")].join("\t"))].join("\n");
+    try { await navigator.clipboard.writeText(tsv); toast("الكشف اتنسخ. الزقه في إكسل على طول"); } catch { toast("المتصفح منع النسخ"); } return true; }
+  return false;
+}
+
 function filesHtml(t){
   const can = S.me.role !== "employee" || mine(t) || lent(t);
   const list = t.files || [];
@@ -1072,6 +1208,8 @@ function renderDetail(){
   if (!sheetEl) return;
   const t = S.tasks.find(x => x.id === S.openId);
   if (!t){ closeTask(); return; }
+  const focusId = document.activeElement && sheetEl.contains(document.activeElement) ? document.activeElement.id : "";
+  const scrollY = $("#sheetBody").scrollTop;
   const keep = {}; $("#sheetBody").querySelectorAll("input[id],textarea[id],select[id]").forEach(el => keep[el.id] = el.type === "checkbox" ? el.checked : el.value);
   const d = dueInfo(t);
   $("#sheetRef").textContent = "#" + pad(t.no);
@@ -1085,12 +1223,15 @@ function renderDetail(){
     ${t.details ? `<p class="details">${esc(t.details)}</p>` : ""}
     ${t.rating ? `<div class="rated"><span>${starsSm(t.rating)} تقييم مدير التشغيل</span>${t.ratingNote ? `<span>${esc(t.ratingNote)}</span>` : ""}</div>` : ""}
     ${actionsHtml(t)}
+    ${colHtml(t)}
     ${filesHtml(t)}
     <section><h3 class="timeline-h">سجل المتابعة</h3>
       <ol class="timeline">${S.updates.map(u => `<li class="${u.kind}"><div class="tl-meta"><b>${esc(u.byName)}</b> (${ROLE[u.role] || ""}) — ${ago(u.createdAt)}</div><div class="tl-text">${esc(u.text)}</div></li>`).join("") || `<li class="event"><div class="tl-text">لسه مفيش تحديثات.</div></li>`}</ol></section>`;
-  for (const id in keep){ const el = document.getElementById(id); if (el && id !== "priSel" && id !== "dueEdit"){ if (el.type === "checkbox") el.checked = keep[id]; else el.value = keep[id]; } }
+  for (const id in keep){ const el = document.getElementById(id); if (el && id !== "priSel" && id !== "dueEdit" && (!el.dataset.sh || id === focusId)){ if (el.type === "checkbox") el.checked = keep[id]; else el.value = keep[id]; } }
+  if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
   const ro = S.me.role === "employee" && !mine(t) && !lent(t);
   $("#composer").hidden = (t.status === "closed" && S.me.role === "employee") || ro;
+  $("#sheetBody").scrollTop = scrollY;
   if (S.extOpen && $("#extBox")){ $("#extBox").scrollIntoView({ block:"center" }); }
 }
 function onSheetClick(e){
@@ -1099,6 +1240,7 @@ function onSheetClick(e){
   if (s){ S.stars = +s.dataset.star; sheetEl.querySelectorAll("[data-star]").forEach(b => b.classList.toggle("on", +b.dataset.star <= S.stars)); return; }
   const q = e.target.closest("[data-extq]");
   if (q){ const t = S.tasks.find(x => x.id === S.openId); $("#extAt").value = toInput(EXT_QUICK[+q.dataset.extq][1](t)); sheetEl.querySelectorAll("[data-extq]").forEach(b => b.classList.toggle("on", b === q)); return; }
+  if (e.target.closest("[data-col],[data-colf],[data-coldel]")) return colClick(e);
   const un = e.target.closest("[data-unlink]"); if (un) return doAct("unlink", un, un.dataset.unlink);
   const rp = e.target.closest("[data-reply]"); if (rp) return doAct("note", rp, rp.dataset.reply);
   const b = e.target.closest("[data-act]"); if (!b) return;

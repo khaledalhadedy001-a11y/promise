@@ -73,15 +73,26 @@ service cloud.firestore {
 
       allow delete: if isSup();
 
+      function taskDoc() { return get(/databases/$(database)/documents/tasks/$(taskId)).data; }
+      function canSeeTask() {
+        return isSup() || isMgr()
+          || (isEmp() && (taskDoc().assignedTo == request.auth.uid || taskDoc().get('returnTo', '') == request.auth.uid));
+      }
+      function canWorkTask() {
+        return isSup()
+          || (isEmp() && (taskDoc().assignedTo == request.auth.uid || taskDoc().get('returnTo', '') == request.auth.uid));
+      }
+
       match /updates/{updateId} {
-        function canSeeTask() {
-          let t = get(/databases/$(database)/documents/tasks/$(taskId)).data;
-          return isSup() || isMgr()
-            || (isEmp() && (t.assignedTo == request.auth.uid || t.get('returnTo', '') == request.auth.uid));
-        }
         allow read: if canSeeTask();
         allow create: if canSeeTask() && request.resource.data.by == request.auth.uid;
         allow update, delete: if false;
+      }
+
+      // كشف التحصيل (أسماء، نتيجة المكالمة، المدفوع)
+      match /sheet/{rowId} {
+        allow read: if canSeeTask();
+        allow create, update, delete: if canWorkTask();
       }
     }
 
