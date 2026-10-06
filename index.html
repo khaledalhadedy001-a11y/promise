@@ -295,6 +295,25 @@ main{padding-bottom:56px}
 .file-chips{display:flex;gap:6px;flex-wrap:wrap}
 .file-chips a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;color:var(--t-follow);background:color-mix(in srgb,var(--t-follow) 12%,transparent);direction:ltr}
 .check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+/* مسارات التنفيذ */
+.f-trk{--h:var(--accent)}.f-trk.all{--h:var(--ok)}
+.av-stack{display:inline-flex;flex-direction:row-reverse;justify-content:flex-end}
+.av-stack .av{box-shadow:0 0 0 2px var(--surface)}.av-stack .av+.av{margin-left:-9px}
+.trks{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px}
+.trks-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.trk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.trk{--h:var(--p-normal);display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);border-right:4px solid var(--h);background:var(--surface)}
+.trk.st-in_progress{--h:var(--accent)}.trk.st-done{--h:var(--ok);background:color-mix(in srgb,var(--ok) 6%,var(--surface))}
+.trk.me{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}
+.trk-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.trk-top b{flex:1;min-width:0}
+.trk-st{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;color:var(--h);background:color-mix(in srgb,var(--h) 14%,transparent)}
+.trk-note{margin:0;font-size:14px}.trk-meta{font-size:12px;color:var(--muted)}
+.trk-done{margin:0;font-size:13px;white-space:pre-wrap;padding:6px 10px;border-radius:8px;background:var(--surface-2)}
+.splitbox{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.split-row{display:grid;grid-template-columns:minmax(90px,auto) 1fr;gap:8px;align-items:center}
+.split-row input[type=text]{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface);min-width:0;width:100%}
+.nt-notes{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+#nt-assign button{--h:var(--accent)}
 /* priority board + date view */
 .board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px;align-items:start}
 .kcol{background:color-mix(in srgb,var(--h) 7%,var(--bg));border:1px solid color-mix(in srgb,var(--h) 28%,var(--line));border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
@@ -566,11 +585,13 @@ async function makeFirebase(){
       const err = e => { console.error(e); toast("مش قادر يقرا المهام"); };
       if (me.role !== "employee") return F.onSnapshot(col, s => cb(s.docs.map(withId)), err);
       // الموظف: المهام اللي عليه + المهام اللي حوّل جزء منها لزميل
-      let a = [], b = [];
-      const emit = () => { const m = new Map(); [...a, ...b].forEach(t => m.set(t.id, t)); cb([...m.values()]); };
+      // + المهام اللي ليه فيها مسار تنفيذ (مهمة موزعة على أكتر من موظف)
+      let a = [], b = [], c = [];
+      const emit = () => { const m = new Map(); [...a, ...b, ...c].forEach(t => m.set(t.id, t)); cb([...m.values()]); };
       const u1 = F.onSnapshot(F.query(col, F.where("assignedTo","==",me.uid)), s => { a = s.docs.map(withId); emit(); }, err);
       const u2 = F.onSnapshot(F.query(col, F.where("returnTo","==",me.uid)), s => { b = s.docs.map(withId); emit(); }, e => console.warn(e));
-      return () => { u1(); u2(); };
+      const u3 = F.onSnapshot(F.query(col, F.where("members","array-contains",me.uid)), s => { c = s.docs.map(withId); emit(); }, e => console.warn(e));
+      return () => { u1(); u2(); u3(); };
     },
     watchUsers(cb){ return F.onSnapshot(F.collection(db,"users"), s => cb(s.docs.map(d => ({ uid:d.id, ...d.data() }))), e => console.error(e)); },
     watchUpdates(id, cb){ return F.onSnapshot(F.query(F.collection(db,"tasks",id,"updates"), F.orderBy("createdAt")), s => cb(s.docs.map(withId)), e => console.error(e)); },
@@ -589,6 +610,16 @@ async function makeFirebase(){
       b.update(F.doc(db,"tasks",id), fix({ ...patch, updatedAt:NOW, lastUpdate:entry.text.slice(0,160), lastUpdateBy:me.name, lastUpdateAt:NOW }));
       b.set(F.doc(F.collection(db,"tasks",id,"updates")), { kind:entry.kind, text:entry.text, by:me.uid, byName:me.name, role:me.role, createdAt:F.serverTimestamp() });
       await b.commit();
+    },
+    // تعديل بيقرا آخر نسخة من المهمة الأول (عشان لو اتنين خلّصوا مساراتهم في نفس اللحظة)
+    async actTx(id, me, fn){
+      const ref = F.doc(db,"tasks",id), up = F.doc(F.collection(db,"tasks",id,"updates"));
+      await F.runTransaction(db, async tx => {
+        const s = await tx.get(ref); if (!s.exists()) throw new Error("gone");
+        const r = fn({ id, ...s.data() }); if (!r) throw new Error("noop");
+        tx.update(ref, fix({ ...r.patch, updatedAt:NOW, lastUpdate:r.entry.text.slice(0,160), lastUpdateBy:me.name, lastUpdateAt:NOW }));
+        tx.set(up, { kind:r.entry.kind, text:r.entry.text, by:me.uid, byName:me.name, role:me.role, createdAt:F.serverTimestamp() });
+      });
     },
     deleteTask:id => F.deleteDoc(F.doc(db,"tasks",id)),
     async createUser({ name, email, password, role }){
@@ -705,7 +736,13 @@ function makeDemo(){
       ["م. كريم فؤاد","01555666777",30000,0,"",""," "]].map(([name,phone,required,paid,result,note,h], i) => ({ id:"r"+i, n:i+1, name, phone, required, paid, result, note, byName:"سارة", at: h === " " ? null : H2(h) })); }
   let me = null, authCb = () => {};
   const tSubs = new Set(), uSubs = new Set(), upSubs = new Map();
-  const visible = m => m.role === "employee" ? tasks.filter(t => t.assignedTo === m.uid || t.returnTo === m.uid) : tasks;
+  // مهمة موزعة على أكتر من موظف (مسارات تنفيذ)
+  seed({ title:"تجهيز وفد عمرة ديسمبر — ٤٠ معتمر", type:"عمرة / حج", priority:"high", status:"in_progress", client:"وفد عمرة ديسمبر", assignedTo:"", assignedToName:"سارة، منى", dueH:48,
+      details:"الوفد مسافر ١٥ ديسمبر. كل واحدة ماسكة جزء، والمهمة بتتقفل لما الكل يخلص.", members:["e1","e2"],
+      tracks:{ e1:{ name:"سارة", note:"حجز الفنادق في مكة والمدينة", status:"in_progress", order:1, at:now - 26*HOUR, startedAt:now - 20*HOUR },
+               e2:{ name:"منى", note:"إصدار التأشيرات وتذاكر الطيران", status:"done", order:2, at:now - 26*HOUR, startedAt:now - 22*HOUR, doneAt:now - 3*HOUR, doneNote:"التأشيرات طلعت كلها والتذاكر اتحجزت على مصر للطيران" } } },
+    [["sup","event","أنشأ المهمة ووزّعها على أكتر من موظف:\n• سارة: حجز الفنادق في مكة والمدينة\n• منى: إصدار التأشيرات وتذاكر الطيران",26],["e2","event","بدأت مسارها: إصدار التأشيرات وتذاكر الطيران",22],["e1","event","بدأت مسارها: حجز الفنادق في مكة والمدينة",20],["e2","event","خلّصت مسارها (إصدار التأشيرات وتذاكر الطيران):\nالتأشيرات طلعت كلها والتذاكر اتحجزت على مصر للطيران",3]]);
+  const visible = m => m.role === "employee" ? tasks.filter(t => t.assignedTo === m.uid || t.returnTo === m.uid || (t.members || []).includes(m.uid)) : tasks;
   const emitT = () => tSubs.forEach(s => s.cb(visible(s.me).map(t => ({ ...t }))));
   const emitU = () => uSubs.forEach(cb => cb(users.map(u => ({ ...u }))));
   const emitUp = id => (upSubs.get(id) || new Set()).forEach(cb => cb([...(updates[id] || [])]));
@@ -726,6 +763,8 @@ function makeDemo(){
     act(id, m, patch, entry){ return later(() => { const t = tasks.find(x => x.id === id); const n = Date.now();
       Object.assign(t, fix(patch), { updatedAt:n, lastUpdate:entry.text.slice(0,160), lastUpdateBy:m.name, lastUpdateAt:n });
       (updates[id] ||= []).push({ id:"x"+n, kind:entry.kind, text:entry.text, by:m.uid, byName:m.name, role:m.role, createdAt:n }); emitT(); emitUp(id); }); },
+    actTx(id, m, fn){ return later(() => { const t = tasks.find(x => x.id === id); const r = fn(JSON.parse(JSON.stringify(t))); if (!r) throw new Error("noop"); return r; })
+      .then(r => this.act(id, m, r.patch, r.entry)); },
     deleteTask(id){ return later(() => { tasks.splice(tasks.findIndex(t => t.id === id), 1); emitT(); }); },
     createUser({ name, email, role }){ return later(() => { users.push({ uid:"u"+Date.now(), name, email, role, active:true }); emitU(); }); },
     updateUser(uid, patch){ return later(() => { Object.assign(U(uid), patch); emitU(); }); },
@@ -836,11 +875,25 @@ function renderView(soft){
 }
 
 /* ---------- القائمة ---------- */
-const mine = t => t.assignedTo === S.me.uid;
+/* ---------- مسارات التنفيذ (مهمة واحدة موزعة على أكتر من موظف) ---------- */
+const hasTracks = t => !!(t.tracks && Object.keys(t.tracks).length);
+const trackList = t => Object.entries(t.tracks || {}).map(([uid, x]) => ({ uid, ...x })).sort((a,b) => (a.order || 0) - (b.order || 0));
+const myTrack = t => t.tracks && t.tracks[S.me.uid] ? { uid:S.me.uid, ...t.tracks[S.me.uid] } : null;
+const trackNames = tr => Object.values(tr).sort((a,b) => (a.order || 0) - (b.order || 0)).map(x => x.name).join("، ");
+const trackStatus = tr => { const L = Object.values(tr); return !L.length ? "new" : L.every(x => x.status === "done") ? "pending_approval" : L.some(x => x.status !== "assigned") ? "in_progress" : "assigned"; };
+const TST = { assigned:"لسه ما بدأش", in_progress:"شغال عليه", done:"خلص" };
+const tracksDone = t => trackList(t).filter(x => x.status === "done").length;
+// mine = المهمة (أو مساري فيها) لسه شغلي أنا
+const mine = t => t.assignedTo === S.me.uid || !!(myTrack(t) && myTrack(t).status !== "done");
 const lent = t => t.returnTo === S.me.uid && !mine(t);
+// ليه علاقة بالمهمة: يشوفها ويكتب فيها
+const inTask = t => mine(t) || lent(t) || !!myTrack(t);
+const involves = (t, uid) => t.assignedTo === uid || t.returnTo === uid || !!(t.tracks && t.tracks[uid]);
+const avatars = t => hasTracks(t) ? `<span class="av-stack">${trackList(t).slice(0,3).map(x => avatar(x.name, x.uid)).join("")}</span>` : t.assignedTo ? avatar(t.assignedToName, t.assignedTo) : `<span class="av c-other" aria-hidden="true">؟</span>`;
 const STALE = 4 * HOUR;
 const isStale = t => t.status === "in_progress" && Date.now() - ms(t.lastUpdateAt || t.updatedAt) > STALE;
-const isOpenFor = t => t.status !== "closed" && (S.me.role !== "employee" || (t.status !== "pending_approval" || lent(t)));
+const myTrackDone = t => !!(myTrack(t) && myTrack(t).status === "done");
+const isOpenFor = t => t.status !== "closed" && (S.me.role !== "employee" || lent(t) || (t.status !== "pending_approval" && !myTrackDone(t)));
 function tabDefs(){
   const r = S.me.role, T = S.tasks, open = T.filter(isOpenFor);
   const c = { hot:open.filter(HOT).length, new:T.filter(t => t.status === "new").length, approval:T.filter(t => t.status === "pending_approval" || t.extReq).length,
@@ -849,7 +902,7 @@ function tabDefs(){
     { k:"open", l:"مهامي المفتوحة", n:open.length, s:"s-in_progress" },
     { k:"hot", l:"عاجل وفوري", n:c.hot, s:"p-immediate" },
     { k:"late", l:"متأخرة", n:c.late, s:"s-new" },
-    { k:"approval", l:"مستنية الاعتماد", n:T.filter(t => t.status === "pending_approval" || (t.extReq && mine(t))).length, s:"s-pending_approval" },
+    { k:"approval", l:"مستنية الاعتماد", n:T.filter(t => t.status === "pending_approval" || (t.extReq && mine(t)) || (myTrackDone(t) && t.status !== "closed")).length, s:"s-pending_approval" },
     { k:"closed", l:"اتقفلت", n:c.closed, s:"s-closed" } ];
   return [
     { k:"open", l:"كل المفتوحة", n:open.length, s:"s-in_progress" },
@@ -879,10 +932,10 @@ function filtered(){
   if (k === "open") t = t.filter(isOpenFor);
   else if (k === "hot") t = t.filter(x => isOpenFor(x) && HOT(x));
   else if (k === "new") t = t.filter(x => x.status === "new");
-  else if (k === "approval") t = t.filter(x => x.status === "pending_approval" || (x.extReq && (!emp || mine(x))));
+  else if (k === "approval") t = t.filter(x => x.status === "pending_approval" || (x.extReq && (!emp || mine(x))) || (emp && myTrackDone(x) && x.status !== "closed"));
   else if (k === "late") t = t.filter(x => isLate(x) && (!emp || mine(x)));
   else if (k === "closed") t = t.filter(x => x.status === "closed");
-  if (S.emp) t = t.filter(x => x.assignedTo === S.emp || x.returnTo === S.emp);
+  if (S.emp) t = t.filter(x => involves(x, S.emp));
   if (S.q.trim()){ const q = S.q.trim().toLowerCase();
     t = t.filter(x => [x.title, x.client, x.phone, x.details, x.type, x.assignedToName, "#"+x.no, String(x.no), ...(x.files || [])].some(v => v && String(v).toLowerCase().includes(q))); }
   if (k === "closed") return t.sort((a,b) => ms(b.closedAt) - ms(a.closedAt));
@@ -891,6 +944,11 @@ function filtered(){
 const byPriority = (a,b) => (PRI[a.priority] || PRI.normal).r - (PRI[b.priority] || PRI.normal).r || (dueMs(a) || 9e15) - (dueMs(b) || 9e15) || ms(a.createdAt) - ms(b.createdAt);
 function quickBtn(t){
   const r = S.me.role;
+  const tr = myTrack(t);
+  if (tr && t.status !== "closed"){
+    if (tr.status === "assigned") return `<button class="qbtn" data-quick="tstart" data-id="${t.id}">ابدأ مساري</button>`;
+    if (tr.status === "in_progress") return `<button class="qbtn ok" data-quick="tdone" data-id="${t.id}">خلصت مساري</button>`;
+    if (r === "employee") return ""; }
   if (r === "employee" && mine(t)){
     if (t.returnTo) return `<button class="qbtn" data-quick="open" data-id="${t.id}">رجّعها لـ${esc(t.returnToName)}</button>`;
     if (t.status === "assigned") return `<button class="qbtn" data-quick="start" data-id="${t.id}">ابدأ</button>`;
@@ -908,6 +966,9 @@ function flags(t){
     else if (t.returnTo === S.me.uid) out.push(`<span class="flag f-hand">عند ${esc(t.assignedToName)} — هترجعلك</span>`);
     else out.push(`<span class="flag f-hand">جزء مع ${esc(t.assignedToName)}، هترجع لـ${esc(t.returnToName)}</span>`);
   }
+  if (hasTracks(t) && t.status !== "closed"){ const n = trackList(t).length, d = tracksDone(t);
+    out.push(myTrackDone(t) && d < n ? `<span class="flag f-trk all">مسارك خلص — مستني ${fmtNum(n - d)} ${n - d === 1 ? "زميل" : "زملاء"}</span>`
+      : `<span class="flag f-trk ${d === n ? "all" : ""}">${fmtNum(n)} مسارات — خلص ${fmtNum(d)}</span>`); }
   if (t.extReq) out.push(`<span class="flag f-ext">طلب مد وقت</span>`);
   if (isStale(t)) out.push(`<span class="flag f-stale">مفيش تحديث من ${span(Date.now() - ms(t.lastUpdateAt || t.updatedAt))}</span>`);
   if (t.files && t.files.length) out.push(`<span class="flag f-file">${fmtNum(t.files.length)} ${t.files.length === 1 ? "مرفق" : "مرفقات"}</span>`);
@@ -916,9 +977,9 @@ function flags(t){
 function rowHtml(t, o = {}){
   const d = dueInfo(t);
   return `<div class="row" data-open="${t.id}" role="button" tabindex="0">
-    ${t.assignedTo ? avatar(t.assignedToName, t.assignedTo) : `<span class="av c-other" aria-hidden="true">؟</span>`}
+    ${avatars(t)}
     <div class="row-main"><div class="row-top"><span class="ref">#${pad(t.no)}</span><span class="row-title">${esc(t.title)}</span></div>
-      <div class="row-meta"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span>${t.client ? `<span>${esc(t.client)}</span>` : ""}<span>${t.assignedTo ? "مع " + esc(t.assignedToName) : "لسه ما اتوزعتش"}</span>${t.status === "closed" && t.rating ? starsSm(t.rating) : ""}</div>
+      <div class="row-meta"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span>${t.client ? `<span>${esc(t.client)}</span>` : ""}<span>${t.assignedTo || hasTracks(t) ? "مع " + esc(t.assignedToName) : "لسه ما اتوزعتش"}</span>${t.status === "closed" && t.rating ? starsSm(t.rating) : ""}</div>
       ${flags(t) ? `<div class="row-meta">${flags(t)}</div>` : ""}
       ${t.lastUpdate ? `<div class="row-last">${esc(t.lastUpdateBy)}: ${esc(t.lastUpdate)} — ${ago(t.lastUpdateAt)}</div>` : ""}</div>
     <div class="row-side">${o.pri ? `<span class="pri p-${PRI[t.priority] ? t.priority : "normal"}">${(PRI[t.priority] || PRI.normal).l}</span>` : ""}<span class="pill s-${t.status}">${ST[t.status]}</span>${o.created ? `<span class="created">دخلت ${new Date(ms(t.createdAt)).toLocaleTimeString("ar-EG",{hour:"numeric",minute:"2-digit"})}</span>` : ""}${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}${quickBtn(t)}</div></div>`;
@@ -979,7 +1040,7 @@ const DAYN = ["السبت","الأحد","الاتنين","التلات","الأ�
 function renderCalendar(){
   const main = $("#main"), y = S.calMonth.getFullYear(), m = S.calMonth.getMonth();
   const off = (new Date(y, m, 1).getDay() + 1) % 7, nd = new Date(y, m + 1, 0).getDate();
-  let T = S.tasks.filter(t => dueMs(t)); if (S.emp) T = T.filter(t => t.assignedTo === S.emp);
+  let T = S.tasks.filter(t => dueMs(t)); if (S.emp) T = T.filter(t => involves(t, S.emp));
   const by = {}; T.forEach(t => (by[dayKey(dueMs(t))] ||= []).push(t));
   Object.values(by).forEach(a => a.sort((x,z) => (x.status === "closed") - (z.status === "closed") || byPriority(x,z)));
   const today = dayKey(Date.now()); const cells = [];
@@ -1012,21 +1073,23 @@ function perfRange(){
 }
 function statsFor(uid){
   const [a, b] = perfRange();
-  const mine = S.tasks.filter(t => t.assignedTo === uid);
+  const mine = S.tasks.filter(t => t.assignedTo === uid || (t.tracks && t.tracks[uid]));
+  const trk = t => t.tracks && t.tracks[uid];   // في المهام الموزعة: حساب كل واحد بمساره هو
+  const fin = t => trk(t) && trk(t).doneAt ? ms(trk(t).doneAt) : ms(t.closedAt);
   const closed = mine.filter(t => t.status === "closed" && t.closedAt && ms(t.closedAt) >= a && ms(t.closedAt) < b);
   const withDue = closed.filter(t => dueMs(t));
-  const onTime = withDue.filter(t => ms(t.closedAt) <= dueMs(t));
+  const onTime = withDue.filter(t => fin(t) <= dueMs(t));
   const rated = closed.filter(t => t.rating);
-  const dur = closed.filter(t => t.assignedAt).map(t => ms(t.closedAt) - ms(t.assignedAt));
+  const dur = closed.filter(t => trk(t) ? trk(t).at : t.assignedAt).map(t => trk(t) ? fin(t) - ms(trk(t).at) : ms(t.closedAt) - ms(t.assignedAt));
   return { closed:closed.length, onTimePct: withDue.length ? Math.round(onTime.length / withDue.length * 100) : null,
     avg: rated.length ? rated.reduce((s,t) => s + t.rating, 0) / rated.length : null, nRated:rated.length,
     avgDur: dur.length ? dur.reduce((s,x) => s + x, 0) / dur.length : null,
-    open: mine.filter(t => t.status !== "closed").length, late: mine.filter(isLate).length,
+    open: mine.filter(t => t.status !== "closed" && !(trk(t) && trk(t).status === "done")).length, late: mine.filter(t => isLate(t) && !(trk(t) && trk(t).status === "done")).length,
     recent: rated.sort((x,z) => ms(z.closedAt) - ms(x.closedAt)).slice(0,3) };
 }
 function renderPerf(){
   const main = $("#main");
-  let people = S.me.role === "employee" ? [S.me] : S.users.filter(u => u.role === "employee" || S.tasks.some(t => t.assignedTo === u.uid));
+  let people = S.me.role === "employee" ? [S.me] : S.users.filter(u => u.role === "employee" || S.tasks.some(t => t.assignedTo === u.uid || (t.tracks && t.tracks[u.uid])));
   const cards = people.map(u => { const s = statsFor(u.uid);
     return `<article class="pcard"><div class="pcard-h">${avatar(u.name, u.uid, true)}<div><b>${esc(u.name)}</b><span>${ROLE[u.role]}${u.active === false ? " — متوقف" : ""}</span></div></div>
       <div class="rating-big">${s.avg ? `<strong>${fmtNum(s.avg.toFixed(1))}</strong>${starsSm(s.avg)}<small>من ${fmtNum(s.nRated)} تقييم</small>` : `<small>لسه مفيش تقييمات في الفترة دي</small>`}</div>
@@ -1299,13 +1362,13 @@ function showDeadline(list){
   m.innerHTML = `<div class="dl-card"><div class="dl-top">${ic("alert")}<div><h2>${anyLate ? "فيه مهمة عدّى ميعادها" : "ميعاد مهمة قرّب يخلص"}</h2>
       <p>${anyLate ? "اتبعت إشعار للإدارة إن المهمة اتأخرت. حدّث الحالة دلوقتي أو اطلب مد الوقت." : "لو الميعاد عدّى من غير ما المهمة تخلص، هيتبعت إشعار للإدارة تلقائياً. حدّث الحالة أو اطلب مد الوقت."}</p></div></div>
     ${list.slice(0,4).map(t => { const d = dueInfo(t); return `<div class="dl-item"><b>#${pad(t.no)} ${esc(t.title)}</b><span class="due ${d.cls}">${ic("clock")}${d.txt}</span>
-      <div class="act-row"><button class="btn primary sm" data-dl-open="${t.id}">فتح وتحديث الحالة</button><button class="btn sm" data-dl-ext="${t.id}">طلب مد الوقت</button>${t.status === "in_progress" && !t.returnTo ? `<button class="btn ok sm" data-dl-done="${t.id}">خلصت</button>` : ""}</div></div>`; }).join("")}
+      <div class="act-row"><button class="btn primary sm" data-dl-open="${t.id}">فتح وتحديث الحالة</button><button class="btn sm" data-dl-ext="${t.id}">طلب مد الوقت</button>${myTrack(t) ? (myTrack(t).status === "in_progress" ? `<button class="btn ok sm" data-dl-done="${t.id}">خلصت مساري</button>` : "") : t.status === "in_progress" && !t.returnTo ? `<button class="btn ok sm" data-dl-done="${t.id}">خلصت</button>` : ""}</div></div>`; }).join("")}
     <div class="dl-foot"><button class="btn ghost" data-dl-close>هتابعها — فكّرني تاني بعد ${span(repeatEvery())}</button></div></div>`;
   m.addEventListener("click", async e => {
     const o = e.target.closest("[data-dl-open]"), x = e.target.closest("[data-dl-ext]"), d = e.target.closest("[data-dl-done]");
     if (o){ m.remove(); openTask(o.dataset.dlOpen); }
     else if (x){ m.remove(); openTask(x.dataset.dlExt); S.extOpen = true; renderDetail(); }
-    else if (d){ const t = S.tasks.find(z => z.id === d.dataset.dlDone); d.disabled = true; if (t && await runAct(t, "done", {})) { d.closest(".dl-item").remove(); if (!m.querySelector(".dl-item")) m.remove(); } }
+    else if (d){ const t = S.tasks.find(z => z.id === d.dataset.dlDone); d.disabled = true; if (t && await runAct(t, myTrack(t) ? "tdone" : "done", {})) { d.closest(".dl-item").remove(); if (!m.querySelector(".dl-item")) m.remove(); } }
     else if (e.target.closest("[data-dl-close]")) m.remove();
   });
   document.body.appendChild(m);
@@ -1365,7 +1428,7 @@ document.addEventListener("keydown", e => {
 /* ---------- تفاصيل المهمة ---------- */
 function openTask(id){
   closeTask();
-  S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0; S.handOpen = false; S.colFilter = "all"; S.colArm = null;
+  S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0; S.handOpen = false; S.splitOpen = false; S.trkArm = null; S.colFilter = "all"; S.colArm = null;
   const qs = QUICK[S.me.role] || [];
   sheetEl = document.createElement("div");
   sheetEl.innerHTML = `<div class="backdrop" data-close></div>
@@ -1405,7 +1468,7 @@ function extHtml(t){
     <div class="act-row"><button class="btn primary" data-act="extreq">إرسال الطلب لمدير التشغيل</button><button class="btn ghost" data-act="extToggle">إلغاء</button></div></div>`;
 }
 function handHtml(t){
-  if (t.status === "closed") return "";
+  if (t.status === "closed" || hasTracks(t)) return "";
   if (mine(t) && t.returnTo) return `<div class="handbox"><b>المهمة جاتلك من ${esc(t.returnToName)} عشان تخلص جزء منها</b>${t.handoffNote ? `<p class="tl-text" style="margin:0">${esc(t.handoffNote)}</p>` : ""}
     <p class="hint">لما تخلص الجزء بتاعك اكتب اللي عملته في خانة التحديث تحت ودوس الزرار. السجل كله هيفضل معاها.</p>
     <div class="act-row"><button class="btn primary" data-act="giveback">خلصت الجزء بتاعي — رجّعها لـ${esc(t.returnToName)}</button></div></div>`;
@@ -1425,7 +1488,7 @@ const RES = [["","لسه ما اتكلمش","none"],["paid","دفع كامل","p
 const resLabel = k => (RES.find(r => r[0] === (k || "")) || RES[0])[1];
 const money = n => Number(n || 0).toLocaleString("ar-EG") + " ج.م";
 const num = v => Number(String(v ?? "").replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[٬,\s]/g, "")) || 0;
-const canCol = t => S.me.role === "supervisor" || (S.me.role === "employee" && (mine(t) || lent(t)));
+const canCol = t => S.me.role === "supervisor" || (S.me.role === "employee" && inTask(t));
 function colHtml(t){
   const rows = S.sheet || [], edit = canCol(t) && t.status !== "closed";
   if (!rows.length && t.type !== "تحصيل فلوس" && !S.colOpen){
@@ -1511,23 +1574,57 @@ async function colClick(e){
 }
 
 function filesHtml(t){
-  const can = S.me.role !== "employee" || mine(t) || lent(t);
+  const can = S.me.role !== "employee" || inTask(t);
   const list = t.files || [];
   if (!can && !list.length) return "";
   return `<section class="files"><h3 class="timeline-h">المرفقات من الأرشيف</h3>
     ${list.length ? `<div class="file-chips">${list.map(r => `<a href="archive.html#${encodeURIComponent(r)}" target="_blank" rel="noopener">${esc(r)}</a>${S.me.role === "supervisor" ? `<button class="btn ghost sm" data-unlink="${esc(r)}" aria-label="شيل ${esc(r)}">✕</button>` : ""}`).join("")}</div>` : `<p class="hint">مفيش ملفات مربوطة لسه.</p>`}
     ${can && t.status !== "closed" ? `<div class="act-row"><input id="fileRef" dir="ltr" placeholder="الصق رقم الرفع، مثلاً A-0012" ${inputCss}><button class="btn" data-act="link">ربط</button><a class="btn sm" href="archive.html?task=${t.no}" target="_blank" rel="noopener">رفع ملف للأرشيف</a></div>` : ""}</section>`;
 }
+/* ---------- مسارات التنفيذ ---------- */
+function splitHtml(t){
+  const has = hasTracks(t);
+  if (!S.splitOpen) return `<div class="act-row"><button class="btn sm" data-act="splitToggle">${ic("users")}${has ? "إضافة مسار لموظف تاني" : "توزيع على أكتر من موظف (مسارات)"}</button></div>`;
+  const taken = new Set(Object.keys(t.tracks || {})); if (t.assignedTo) taken.add(t.assignedTo);
+  const list = staff().filter(u => !taken.has(u.uid));
+  const nm = u => esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name);
+  return `<div class="splitbox"><b>${has ? "إضافة مسار" : "توزيع المهمة على أكتر من موظف"}</b>
+    <p class="hint">${has ? "اختار الموظف واكتب المطلوب منه." : "المهمة هتفضل ملف واحد بسجل متابعة واحد، وكل موظف يبقى له مسار بالجزء المطلوب منه. لما كل المسارات تخلص، المهمة تروح لك للاعتماد."}</p>
+    ${!has && t.assignedTo ? `<div class="split-row"><span>${esc(t.assignedToName)} <small class="hint">(ماسكها دلوقتي)</small></span><input type="text" id="sn-${t.assignedTo}" placeholder="المطلوب منه (اختياري)"></div>` : ""}
+    ${list.map(u => `<div class="split-row"><label class="check"><input type="checkbox" id="sc-${u.uid}" data-split="${u.uid}"> ${nm(u)}</label><input type="text" id="sn-${u.uid}" placeholder="المطلوب منه (اختياري)"></div>`).join("") || `<p class="hint">كل الموظفين ليهم مسارات في المهمة دي.</p>`}
+    <div class="act-row"><button class="btn primary" data-act="split">${has ? "إضافة" : "توزيع كمسارات"}</button><button class="btn ghost" data-act="splitToggle">إلغاء</button></div></div>`;
+}
+function tracksHtml(t){
+  if (!hasTracks(t)) return "";
+  const L = trackList(t), d = tracksDone(t), sup = S.me.role === "supervisor", open = t.status !== "closed", mt = myTrack(t);
+  const item = x => { const me = x.uid === S.me.uid, b = [];
+    if (open && me && x.status === "assigned") b.push(`<button class="btn primary sm" data-act="tstart">بدء مساري</button>`);
+    if (open && me && x.status === "in_progress") b.push(`<button class="btn ok sm" data-act="tdone">خلصت مساري</button>`);
+    if (open && sup && x.status === "done") b.push(`<button class="btn sm" data-tr="tback" data-uid="${x.uid}">رجّع المسار للتعديل</button>`);
+    if (open && sup && L.length > 1) b.push(`<button class="btn danger sm ${S.trkArm === x.uid ? "armed" : ""}" data-tr="tdel" data-uid="${x.uid}">${S.trkArm === x.uid ? "اضغط تاني للتأكيد" : "شيل المسار"}</button>`);
+    const when = x.status === "done" && x.doneAt ? "خلص " + ago(x.doneAt) : x.startedAt ? "بدأ " + ago(x.startedAt) : x.at ? "اتوزع " + ago(x.at) : "";
+    return `<li class="trk st-${x.status} ${me ? "me" : ""}"><div class="trk-top">${avatar(x.name, x.uid)}<b>${esc(x.name)}${me ? " (أنا)" : ""}</b><span class="trk-st">${TST[x.status] || ""}</span></div>
+      ${x.note ? `<p class="trk-note">${esc(x.note)}</p>` : ""}${x.doneNote ? `<p class="trk-done">${esc(x.doneNote)}</p>` : ""}
+      ${when ? `<span class="trk-meta">${when}</span>` : ""}
+      ${open && me && x.status === "in_progress" ? `<p class="hint">اكتب ملخص اللي عملته في خانة التحديث تحت (اختياري) قبل ما تدوس «خلصت مساري».</p>` : ""}
+      ${b.length ? `<div class="act-row">${b.join("")}</div>` : ""}</li>`; };
+  return `<section class="trks" aria-label="مسارات التنفيذ"><div class="trks-h"><h3 class="timeline-h" style="margin:0">مسارات التنفيذ</h3><span class="hint">خلص ${fmtNum(d)} من ${fmtNum(L.length)}</span></div>
+    <div class="bar"><i style="width:${Math.round(d / L.length * 100)}%"></i></div>
+    ${open && mt && mt.status === "done" && d < L.length ? `<p class="hint">مسارك خلص. المهمة هتروح للاعتماد أول ما باقي المسارات تخلص، وتقدر تتابع وتكتب ملاحظات هنا.</p>` : ""}
+    <ol class="trk-list">${L.map(item).join("")}</ol>
+    ${sup && open ? splitHtml(t) : ""}</section>`;
+}
 function actionsHtml(t){
   const r = S.me.role, st = t.status, out = [];
   if (r === "supervisor"){
     if (t.extReq) out.push(`<div class="extbox"><b>${esc(t.extReq.byName)} طالب مد الوقت</b><span>من ${dueMs(t) ? fullDate(dueMs(t)) : "—"} لحد <b>${fullDate(t.extReq.at)}</b></span><p class="tl-text" style="margin:0">السبب: ${esc(t.extReq.reason)}</p>
       <div class="act-row"><button class="btn ok" data-act="extok">موافقة على المد</button><button class="btn" data-act="extno">رفض</button></div></div>`);
-    if (st === "pending_approval") out.push(`<div class="approve-box"><b>${esc(t.assignedToName)} خلّص المهمة</b><p class="hint">قيّم الشغل واعتمد الإغلاق. ولو فيه حاجة ناقصة، اكتب السبب تحت ورجّعها.</p>${starsPick()}<input id="rateNote" ${inputCss} placeholder="ملاحظة على التقييم (اختياري)"><div class="act-row"><button class="btn ok" data-act="approve">اعتماد وإغلاق</button><button class="btn" data-act="return">إرجاع للموظف</button></div></div>`);
+    if (st === "pending_approval") out.push(`<div class="approve-box"><b>${hasTracks(t) ? "كل المسارات خلصت (" + esc(t.assignedToName) + ")" : esc(t.assignedToName) + " خلّص المهمة"}</b><p class="hint">قيّم الشغل واعتمد الإغلاق. ولو فيه حاجة ناقصة، اكتب السبب تحت ورجّعها${hasTracks(t) ? " (كل المسارات)، أو رجّع مسار واحد بس من قائمة المسارات فوق" : ""}.</p>${starsPick()}<input id="rateNote" ${inputCss} placeholder="ملاحظة على التقييم (اختياري)"><div class="act-row"><button class="btn ok" data-act="approve">اعتماد وإغلاق</button><button class="btn" data-act="return">إرجاع للموظف</button></div></div>`);
     if (st !== "closed"){
       if (t.returnTo) out.push(`<div class="handbox"><b>جزء من المهمة مع ${esc(t.assignedToName)}</b><span class="hint">هترجع لـ${esc(t.returnToName)} لما يخلص.${t.handoffNote ? " المطلوب: " + esc(t.handoffNote) : ""}</span><div class="act-row"><button class="btn sm" data-act="recall">رجّعها لـ${esc(t.returnToName)} دلوقتي</button></div></div>`);
-      out.push(`<div class="act-row"><select id="assignSel" aria-label="توزيع على"><option value="">${t.assignedTo ? "تحويل لموظف تاني…" : "اختار الموظف…"}</option>${staff().filter(u => u.uid !== t.assignedTo).map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select><button class="btn primary" data-act="assign">${t.assignedTo ? "تحويل" : "توزيع"}</button></div>
+      if (!hasTracks(t)) out.push(`<div class="act-row"><select id="assignSel" aria-label="توزيع على"><option value="">${t.assignedTo ? "تحويل لموظف تاني…" : "اختار الموظف…"}</option>${staff().filter(u => u.uid !== t.assignedTo).map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select><button class="btn primary" data-act="assign">${t.assignedTo ? "تحويل" : "توزيع"}</button></div>
         ${t.assignedTo && !t.returnTo ? `<label class="check"><input type="checkbox" id="partialChk"> تحويل جزء بس، وترجع لـ${esc(t.assignedToName)} بعد ما يخلص</label>` : ""}`);
+      if (!hasTracks(t) && !t.returnTo) out.push(splitHtml(t));
       out.push(`<div class="act-row"><select id="priSel" aria-label="الأولوية">${Object.keys(PRI).map(p => `<option value="${p}" ${t.priority === p ? "selected" : ""}>الأولوية: ${PRI[p].l}</option>`).join("")}</select></div>`);
       out.push(`<div class="act-row"><input type="datetime-local" id="dueEdit" aria-label="ميعاد التنفيذ" value="${dueMs(t) ? toInput(dueMs(t)) : ""}"><button class="btn" data-act="due">${ic("clock")}${dueMs(t) ? "تغيير الميعاد" : "تحديد ميعاد"}</button></div>`);
       if (mine(t)) out.push(extHtml(t));
@@ -1538,7 +1635,7 @@ function actionsHtml(t){
     out.push(`<div class="act-row"><button class="btn danger sm ${S.armedDel ? "armed" : ""}" data-act="delete">${S.armedDel ? "اضغط تاني لتأكيد الحذف" : "حذف المهمة"}</button></div>`);
   } else if (r === "employee"){
     out.push(handHtml(t));
-    if (mine(t) && !t.returnTo){
+    if (mine(t) && !t.returnTo && !hasTracks(t)){
       if (st === "assigned") out.push(`<div class="act-row"><button class="btn primary" data-act="start">بدء التنفيذ</button></div>`);
       if (st === "in_progress") out.push(`<p class="hint">لما تخلص اكتب ملخص اللي عملته تحت (اختياري) واضغط الزرار.</p><div class="act-row"><button class="btn ok" data-act="done">خلصت — إرسال للاعتماد</button></div>`);
     }
@@ -1561,7 +1658,7 @@ function renderDetail(){
   const keep = {}; $("#sheetBody").querySelectorAll("input[id],textarea[id],select[id]").forEach(el => keep[el.id] = el.type === "checkbox" ? el.checked : el.value);
   const d = dueInfo(t);
   $("#sheetRef").textContent = "#" + pad(t.no);
-  const facts = [["العميل", esc(t.client)], ["مع", t.assignedTo ? avatar(t.assignedToName, t.assignedTo) + esc(t.assignedToName) : "لسه ما اتوزعتش"],
+  const facts = [["العميل", esc(t.client)], ["مع", t.assignedTo || hasTracks(t) ? avatars(t) + " " + esc(t.assignedToName) : "لسه ما اتوزعتش"],
     ["أرسلها", esc(t.createdByName)], ["اتعملت", fullDate(t.createdAt)], ["ميعاد التنفيذ", dueMs(t) ? fullDate(dueMs(t)) : ""],
     t.closedAt && t.status === "closed" ? ["اتقفلت", fullDate(t.closedAt)] : null].filter(f => f && f[1]);
   $("#sheetBody").innerHTML = `
@@ -1570,6 +1667,7 @@ function renderDetail(){
     <dl class="facts">${facts.map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     ${t.details ? `<p class="details">${esc(t.details)}</p>` : ""}
     ${t.rating ? `<div class="rated"><span>${starsSm(t.rating)} تقييم مدير التشغيل</span>${t.ratingNote ? `<span>${esc(t.ratingNote)}</span>` : ""}</div>` : ""}
+    ${tracksHtml(t)}
     ${actionsHtml(t)}
     ${colHtml(t)}
     ${filesHtml(t)}
@@ -1577,7 +1675,7 @@ function renderDetail(){
       <ol class="timeline">${S.updates.map(u => `<li class="${u.kind}"><div class="tl-meta"><b>${esc(u.byName)}</b> (${ROLE[u.role] || ""}) — ${ago(u.createdAt)}</div><div class="tl-text">${esc(u.text)}</div></li>`).join("") || `<li class="event"><div class="tl-text">لسه مفيش تحديثات.</div></li>`}</ol></section>`;
   for (const id in keep){ const el = document.getElementById(id); if (el && id !== "priSel" && id !== "dueEdit" && (!el.dataset.sh || id === focusId)){ if (el.type === "checkbox") el.checked = keep[id]; else el.value = keep[id]; } }
   if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
-  const ro = S.me.role === "employee" && !mine(t) && !lent(t);
+  const ro = S.me.role === "employee" && !inTask(t);
   $("#composer").hidden = (t.status === "closed" && S.me.role === "employee") || ro;
   $("#sheetBody").scrollTop = scrollY;
   if (S.extOpen && $("#extBox")){ $("#extBox").scrollIntoView({ block:"center" }); }
@@ -1591,9 +1689,14 @@ function onSheetClick(e){
   if (e.target.closest("[data-col],[data-colf],[data-coldel]")) return colClick(e);
   const un = e.target.closest("[data-unlink]"); if (un) return doAct("unlink", un, un.dataset.unlink);
   const rp = e.target.closest("[data-reply]"); if (rp) return doAct("note", rp, rp.dataset.reply);
+  const tr = e.target.closest("[data-tr]");
+  if (tr){ const uid = tr.dataset.uid;
+    if (tr.dataset.tr === "tdel" && S.trkArm !== uid){ S.trkArm = uid; renderDetail(); setTimeout(() => { if (S.trkArm === uid){ S.trkArm = null; renderDetail(); } }, 4000); return; }
+    S.trkArm = null; return doAct(tr.dataset.tr, tr, uid); }
   const b = e.target.closest("[data-act]"); if (!b) return;
   if (b.dataset.act === "extToggle"){ S.extOpen = !S.extOpen; return renderDetail(); }
   if (b.dataset.act === "handToggle"){ S.handOpen = !S.handOpen; return renderDetail(); }
+  if (b.dataset.act === "splitToggle"){ S.splitOpen = !S.splitOpen; return renderDetail(); }
   doAct(b.dataset.act, b);
 }
 async function doAct(kind, btn, val){
@@ -1601,12 +1704,15 @@ async function doAct(kind, btn, val){
   const txtEl = $("#updText");
   const opts = { text: kind === "note" && val ? val : txtEl.value.trim(), val, btn };
   const ok = await runAct(t, kind, opts);
-  if (ok && ["note","done","approve","return","reopen","rate","giveback","extno"].includes(kind) && !(kind === "note" && val)) txtEl.value = "";
+  if (ok && ["note","done","approve","return","reopen","rate","giveback","extno","tdone","tback"].includes(kind) && !(kind === "note" && val)) txtEl.value = "";
+  if (ok && kind === "split"){ S.splitOpen = false; renderDetail(); }
   if (ok && kind === "extreq") S.extOpen = false;
   if (ok && kind === "handoff") S.handOpen = false;
 }
 function normRef(v){ v = String(v || "").trim().toUpperCase().replace(/\s/g, ""); if (/^\d+$/.test(v)) v = "A-" + v.padStart(4, "0"); if (/^A\d+$/.test(v)) v = "A-" + v.slice(1).padStart(4, "0"); return v; }
+const TRACK_ACTS = ["tstart","tdone","split","tdel","tback"];
 async function runAct(t, kind, { text = "", val, btn, silent } = {}){
+  if (TRACK_ACTS.includes(kind) || (hasTracks(t) && (kind === "return" || kind === "reopen"))) return trackAct(t, kind, { text, val, btn });
   const me = S.me; let patch = {}, entry = null;
   switch (kind){
     case "note": if (!text){ toast("اكتب التحديث الأول"); return false; } entry = { kind:"note", text }; break;
@@ -1679,6 +1785,61 @@ async function runAct(t, kind, { text = "", val, btn, silent } = {}){
   finally { if (btn) btn.disabled = false; }
 }
 
+// كل حركات المسارات بتتعمل على آخر نسخة من المهمة (transaction)
+async function trackAct(t, kind, { text = "", val, btn } = {}){
+  const me = S.me, now = Date.now();
+  let picks = [], newSt = t.status;
+  const convNote = t.assignedTo && $("#sn-" + t.assignedTo) ? $("#sn-" + t.assignedTo).value.trim() : "";
+  if (kind === "split"){
+    sheetEl.querySelectorAll("[data-split]:checked").forEach(c => { const u = S.users.find(x => x.uid === c.dataset.split); if (u) picks.push({ uid:u.uid, name:u.name, note:($("#sn-" + u.uid) || {}).value?.trim() || "" }); });
+    if (!picks.length){ toast("اختار موظف واحد على الأقل"); return false; }
+    if (!hasTracks(t) && !t.assignedTo && picks.length < 2){ toast("اختار موظفين اتنين على الأقل، أو وزّعها عادي على موظف واحد"); return false; }
+  }
+  if (kind === "return" && !text){ $("#updText").focus(); toast("اكتب سبب الإرجاع في خانة التحديث تحت"); return false; }
+  const fn = cur => {
+    const tr = JSON.parse(JSON.stringify(cur.tracks || {}));
+    let msg = "";
+    if (kind === "tstart"){ const x = tr[me.uid]; if (!x || x.status !== "assigned") return null;
+      x.status = "in_progress"; x.startedAt = now; msg = "بدأ مساره" + (x.note ? ": " + x.note : ""); }
+    else if (kind === "tdone"){ const x = tr[me.uid]; if (!x || x.status === "done") return null;
+      x.status = "done"; x.doneAt = now; x.doneNote = text; if (!x.startedAt) x.startedAt = now;
+      msg = "خلّص مساره" + (x.note ? " (" + x.note + ")" : "") + (text ? ":\n" + text : ""); }
+    else if (kind === "split"){
+      const conv = !Object.keys(tr).length;
+      let o = Object.values(tr).reduce((m, x) => Math.max(m, x.order || 0), 0);
+      if (conv && cur.assignedTo) tr[cur.assignedTo] = { name:cur.assignedToName, note:cur.assignedTo === t.assignedTo ? convNote : "", order:++o, at:now,
+        status: cur.status === "in_progress" ? "in_progress" : cur.status === "pending_approval" ? "done" : "assigned" };
+      const added = picks.filter(p => !tr[p.uid]);
+      if (!added.length) return null;
+      added.forEach(p => tr[p.uid] = { name:p.name, note:p.note, status:"assigned", order:++o, at:now });
+      const lines = (conv ? trackList({ tracks:tr }) : added.map(p => ({ ...tr[p.uid] }))).map(x => "• " + x.name + (x.note ? ": " + x.note : "")).join("\n");
+      msg = (conv ? "وزّع المهمة على أكتر من موظف:\n" : "ضاف " + (added.length === 1 ? "مسار" : "مسارات") + ":\n") + lines; }
+    else if (kind === "tdel"){ const x = tr[val]; if (!x || Object.keys(tr).length < 2) return null;
+      delete tr[val]; msg = "شال مسار " + x.name + (x.note ? " (" + x.note + ")" : ""); }
+    else if (kind === "tback"){ const x = tr[val]; if (!x || x.status !== "done") return null;
+      x.status = "in_progress"; x.doneAt = null; msg = "رجّع مسار " + x.name + " للتعديل" + (text ? ":\n" + text : ""); }
+    else if (kind === "return"){ Object.values(tr).forEach(x => { if (x.status === "done"){ x.status = "in_progress"; x.doneAt = null; } });
+      msg = "رجّع المهمة للتعديل (كل المسارات):\n" + text; }
+    else if (kind === "reopen"){ Object.values(tr).forEach(x => { x.status = "assigned"; x.doneAt = null; x.startedAt = null; });
+      msg = "أعاد فتح المهمة" + (text ? ":\n" + text : ""); }
+    if (cur.status === "closed" && kind !== "reopen") return null;
+    const st = trackStatus(tr), patch = { tracks:tr }; newSt = st;
+    if (st !== cur.status) patch.status = st;
+    if (me.role !== "employee"){ patch.members = Object.keys(tr); patch.assignedTo = ""; patch.assignedToName = trackNames(tr); }
+    if (kind === "split"){ patch.returnTo = ""; patch.returnToName = ""; patch.handoffNote = ""; if (!cur.assignedAt) patch.assignedAt = NOW; }
+    if (st === "pending_approval" && cur.status !== "pending_approval") msg += "\n— كل المسارات خلصت، والمهمة اتبعتت للاعتماد";
+    return { patch, entry:{ kind:"event", text:msg } };
+  };
+  if (btn) btn.disabled = true;
+  try {
+    await api.actTx(t.id, me, fn);
+    toast({ tstart:"بالتوفيق!", tdone:"مسارك اتسجل إنه خلص", split:"المهمة اتوزعت كمسارات", tdel:"المسار اتشال", tback:"المسار رجع للموظف", return:"المهمة رجعت للمسارات", reopen:"المهمة اتفتحت تاني" }[kind]
+      + (kind === "tdone" && newSt === "pending_approval" ? " — والمهمة راحت للاعتماد" : ""));
+    return true;
+  } catch(x){ console.error(x); toast(x.message === "noop" ? "الحالة اتغيرت، حدّث الصفحة" : "العملية ما نجحتش، جرّب تاني"); return false; }
+  finally { if (btn) btn.disabled = false; }
+}
+
 /* ---------- مهمة جديدة ---------- */
 function modal(title, body){
   const m = document.createElement("div"); m.className = "modal";
@@ -1703,12 +1864,19 @@ function openNewTask(){
     <div class="field full"><label for="nt-due">ميعاد التنفيذ</label><div class="chips-row">${DEADLINES.map((d,i) => `<button type="button" class="chip" data-dl="${i}">${d[0]}</button>`).join("")}</div><input id="nt-due" type="datetime-local"></div>
     <div class="field"><label for="nt-client">العميل</label><input id="nt-client"></div>
     <div class="field"><label for="nt-phone">تليفون العميل</label><input id="nt-phone" type="tel" dir="ltr" placeholder="01xxxxxxxxx"></div>
-    ${sup ? `<div class="field full"><label for="nt-assign">توزيع على</label><select id="nt-assign"><option value="">بعدين</option>${staff().map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select></div>` : ""}
+    ${sup ? `<div class="field full"><span class="lbl">توزيع على <small class="hint">— اختار واحد أو أكتر، ولو اخترت أكتر من واحد المهمة هتبقى ملف واحد فيه مسار لكل موظف</small></span><div class="type-pick" id="nt-assign">${staff().map(u => `<button type="button" data-asg="${u.uid}" aria-pressed="false">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</button>`).join("")}</div><div class="nt-notes" id="nt-notes"></div></div>` : ""}
     <div class="field full"><label for="nt-details">التفاصيل</label><textarea id="nt-details" rows="3"></textarea></div>
     <p class="err" id="nt-err" hidden></p>
     </form><div class="form-foot"><button class="btn primary" id="ntSave">${sup ? "حفظ المهمة" : "إرسال لمدير التشغيل"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
-  let pri = "normal";
+  let pri = "normal"; const asg = [];
+  const drawNotes = () => { const box = $("#nt-notes"); if (!box) return;
+    const keep = {}; box.querySelectorAll("input").forEach(i => keep[i.id] = i.value);
+    box.innerHTML = asg.length < 2 ? "" : `<span class="hint">المطلوب من كل واحد (اختياري):</span>` + asg.map(uid => { const u = S.users.find(x => x.uid === uid);
+      return `<div class="split-row"><span>${esc(u.name)}</span><input type="text" id="ntn-${uid}" placeholder="مثلاً: حجز الفنادق" value="${esc(keep["ntn-" + uid] || "")}"></div>`; }).join(""); };
   m.addEventListener("click", e => {
+    const ag = e.target.closest("[data-asg]"); if (ag){ const uid = ag.dataset.asg, i = asg.indexOf(uid);
+      if (i < 0) asg.push(uid); else asg.splice(i, 1);
+      ag.classList.toggle("on", i < 0); ag.setAttribute("aria-pressed", String(i < 0)); drawNotes(); }
     const ty = e.target.closest("[data-type]"); if (ty){ type = ty.dataset.type; m.querySelectorAll("[data-type]").forEach(b => b.classList.toggle("on", b === ty)); }
     const pr = e.target.closest("[data-pri]"); if (pr){ pri = pr.dataset.pri; m.querySelectorAll("[data-pri]").forEach(b => b.classList.toggle("on", b === pr)); }
     const dl = e.target.closest("[data-dl]"); if (dl){ $("#nt-due").value = toInput(DEADLINES[+dl.dataset.dl][1]()); m.querySelectorAll("[data-dl]").forEach(b => b.classList.toggle("on", b === dl)); }
@@ -1717,15 +1885,22 @@ function openNewTask(){
   const save = async () => {
     const title = $("#nt-title").value.trim(), er = $("#nt-err");
     if (!title){ er.textContent = "اكتب عنوان المهمة."; er.hidden = false; return; }
-    const aid = sup ? $("#nt-assign").value : "", au = S.users.find(u => u.uid === aid);
+    const multi = sup && asg.length > 1, au = sup && asg.length === 1 ? S.users.find(u => u.uid === asg[0]) : null;
     const dv = $("#nt-due").value;
     const data = { title, type, priority:pri, client:$("#nt-client").value.trim(), phone:$("#nt-phone").value.trim(),
       dueAt: dv ? new Date(dv).getTime() : null, details:$("#nt-details").value.trim(), status: au ? "assigned" : "new", assignedTo: au ? au.uid : "", assignedToName: au ? au.name : "",
       createdBy:S.me.uid, createdByName:S.me.name, createdByRole:S.me.role };
     if (au) data.assignedAt = NOW;
+    let first = au ? "أنشأ المهمة ووزّعها على " + au.name : "أنشأ المهمة";
+    if (multi){
+      const tracks = {}, now = Date.now();
+      asg.forEach((uid, i) => { const u = S.users.find(x => x.uid === uid); tracks[uid] = { name:u.name, note:($("#ntn-" + uid) || {}).value?.trim() || "", status:"assigned", order:i + 1, at:now }; });
+      Object.assign(data, { tracks, members:Object.keys(tracks), status:"assigned", assignedTo:"", assignedToName:trackNames(tracks), assignedAt:NOW });
+      first = "أنشأ المهمة ووزّعها على أكتر من موظف:\n" + trackList({ tracks }).map(x => "• " + x.name + (x.note ? ": " + x.note : "")).join("\n");
+    }
     $("#ntSave").disabled = true;
     try {
-      await api.createTask(data, S.me, au ? "أنشأ المهمة ووزّعها على " + au.name : "أنشأ المهمة");
+      await api.createTask(data, S.me, first);
       m.remove(); toast(sup ? "المهمة اتحفظت" : "المهمة اتبعتت لمدير التشغيل"); S.tab = "open"; S.view = "list"; renderView();
     } catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت وجرّب تاني."; er.hidden = false; $("#ntSave").disabled = false; }
   };
