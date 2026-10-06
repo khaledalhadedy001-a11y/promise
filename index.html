@@ -349,6 +349,8 @@ main{padding-bottom:56px}
 .tbl td{padding:8px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tbl tr.sum td{font-weight:600}
 .tbl td.warn{color:var(--warn);font-weight:600}
+.tbl td.good{color:var(--ok);font-weight:600}
+.f-early{--h:var(--ok)}.f-ontime{--h:var(--p-normal)}.f-late{--h:var(--p-urgent)}
 .tbl input,.tbl select{border:1px solid var(--line);border-radius:7px;padding:4px 6px;background:var(--surface);font-size:13px}
 .tbl button{margin-inline-start:4px}
 .set-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -609,7 +611,7 @@ async function makeFirebase(){
       else await F.addDoc(F.collection(db,"attendance"), { uid:me.uid, name:me.name, day:dayKey(Date.now()), inAt:F.serverTimestamp(), inLat:loc.Lat, inLng:loc.Lng, inAcc:loc.Acc, inCode:code });
     },
     async getOffice(){ const d = await F.getDoc(F.doc(db,"settings","office")); return d.exists() ? d.data() : null; },
-    setOffice:o => F.setDoc(F.doc(db,"settings","office"), o),
+    setOffice:o => F.setDoc(F.doc(db,"settings","office"), o, { merge:true }),
     addAtt:r => F.addDoc(F.collection(db,"attendance"), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : {}) }),
     editAtt:(id, r) => F.updateDoc(F.doc(db,"attendance",id), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : { outAt:F.deleteField() }) }),
     delAtt:id => F.deleteDoc(F.doc(db,"attendance",id)),
@@ -731,7 +733,7 @@ function makeDemo(){
     punch(m, open, code, pos){ return later(() => { if (code !== "DEMO42") throw new Error("code"); const n = Date.now();
       if (open) Object.assign(att.find(r => r.id === open.id), { outAt:n, outLat:pos.lat, outLng:pos.lng });
       else att.push({ id:"a" + n, uid:m.uid, name:m.name, day:dayKey(n), inAt:n, inLat:pos.lat, inLng:pos.lng }); emitA(); }); },
-    getOffice(){ return later(() => office); }, setOffice(o){ return later(() => { office = o; }); },
+    getOffice(){ return later(() => office); }, setOffice(o){ return later(() => { office = { ...office, ...o }; }); },
     addAtt(r){ return later(() => { att.push({ ...r, id:"a" + Date.now() }); emitA(); }); },
     editAtt(id, r){ return later(() => { const x = att.find(a => a.id === id); Object.assign(x, r); if (!r.outAt) delete x.outAt; emitA(); }); },
     delAtt(id){ return later(() => { att.splice(att.findIndex(a => a.id === id), 1); emitA(); }); },
@@ -764,6 +766,7 @@ api.onAuth(p => {
   S.view = "list"; S.tab = "open"; S.emp = ""; S.q = "";
   renderShell();
   S.unsub.push(api.watchTasks(S.me, ts => { S.tasks = ts; renderView(); if (S.openId) renderDetail(); checkAlerts(S.firstLoad); S.firstLoad = false; }));
+  S.attCfg = null; api.getOffice().then(o => { S.attCfg = o; if (S.view === "att") renderAtt(); }).catch(() => {});
   S.att = []; S.unsub.push(api.watchAtt(S.me, rows => { S.att = rows; if (S.view === "att") renderAtt(); }));
   if (pendingCode){ const c = pendingCode; pendingCode = ""; setTimeout(() => doPunch(c), 300); }
   S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); }));
@@ -1074,6 +1077,20 @@ function attPeople(){
 }
 function attMonth(){ const n = new Date(); const d = new Date(n.getFullYear(), n.getMonth() - (S.attMonth || 0), 1);
   return { key:d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"), label:d.toLocaleDateString("ar-EG", { month:"long", year:"numeric" }) }; }
+const attCfg = () => ({ hours:(S.attCfg && +S.attCfg.workHours) || 8, start:(S.attCfg && S.attCfg.startTime) || "09:00", late:(S.attCfg && S.attCfg.lateTime) || "11:00" });
+const toMin = v => { const [h, m] = String(v).split(":").map(Number); return h * 60 + (m || 0); };
+const startMin = () => toMin(attCfg().start), lateMin = () => toMin(attCfg().late);
+const lateTxt = () => { const m = lateMin(); return new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" }); };
+const minOf = t => { const d = new Date(ms(t)); return d.getHours() * 60 + d.getMinutes(); };
+const startTxt = () => { const m = startMin(); return new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" }); };
+function arrivalTag(inAt){ const m = minOf(inAt);
+  if (m <= startMin()) return `<span class="flag f-early">بدري</span>`;
+  if (m <= lateMin()) return `<span class="flag f-ontime">في الميعاد</span>`;
+  return `<span class="flag f-late">متأخر ${hm((m - lateMin()) * MIN)}</span>`; }
+const signedHm = d => Math.abs(d) < MIN ? "٠" : (d > 0 ? "+" : "−") + hm(Math.abs(d));
+function dayStats(recs){ // لكل يوم: أول حضور وإجمالي الساعات
+  const m = new Map(); recs.forEach(x => { const k = x.uid + "|" + x.day, d = m.get(k) || { uid:x.uid, day:x.day, firstIn:x.inAt, total:0 };
+    if (ms(x.inAt) < ms(d.firstIn)) d.firstIn = x.inAt; d.total += recDur(x); m.set(k, d); }); return m; }
 function renderAtt(){
   const main = $("#main"), r = S.me.role, boss = r === "supervisor" || r === "manager", today = dayKey(Date.now());
   let html = "";
@@ -1081,7 +1098,8 @@ function renderAtt(){
     const open = myOpen();
     const mine = (S.att || []).filter(x => x.uid === S.me.uid && x.day === today), todayDur = mine.reduce((a,x) => a + recDur(x), 0);
     html += `<section class="att-me" aria-label="حضوري">
-      <div class="att-status ${open ? "in" : "out"}"><span class="dotbig"></span><div><b>${open ? "إنت مسجّل حضور من الساعة " + tOf(open.inAt) : "إنت مش مسجّل حضور دلوقتي"}</b><br><span>${todayDur ? "اشتغلت النهارده " + hm(todayDur) : "لسه ما سجّلتش حضور النهارده"}</span></div></div>
+      <div class="att-status ${open ? "in" : "out"}"><span class="dotbig"></span><div><b>${open ? "إنت مسجّل حضور من الساعة " + tOf(open.inAt) : "إنت مش مسجّل حضور دلوقتي"}</b><br><span>${todayDur ? "اشتغلت النهارده " + hm(todayDur) + (todayDur >= attCfg().hours * HOUR ? " — كمّلت " + fmtNum(attCfg().hours) + " ساعات" : " — باقي " + hm(attCfg().hours * HOUR - todayDur) + " عشان تكمّل " + fmtNum(attCfg().hours) + " ساعات") : "لسه ما سجّلتش حضور النهارده. الحضور قبل " + startTxt() + " بيتحسب بدري، وبعد " + lateTxt() + " بيتحسب تأخير."}</span>
+        ${mine.length ? `<div style="margin-top:6px">${arrivalTag(mine.slice().sort((a,b) => ms(a.inAt) - ms(b.inAt))[0].inAt)}</div>` : ""}</div></div>
       <p class="hint">عشان تسجّل ${open ? "انصراف" : "حضور"}: دوس «امسح الكود بالكاميرا» ووجّه الموبايل على شاشة الشركة، أو اكتب الحروف اللي تحت الكود. لازم تكون في الشركة والموقع مفتوح.</p>
       <div class="act-row"><button class="btn primary" data-att="scan" style="padding:12px 18px;font-size:16px">${ic("cam")}امسح الكود بالكاميرا</button></div>
       <div class="act-row"><input id="attCode" dir="ltr" maxlength="8" autocomplete="off" placeholder="ABC123" aria-label="كود الحضور"><button class="btn" data-att="punch">${ic(open ? "out" : "pin")}${open ? "تسجيل انصراف" : "تسجيل حضور"} بالكود المكتوب</button></div>
@@ -1092,34 +1110,43 @@ function renderAtt(){
       const open = recs.find(isOpenRec), last = recs[recs.length - 1], dur = recs.reduce((a,x) => a + recDur(x), 0);
       const st = !recs.length ? ["absent","لسه ما سجّلش"] : open ? ["in","موجود"] : ["left","انصرف"];
       return `<div class="pcell ${st[0]}"><div class="pcell-h">${avatar(p.name, p.uid)}<b>${esc(p.name)}</b><span class="pill ${st[0] === "in" ? "s-closed" : st[0] === "left" ? "s-assigned" : ""}">${st[1]}</span></div>
+        ${recs.length ? `<div class="row-meta">${arrivalTag(recs[0].inAt)}<span>${dur >= attCfg().hours * HOUR ? "كمّل " + fmtNum(attCfg().hours) + " ساعات" : "باقي " + hm(attCfg().hours * HOUR - dur)}</span></div>` : ""}
         <dl><div><dt>حضور</dt><dd>${recs.length ? tOf(recs[0].inAt) : "—"}</dd></div><div><dt>انصراف</dt><dd>${last && last.outAt ? tOf(last.outAt) : "—"}</dd></div><div><dt>الساعات</dt><dd>${dur ? hm(dur) : "—"}</dd></div></dl></div>`; }).join("");
     html += `<section class="att-sec"><header><h2>حضور النهارده</h2><span class="hint">${new Date().toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long" })}</span></header><div class="att-today">${cells || `<p class="hint">مفيش موظفين لسه.</p>`}</div></section>`;
   }
   // التقرير الشهري
   const M = attMonth(), people = boss ? attPeople() : [{ uid:S.me.uid, name:S.me.name }];
   const recs = (S.att || []).filter(x => x.day && x.day.startsWith(M.key) && (!S.attEmp || x.uid === S.attEmp) && people.some(p => p.uid === x.uid)).sort((a,b) => ms(a.inAt) - ms(b.inAt));
+  const DS = dayStats(recs), H8 = attCfg().hours * HOUR, st0 = startMin(), lt0 = lateMin();
   const sums = people.filter(p => !S.attEmp || p.uid === S.attEmp).map(p => { const mine = recs.filter(x => x.uid === p.uid);
-    const days = new Set(mine.map(x => x.day)), total = mine.reduce((a,x) => a + recDur(x), 0), miss = mine.filter(x => !x.outAt && !isOpenRec(x)).length;
-    const ins = [...days].map(d => Math.min(...mine.filter(x => x.day === d).map(x => { const t = new Date(ms(x.inAt)); return t.getHours() * 60 + t.getMinutes(); })));
+    const days = [...DS.values()].filter(d => d.uid === p.uid), total = days.reduce((a,d) => a + d.total, 0), miss = mine.filter(x => !x.outAt && !isOpenRec(x)).length;
+    const ins = days.map(d => minOf(d.firstIn)), lates = ins.filter(m => m > lt0), earlies = ins.filter(m => m <= st0);
     const avgIn = ins.length ? Math.round(ins.reduce((a,b) => a + b, 0) / ins.length) : null;
-    return { p, days:days.size, total, avg: days.size ? total / days.size : 0, miss, avgIn }; });
+    return { p, days:days.length, total, avg: days.length ? total / days.length : 0, miss, avgIn, req:days.length * H8, full:days.filter(d => d.total >= H8).length,
+      early:earlies.length, ontime:ins.length - earlies.length - lates.length, late:lates.length, lateMin:lates.reduce((a,m) => a + m - lt0, 0) }; })
+    .sort((a,b) => b.early - a.early || a.late - b.late || a.lateMin - b.lateMin || (a.avgIn ?? 1e9) - (b.avgIn ?? 1e9));
   const avgInTxt = m => m == null ? "—" : new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" });
   const sup = r === "supervisor";
-  const rowsHtml = recs.slice().reverse().map(x => { const dur = recDur(x), editing = S.attEdit === x.id;
+  const firstOf = new Map(); recs.forEach(x => { const k = x.uid + "|" + x.day; if (!firstOf.has(k)) firstOf.set(k, x.id); });
+  const rowsHtml = recs.slice().reverse().map(x => { const dur = recDur(x), editing = S.attEdit === x.id, k = x.uid + "|" + x.day, first = firstOf.get(k) === x.id, dd = DS.get(k);
     if (editing) return `<tr><td>${esc(new Date(x.day + "T00:00").toLocaleDateString("ar-EG", { weekday:"short", day:"numeric", month:"short" }))}</td><td>${esc(x.name)}</td>
       <td><input type="datetime-local" id="ae-in" value="${toInput(ms(x.inAt))}"></td><td><input type="datetime-local" id="ae-out" value="${x.outAt ? toInput(ms(x.outAt)) : ""}"></td><td></td>
-      <td><button class="btn primary sm" data-att="save" data-id="${x.id}">حفظ</button><button class="btn sm" data-att="cancel">إلغاء</button></td></tr>`;
+      <td></td><td></td><td><button class="btn primary sm" data-att="save" data-id="${x.id}">حفظ</button><button class="btn sm" data-att="cancel">إلغاء</button></td></tr>`;
     return `<tr><td>${esc(new Date(x.day + "T00:00").toLocaleDateString("ar-EG", { weekday:"short", day:"numeric", month:"short" }))}</td><td>${esc(x.name)}</td><td>${tOf(x.inAt)}</td>
       <td class="${!x.outAt && !isOpenRec(x) ? "warn" : ""}">${x.outAt ? tOf(x.outAt) : isOpenRec(x) ? "لسه موجود" : "ما سجّلش انصراف"}</td><td>${dur ? hm(dur) : "—"}</td>
+      <td>${first ? arrivalTag(x.inAt) : ""}</td><td class="${first && dd.total < H8 ? "warn" : "good"}">${first && (x.outAt || !isOpenRec(x)) ? signedHm(dd.total - H8) : ""}</td>
       ${sup ? `<td><button class="btn sm" data-att="edit" data-id="${x.id}">تعديل</button><button class="btn danger sm" data-att="del" data-id="${x.id}">${S.attArm === x.id ? "تأكيد" : "حذف"}</button></td>` : ""}</tr>`; }).join("");
   html += `<section class="att-sec"><header><h2>التقرير الشهري — ${M.label}</h2>
       <div class="chips-row">${[0,1,2].map(i => `<button class="chip ${(S.attMonth || 0) === i ? "on" : ""}" data-attm="${i}">${i === 0 ? "الشهر ده" : i === 1 ? "الشهر اللي فات" : "من شهرين"}</button>`).join("")}</div>
       ${boss ? `<select id="attEmp" class="btn sm" aria-label="الموظف"><option value="">الكل</option>${attPeople().map(p => `<option value="${p.uid}" ${S.attEmp === p.uid ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select>` : ""}
       ${recs.length ? `<button class="btn sm" data-att="copy">نسخ التقرير لإكسل</button>` : ""}</header>
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>الاسم</th><th>أيام الحضور</th><th>إجمالي الساعات</th><th>متوسط اليوم</th><th>متوسط وقت الحضور</th><th>أيام من غير انصراف</th></tr></thead>
-      <tbody>${sums.map(x => `<tr class="sum"><td>${esc(x.p.name)}</td><td>${fmtNum(x.days)}</td><td>${hm(x.total)}</td><td>${x.days ? hm(x.avg) : "—"}</td><td>${avgInTxt(x.avgIn)}</td><td class="${x.miss ? "warn" : ""}">${fmtNum(x.miss)}</td></tr>`).join("")}</tbody></table></div>
+    <p class="hint">الدوام ${fmtNum(attCfg().hours)} ساعات في اليوم. الحضور قبل ${startTxt()} «بدري»، ومن ${startTxt()} لـ ${lateTxt()} «في الميعاد»، وبعد ${lateTxt()} «تأخير». الترتيب حسب الالتزام: الأكتر حضوراً بدري، وبعدها الأقل تأخير.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>الترتيب</th><th>الاسم</th><th>أيام الحضور</th><th>بدري (قبل ${startTxt()})</th><th>في الميعاد</th><th>اتأخر (بعد ${lateTxt()})</th><th>إجمالي التأخير</th><th>متوسط وقت الحضور</th><th>إجمالي الساعات</th><th>المطلوب</th><th>الفرق</th><th>أيام كمّلت ${fmtNum(attCfg().hours)} س</th><th>من غير انصراف</th></tr></thead>
+      <tbody>${sums.map((x, i) => `<tr class="sum"><td>${x.days ? (i === 0 && sums.length > 1 ? `<span class="flag f-early">الأول</span>` : fmtNum(i + 1)) : "—"}</td><td>${esc(x.p.name)}</td><td>${fmtNum(x.days)}</td>
+        <td class="good">${fmtNum(x.early)}</td><td>${fmtNum(x.ontime)}</td><td class="${x.late ? "warn" : ""}">${fmtNum(x.late)}</td><td class="${x.lateMin ? "warn" : ""}">${x.lateMin ? hm(x.lateMin * MIN) : "—"}</td><td>${avgInTxt(x.avgIn)}</td>
+        <td>${hm(x.total)}</td><td>${hm(x.req)}</td><td class="${x.total - x.req < 0 ? "warn" : "good"}">${x.days ? signedHm(x.total - x.req) : "—"}</td><td>${fmtNum(x.full)} من ${fmtNum(x.days)}</td><td class="${x.miss ? "warn" : ""}">${fmtNum(x.miss)}</td></tr>`).join("")}</tbody></table></div>
     <h3 class="timeline-h">التفاصيل يوم بيوم</h3>
-    ${recs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>اليوم</th><th>الاسم</th><th>حضور</th><th>انصراف</th><th>الساعات</th>${sup ? "<th></th>" : ""}</tr></thead><tbody>${rowsHtml}</tbody></table></div>` : `<p class="hint">مفيش تسجيلات في الشهر ده.</p>`}
+    ${recs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>اليوم</th><th>الاسم</th><th>حضور</th><th>انصراف</th><th>الساعات</th><th>الالتزام</th><th>الفرق عن ${fmtNum(attCfg().hours)} س</th>${sup ? "<th></th>" : ""}</tr></thead><tbody>${rowsHtml}</tbody></table></div>` : `<p class="hint">مفيش تسجيلات في الشهر ده.</p>`}
   </section>`;
   if (sup){
     html += `<section class="att-sec"><header><h2>إعدادات الحضور</h2></header><div class="set-grid">
@@ -1127,6 +1154,11 @@ function renderAtt(){
         <label class="check">المسافة المسموحة <select id="officeR">${[100,150,250,400].map(v => `<option value="${v}">${fmtNum(v)} متر</option>`).join("")}</select></label>
         <div class="act-row"><button class="btn primary sm" data-att="office">${ic("pin")}حدد موقع الشركة من مكاني دلوقتي</button></div>
         <p class="hint">اعمل الخطوة دي وإنت جوه الشركة.</p></div>
+      <div><h3>مواعيد الدوام</h3><p class="hint">بتتحسب منها التقارير: الساعات المطلوبة في اليوم، ومواعيد البدري والتأخير.</p>
+        <label class="check">ساعات الدوام في اليوم <input type="number" id="cfgHours" min="1" max="16" step="0.5" value="${attCfg().hours}" style="width:80px"></label>
+        <label class="check">الحضور قبل الساعة دي «بدري» <input type="time" id="cfgStart" value="${attCfg().start}"></label>
+        <label class="check">بعد الساعة دي «تأخير» <input type="time" id="cfgLate" value="${attCfg().late}"></label>
+        <div class="act-row"><button class="btn primary sm" data-att="cfg">حفظ مواعيد الدوام</button></div></div>
       <div><h3>شاشة الكود</h3><p class="hint">افتح الصفحة دي على جهاز ثابت في الشركة وسيبها شغالة. الأحسن تدخل عليها بحساب «جهاز الحضور» من صفحة الفريق.</p>
         <div class="act-row"><a class="btn sm" href="kiosk.html" target="_blank" rel="noopener">${ic("qr")}فتح شاشة الكود</a></div></div>
       <div style="grid-column:1/-1"><h3>مسح كل سجلات الحضور</h3><p class="hint">بيمسح كل الحضور والانصراف المتسجل لحد دلوقتي (مثلاً بعد فترة التجربة). مينفعش يترجع.</p>
@@ -1202,6 +1234,10 @@ async function attClick(b){
     if (!uid || !vi) return toast("اختار الموظف ووقت الحضور"); const inAt = new Date(vi).getTime(), outAt = vo ? new Date(vo).getTime() : null;
     if (outAt && outAt <= inAt) return toast("وقت الانصراف لازم يكون بعد الحضور");
     try { await api.addAtt({ uid, name:p.name, day:dayKey(inAt), inAt, ...(outAt ? { outAt } : {}), manual:true, editedBy:S.me.name }); toast("السجل اتضاف"); } catch(e){ console.error(e); toast("الإضافة ما نجحتش"); } return; }
+  if (k === "cfg"){ const workHours = +$("#cfgHours").value, startTime = $("#cfgStart").value, lateTime = $("#cfgLate").value;
+    if (!(workHours > 0) || !startTime || !lateTime) return toast("اكتب عدد الساعات والمواعيد");
+    if (toMin(lateTime) < toMin(startTime)) return toast("ميعاد التأخير لازم يكون بعد ميعاد البدري");
+    try { await api.setOffice({ workHours, startTime, lateTime }); S.attCfg = { ...(S.attCfg || {}), workHours, startTime, lateTime }; toast("مواعيد الدوام اتحفظت"); renderAtt(); } catch(e){ console.error(e); toast("الحفظ ما نجحش"); } return; }
   if (k === "office"){ b.disabled = true; toast("بيحدد موقعك…");
     try { const pos = await getPos(), radius = +$("#officeR").value, tol = radius + 100;
       await api.setOffice({ lat:pos.lat, lng:pos.lng, radius, dLat: tol / 111320, dLng: tol / (111320 * Math.cos(pos.lat * Math.PI / 180)), setBy:S.me.name, setAt:Date.now() });
@@ -1210,7 +1246,8 @@ async function attClick(b){
     b.disabled = false; return; }
   if (k === "copy"){ const M = attMonth();
     const rows = (S.att || []).filter(x => x.day && x.day.startsWith(M.key) && (!S.attEmp || x.uid === S.attEmp)).sort((a,b) => ms(a.inAt) - ms(b.inAt));
-    const tsv = ["اليوم\tالاسم\tحضور\tانصراف\tالساعات", ...rows.map(x => [x.day, x.name, tOf(x.inAt), x.outAt ? tOf(x.outAt) : "", (recDur(x) / HOUR).toFixed(2)].join("\t"))].join("\n");
+    const st0 = startMin(), lt0 = lateMin(), lvl = m => m <= st0 ? "بدري" : m <= lt0 ? "في الميعاد" : "متأخر";
+    const tsv = ["اليوم\tالاسم\tحضور\tانصراف\tالساعات\tالالتزام\tتأخير (دقيقة)", ...rows.map(x => [x.day, x.name, tOf(x.inAt), x.outAt ? tOf(x.outAt) : "", (recDur(x) / HOUR).toFixed(2), lvl(minOf(x.inAt)), Math.max(0, minOf(x.inAt) - lt0)].join("\t"))].join("\n");
     try { await navigator.clipboard.writeText(tsv); toast("التقرير اتنسخ. الزقه في إكسل"); } catch { toast("المتصفح منع النسخ"); } }
 }
 
