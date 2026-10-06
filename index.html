@@ -8,31 +8,34 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
 <style>
-/* Layout: sticky header, status tabs with live counts, task list grouped by priority, detail sheet slides in from the side (full screen on phones) */
+/* Layout: deep-teal header band with view switcher (list / calendar / performance), colored status tabs, rows grouped by priority, side sheet for task detail */
 :root{
-  --bg:#eef2f3; --surface:#ffffff; --surface-2:#f6f8f9; --ink:#13242b; --muted:#5b6c73; --line:#d9e1e4;
-  --accent:#0b6b72; --accent-ink:#ffffff; --accent-soft:#dcefef;
-  --p-urgent:#c0352a; --p-urgent-soft:#fbe5e2; --p-high:#b8680f; --p-high-soft:#fbeedb;
-  --p-normal:#36689a; --p-normal-soft:#e2ecf6; --p-low:#77858b; --p-low-soft:#eceff0;
-  --ok:#2c7a4b; --ok-soft:#e0f1e6; --warn:#9a5a00; --warn-soft:#fff1d6;
-  --shadow:0 12px 40px rgba(14,35,42,.18);
+  --bg:#edf2f2; --surface:#ffffff; --surface-2:#f4f7f7; --ink:#10252b; --muted:#5a6e74; --line:#d6e0e1;
+  --brand:#0a4c54; --brand-2:#0e5f68; --brand-ink:#ffffff; --brand-muted:#a9cfd2;
+  --accent:#0b7a80; --accent-ink:#ffffff; --accent-soft:#d8eeee; --gold:#d8961a;
+  --p-urgent:#c3312a; --p-high:#c66a0c; --p-normal:#2f69a6; --p-low:#77858b;
+  --ok:#25804c; --warn:#a35f00; --on-hue:#ffffff;
+  --t-hotel:#0f8a7e; --t-flight:#2f6fd1; --t-visa:#8a4fc4; --t-transport:#d46a12; --t-program:#3a943a; --t-umrah:#b0840c; --t-follow:#4b7795; --t-other:#7a868a;
+  --shadow:0 14px 44px rgba(10,40,46,.2);
   --f-display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
   --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1518; --surface:#142026; --surface-2:#18262d; --ink:#e3ebee; --muted:#8fa2a9; --line:#243740;
-  --accent:#43b6b2; --accent-ink:#06211f; --accent-soft:#11373a;
-  --p-urgent:#f0776c; --p-urgent-soft:#3a1d1b; --p-high:#e9a24e; --p-high-soft:#3a2a15;
-  --p-normal:#79a8d8; --p-normal-soft:#1a2c3d; --p-low:#9aa7ac; --p-low-soft:#222e33;
-  --ok:#6cc792; --ok-soft:#153222; --warn:#e8b45a; --warn-soft:#3a2c12;
-  --shadow:0 12px 40px rgba(0,0,0,.5); color-scheme:dark}}
+  --bg:#0c1417; --surface:#132025; --surface-2:#18272d; --ink:#e2ebed; --muted:#8fa3a9; --line:#243840;
+  --brand:#0a3439; --brand-2:#10454b; --brand-ink:#e9f6f6; --brand-muted:#8cbcc0;
+  --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440;
+  --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
+  --ok:#62c48b; --warn:#e8b257; --on-hue:#0c1417;
+  --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3;
+  --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0d1518; --surface:#142026; --surface-2:#18262d; --ink:#e3ebee; --muted:#8fa2a9; --line:#243740;
-  --accent:#43b6b2; --accent-ink:#06211f; --accent-soft:#11373a;
-  --p-urgent:#f0776c; --p-urgent-soft:#3a1d1b; --p-high:#e9a24e; --p-high-soft:#3a2a15;
-  --p-normal:#79a8d8; --p-normal-soft:#1a2c3d; --p-low:#9aa7ac; --p-low-soft:#222e33;
-  --ok:#6cc792; --ok-soft:#153222; --warn:#e8b45a; --warn-soft:#3a2c12;
-  --shadow:0 12px 40px rgba(0,0,0,.5); color-scheme:dark}
+  --bg:#0c1417; --surface:#132025; --surface-2:#18272d; --ink:#e2ebed; --muted:#8fa3a9; --line:#243840;
+  --brand:#0a3439; --brand-2:#10454b; --brand-ink:#e9f6f6; --brand-muted:#8cbcc0;
+  --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440;
+  --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
+  --ok:#62c48b; --warn:#e8b257; --on-hue:#0c1417;
+  --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3;
+  --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body)}
@@ -41,105 +44,190 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.3}
-.wrap{max-width:980px;margin:0 auto;padding-inline:16px}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.fill{fill:currentColor;stroke:none}
+
+/* hue helpers: color per travel type / person */
+.c-hotel{--h:var(--t-hotel)}.c-flight{--h:var(--t-flight)}.c-visa{--h:var(--t-visa)}.c-transport{--h:var(--t-transport)}.c-program{--h:var(--t-program)}.c-umrah{--h:var(--t-umrah)}.c-follow{--h:var(--t-follow)}.c-other{--h:var(--t-other)}
+.p-urgent{--h:var(--p-urgent)}.p-high{--h:var(--p-high)}.p-normal{--h:var(--p-normal)}.p-low{--h:var(--p-low)}
+.s-new{--h:var(--p-urgent)}.s-assigned{--h:var(--p-normal)}.s-in_progress{--h:var(--accent)}.s-pending_approval{--h:var(--warn)}.s-closed{--h:var(--ok)}
+.tag,.pill,.pri{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--h);background:color-mix(in srgb,var(--h) 14%,transparent)}
+.pri::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.av{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--h);color:var(--on-hue);font-size:13px;font-weight:600;flex:none;font-family:var(--f-display)}
+.av.lg{width:40px;height:40px;font-size:18px}
 
 /* buttons */
-.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:500;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;font-weight:500;white-space:nowrap}
 .btn:hover{border-color:var(--muted)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.primary:hover{filter:brightness(1.08)}
+.btn.primary:hover,.btn.ok:hover{filter:brightness(1.08)}
 .btn.ok{background:var(--ok);border-color:var(--ok);color:var(--surface)}
-.btn.danger{color:var(--p-urgent);border-color:var(--p-urgent-soft)}
+.btn.danger{color:var(--p-urgent);border-color:color-mix(in srgb,var(--p-urgent) 30%,transparent)}
 .btn.danger.armed{background:var(--p-urgent);color:var(--surface);border-color:var(--p-urgent)}
 .btn.ghost{background:transparent;border-color:transparent}
 .btn.sm{padding:5px 10px;font-size:13px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 
 /* demo strip */
-.demo{background:var(--warn-soft);color:var(--warn);font-size:13px}
+.demo{background:color-mix(in srgb,var(--gold) 18%,var(--surface));color:var(--ink);font-size:13px}
 .demo .wrap{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-block:8px}
-.demo b{color:var(--ink)}
 .demo .btn{font-size:12px;padding:3px 10px}
 .demo .btn.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 
-/* header */
-header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:12px;flex-wrap:wrap}
-.brand{display:flex;flex-direction:column;margin-inline-end:auto;min-width:0}
-.brand h1{font-size:19px;font-weight:700}
-.brand span{font-size:12px;color:var(--muted)}
-.who{font-size:13px;color:var(--muted);text-align:left}
-.who b{color:var(--ink);font-weight:600}
-.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+/* header band */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--brand);color:var(--brand-ink)}
+.top-row{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--gold);color:var(--brand);display:grid;place-items:center;font:700 19px/1 var(--f-display)}
+.brand h1{font-size:18px;font-weight:700}
+.brand span{font-size:12px;color:var(--brand-muted)}
+.views{display:flex;gap:4px;background:var(--brand-2);border-radius:11px;padding:4px;margin-inline-start:auto}
+.views button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--brand-muted);padding:6px 12px;border-radius:8px;font-weight:500}
+.views button.on{background:var(--surface);color:var(--ink)}
+.views button:not(.on):hover{color:var(--brand-ink)}
+.head-actions{display:flex;gap:8px;align-items:center}
+.hbtn{position:relative;display:inline-flex;align-items:center;gap:6px;border:1px solid color-mix(in srgb,var(--brand-ink) 25%,transparent);background:transparent;color:var(--brand-ink);border-radius:9px;padding:7px 11px;font-weight:500}
+.hbtn:hover{background:var(--brand-2)}
+.hbtn.solid{background:var(--gold);border-color:var(--gold);color:var(--brand)}
+.hbtn.solid:hover{filter:brightness(1.06)}
+.badge{position:absolute;top:-6px;left:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--p-urgent);color:var(--surface);font-size:11px;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums}
 
-/* tabs with counts */
-.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;padding-block:16px 8px}
-.tab{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;text-align:right;display:flex;flex-direction:column;gap:2px}
-.tab .n{font-family:var(--f-display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
-.tab .l{font-size:13px;color:var(--muted)}
-.tab.attn .n{color:var(--p-urgent)}
-.tab.waiting .n{color:var(--warn)}
-.tab.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
-.tab.on .l{color:var(--ink)}
+/* status tabs */
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding-block:18px 8px}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;text-align:right;display:flex;align-items:center;gap:10px;min-width:0}
+.tab .dot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--h) 15%,transparent);color:var(--h);font:600 17px/1 var(--f-display);font-variant-numeric:tabular-nums;flex:none}
+.tab .l{font-size:13px;color:var(--muted);line-height:1.3}
+.tab.on{border-color:var(--h);box-shadow:inset 0 0 0 1px var(--h)}
+.tab.on .l{color:var(--ink);font-weight:600}
+.tab.zero .dot{background:var(--surface-2);color:var(--muted)}
 
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;padding-block:8px 4px}
-.toolbar input,.toolbar select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;min-width:0}
+.toolbar input,.toolbar select{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 12px;min-width:0}
 .toolbar input{flex:1 1 220px}
+.alert-strip{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;border:0;border-radius:11px;padding:10px 14px;background:color-mix(in srgb,var(--p-urgent) 13%,var(--surface));color:var(--p-urgent);font-weight:600;text-align:right}
+.alert-strip span{margin-inline-start:auto;font-weight:500;font-size:13px}
 
 /* list */
 .group{margin-top:18px}
-.group-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em;padding:0 4px 6px}
-.group-h .sw{width:10px;height:10px;border-radius:3px}
-.list{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.row{display:grid;grid-template-columns:1fr auto;gap:12px;width:100%;text-align:right;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 16px;align-items:start}
+.group-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--h);padding:0 4px 6px}
+.group-h::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--h)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;width:100%;text-align:right;border-bottom:1px solid var(--line);padding:12px 16px;align-items:start;cursor:pointer}
 .row:last-child{border-bottom:0}
 .row:hover{background:var(--surface-2)}
-.row-main{min-width:0;display:flex;flex-direction:column;gap:3px}
-.row-top{display:flex;gap:8px;align-items:baseline;min-width:0}
+.row-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.row-top{display:flex;gap:8px;align-items:baseline;min-width:0;flex-wrap:wrap}
 .ref{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;flex:none}
 .row-title{font-weight:600;overflow-wrap:anywhere}
-.row-meta,.row-last{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-.row-last{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.row-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.row-last{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .row-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
-.pill.s-new{background:var(--p-urgent-soft);color:var(--p-urgent);border-color:transparent}
-.pill.s-assigned{background:var(--p-normal-soft);color:var(--p-normal);border-color:transparent}
-.pill.s-in_progress{background:var(--accent-soft);color:var(--accent);border-color:transparent}
-.pill.s-pending_approval{background:var(--warn-soft);color:var(--warn);border-color:transparent}
-.pill.s-closed{background:var(--ok-soft);color:var(--ok);border-color:transparent}
-.pri{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
-.pri::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
-.pri.urgent{background:var(--p-urgent-soft);color:var(--p-urgent)}
-.pri.high{background:var(--p-high-soft);color:var(--p-high)}
-.pri.normal{background:var(--p-normal-soft);color:var(--p-normal)}
-.pri.low{background:var(--p-low-soft);color:var(--p-low)}
-.sw.urgent{background:var(--p-urgent)}.sw.high{background:var(--p-high)}.sw.normal{background:var(--p-normal)}.sw.low{background:var(--p-low)}
-.due{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.due{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .due.late{color:var(--p-urgent);font-weight:600}
-.due.today{color:var(--warn);font-weight:600}
+.due.soon{color:var(--warn);font-weight:600}
+.qbtn{border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:3px 12px;font-size:13px;font-weight:600}
+.qbtn:hover{background:var(--accent);color:var(--accent-ink)}
+.qbtn.ok{border-color:var(--ok);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.qbtn.ok:hover{background:var(--ok);color:var(--surface)}
 .empty{padding:40px 16px;text-align:center;color:var(--muted)}
 .empty b{display:block;color:var(--ink);font-family:var(--f-display);font-size:17px;margin-bottom:4px}
-main{padding-bottom:48px}
+main{padding-bottom:56px}
+.stars-sm{display:inline-flex;color:var(--gold)}
+.stars-sm .ic{width:13px;height:13px}
+.stars-sm .off{color:var(--line)}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-block:18px 10px}
+.cal-head h2{font-size:20px;margin-inline-end:auto}
+.cal-nav{display:flex;gap:6px}
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.cal-dn{font-size:12px;color:var(--muted);font-weight:600;padding:8px;text-align:center;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.cal-cell{min-height:104px;border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:none;padding:6px;text-align:right;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cal-cell:nth-child(7n){border-left:0}
+.cal-cell.blank{background:var(--surface-2);cursor:default}
+.cal-cell:not(.blank):hover{background:var(--surface-2)}
+.cal-n{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;width:26px;height:26px;display:grid;place-items:center;border-radius:50%}
+.cal-cell.today .cal-n{background:var(--accent);color:var(--accent-ink)}
+.cal-cell.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.cal-chip{font-size:11px;line-height:1.4;padding:1px 6px;border-radius:5px;background:color-mix(in srgb,var(--h) 15%,transparent);color:var(--h);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.cal-chip.done{opacity:.55;text-decoration:line-through}
+.cal-more{font-size:11px;color:var(--muted)}
+.cal-dots{display:none;gap:3px;flex-wrap:wrap}
+.cal-dots i{width:7px;height:7px;border-radius:50%;background:var(--h)}
+.cal-dots i.done{opacity:.4}
+.day-h{display:flex;align-items:baseline;gap:8px;margin:20px 4px 8px}
+.day-h h3{font-size:16px}
+.day-h span{font-size:13px;color:var(--muted)}
+
+/* performance */
+.perf-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-block:18px 6px}
+.perf-head h2{font-size:20px;margin-inline-end:auto}
+.perf-note{font-size:13px;color:var(--muted);margin:0 0 12px}
+.perf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.pcard-h{display:flex;align-items:center;gap:10px}
+.pcard-h b{font-family:var(--f-display);font-size:17px;display:block}
+.pcard-h span{font-size:12px;color:var(--muted)}
+.rating-big{display:flex;align-items:center;gap:8px}
+.rating-big strong{font:600 26px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.rating-big .stars-sm .ic{width:17px;height:17px}
+.rating-big small{color:var(--muted);font-size:12px}
+.kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kv div{background:var(--surface-2);border-radius:9px;padding:8px 10px;min-width:0}
+.kv dt{font-size:12px;color:var(--muted)}
+.kv dd{margin:0;font:600 17px/1.3 var(--f-display);font-variant-numeric:tabular-nums}
+.kv dd.bad{color:var(--p-urgent)}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.bar-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px}
+.recent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.recent li{display:flex;gap:6px;align-items:baseline;min-width:0}
+.recent li span{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+/* bell panel */
+.pop{position:fixed;top:calc(64px + env(safe-area-inset-top,0px));left:16px;width:min(380px,calc(100% - 32px));max-height:calc(100% - 90px);overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);z-index:15;display:flex;flex-direction:column}
+.pop h3{font-size:14px;padding:12px 14px 6px}
+.pop h3.late{color:var(--p-urgent)}.pop h3.soon{color:var(--warn)}
+.pop-item{display:flex;flex-direction:column;gap:2px;border:0;background:none;text-align:right;padding:8px 14px;border-bottom:1px solid var(--line)}
+.pop-item:hover{background:var(--surface-2)}
+.pop-item b{font-weight:600;font-size:14px;overflow-wrap:anywhere}
+.pop-set{padding:12px 14px;background:var(--surface-2);display:flex;flex-direction:column;gap:8px;font-size:13px}
+.pop-set label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pop-set select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 8px}
+.pop-empty{padding:18px 14px;color:var(--muted);font-size:14px}
 
 /* sheet */
-.backdrop{position:fixed;inset:0;background:rgba(10,22,26,.42);z-index:20}
-.sheet{position:fixed;top:0;bottom:0;left:0;width:min(560px,100%);background:var(--surface);z-index:21;display:flex;flex-direction:column;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.backdrop{position:fixed;inset:0;background:rgba(8,24,28,.45);z-index:20}
+.sheet{position:fixed;top:0;bottom:0;left:0;width:min(580px,100%);background:var(--surface);z-index:21;display:flex;flex-direction:column;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 .sheet-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line)}
-.sheet-bar .ref{font-size:13px}
 .sheet-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:18px}
 .d-head{display:flex;flex-direction:column;gap:8px}
 .d-head h2{font-size:21px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:0;padding:12px;background:var(--surface-2);border-radius:10px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:0;padding:12px;background:var(--surface-2);border-radius:12px}
 .facts div{min-width:0}
 .facts dt{font-size:12px;color:var(--muted)}
-.facts dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.facts dd{margin:0;font-weight:500;overflow-wrap:anywhere;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.contact{display:flex;gap:8px;flex-wrap:wrap}
+.contact a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border-radius:9px;padding:7px 12px;font-weight:600;font-size:14px;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+.contact a.wa{background:color-mix(in srgb,var(--t-program) 14%,transparent);border-color:transparent;color:var(--t-program)}
 .details{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
-.actions{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px}
+.actions{display:flex;flex-direction:column;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px}
 .actions h3,.timeline-h{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .act-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.act-row select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;min-width:0;flex:1 1 160px}
+.act-row select,.act-row input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;min-width:0;flex:1 1 160px}
+.approve-box{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:10px;background:color-mix(in srgb,var(--warn) 10%,var(--surface))}
 .hint{font-size:13px;color:var(--muted);margin:0}
+.stars{display:flex;gap:2px;direction:ltr;justify-content:flex-end}
+.stars button{border:0;background:none;padding:2px;color:var(--line)}
+.stars button.on{color:var(--gold)}
+.stars button .ic{width:28px;height:28px}
+.rated{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--gold) 12%,var(--surface))}
 .timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .timeline li{position:relative;padding:0 18px 14px 0;border-right:2px solid var(--line);margin-right:5px}
 .timeline li:last-child{border-right-color:transparent}
@@ -149,19 +237,26 @@ main{padding-bottom:48px}
 .tl-meta b{color:var(--ink);font-weight:600}
 .tl-text{overflow-wrap:anywhere;white-space:pre-wrap}
 .timeline li.event .tl-text{color:var(--muted);font-size:14px}
-.composer{border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:8px;align-items:flex-end}
-.composer textarea{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 12px;resize:vertical;min-height:44px;max-height:180px;background:var(--surface-2)}
+.composer{border-top:1px solid var(--line);padding:10px 16px 12px;display:flex;flex-direction:column;gap:8px}
+.quick{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.quick .chip{flex:none}
+.comp-row{display:flex;gap:8px;align-items:flex-end}
+.comp-row textarea{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 12px;resize:vertical;min-height:44px;max-height:180px;background:var(--surface-2)}
 
 /* modal */
-.modal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:16px;background:rgba(10,22,26,.42)}
-.modal-card{background:var(--surface);border-radius:14px;width:min(560px,100%);max-height:calc(100% - 16px);overflow-y:auto;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.modal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:16px;background:rgba(8,24,28,.45)}
+.modal-card{background:var(--surface);border-radius:16px;width:min(580px,100%);max-height:calc(100% - 16px);overflow-y:auto;box-shadow:var(--shadow);display:flex;flex-direction:column}
 .modal-card > header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
 .modal-card > header h2{font-size:18px}
 .form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:16px 18px}
-.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .field.full{grid-column:1/-1}
-.field label{font-size:13px;color:var(--muted);font-weight:500}
-.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:8px 12px;min-width:0;width:100%}
+.field label,.field .lbl{font-size:13px;color:var(--muted);font-weight:500}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:8px 12px;min-width:0;width:100%}
+.chips-row{display:flex;gap:6px;flex-wrap:wrap}
+.type-pick{display:flex;gap:6px;flex-wrap:wrap}
+.type-pick button{border:1px solid transparent;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--h);background:color-mix(in srgb,var(--h) 12%,transparent)}
+.type-pick button.on{background:var(--h);color:var(--on-hue)}
 .form-foot{display:flex;gap:8px;justify-content:flex-start;padding:0 18px 16px;flex-wrap:wrap}
 .err{color:var(--p-urgent);font-size:13px;margin:0;grid-column:1/-1}
 .users{list-style:none;margin:0;padding:0 18px}
@@ -173,25 +268,33 @@ main{padding-bottom:48px}
 .sub-h{padding:14px 18px 0;font-size:14px;color:var(--muted)}
 
 /* login */
-.login{min-height:100%;display:grid;place-items:center;padding:24px 16px}
-.login-card{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.login{min-height:100%;display:grid;place-items:center;padding:24px 16px;background:var(--brand)}
+.login-card{width:min(400px,100%);background:var(--surface);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
 .login-card h1{font-size:24px}
 .login-card p{margin:0;color:var(--muted);font-size:14px}
-.login-card .field input{background:var(--surface-2)}
 .demo-pick{display:flex;flex-direction:column;gap:8px}
 .demo-pick .btn{justify-content:space-between}
 .demo-pick .btn span{color:var(--muted);font-size:13px}
 
 #toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:10px;z-index:40;font-size:14px;max-width:calc(100% - 32px)}
 
-@media (max-width:620px){
-  .row{grid-template-columns:1fr}
-  .row-side{flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start}
-  .form{grid-template-columns:1fr}
-  .who{display:none}
+@media (max-width:760px){
   .tabs{display:flex;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
-  .tab{flex:0 0 auto;min-width:104px}
-  .tab .n{font-size:20px}
+  .tab{flex:0 0 auto}
+  .views{order:3;width:100%;margin-inline-start:0}
+  .views button{flex:1;justify-content:center}
+  .head-actions{margin-inline-start:auto}
+  .hbtn .txt{display:none}
+  .cal-cell{min-height:58px;padding:4px}
+  .cal-items{display:none}
+  .cal-dots{display:flex}
+  .cal-dn{font-size:11px;padding:6px 2px}
+}
+@media (max-width:620px){
+  .row{grid-template-columns:auto 1fr}
+  .row-side{grid-column:2;flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start}
+  .form{grid-template-columns:1fr}
+  .brand span{display:none}
 }
 @media (prefers-reduced-motion:no-preference){
   .sheet{animation:slide .18s ease-out}
@@ -204,7 +307,7 @@ main{padding-bottom:48px}
 <div id="toast" hidden></div>
 
 <script type="module">
-/* ============ الإعدادات — غيّرها بعد إنشاء مشروع Firebase ============ */
+/* ============ الإعدادات ============ */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyD-7latIkGl3vQ4dE8lapKDOIREBMkz-hg",
   authDomain: "tasks-ops.firebaseapp.com",
@@ -216,23 +319,53 @@ const FIREBASE_CONFIG = {
 };
 // صاحب السيستم (المشرف). أول دخول بالإيميل ده بيعمل له حساب مشرف تلقائياً
 const OWNER_EMAIL = "khaledalhadedy001@gmail.com";
-/* ==================================================================== */
+/* ================================== */
 
-const DEMO = !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("PASTE");
+// النسخة التجريبية: لو مفيش إعدادات، أو لو الصفحة مفتوحة كمعاينة جوه Claude
+const DEMO = !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("PASTE") || /claude|anthropic|^file:/.test(location.protocol === "file:" ? "file:" : location.hostname);
 document.documentElement.dir = "rtl"; document.documentElement.lang = "ar";
 
 const PRI = { urgent:{l:"عاجل جداً",r:0}, high:{l:"أولوية عالية",r:1}, normal:{l:"عادية",r:2}, low:{l:"منخفضة",r:3} };
 const ST = { new:"بانتظار التوزيع", assigned:"تم التوزيع", in_progress:"جاري التنفيذ", pending_approval:"بانتظار الاعتماد", closed:"مغلقة" };
-const TYPES = ["حجز فندق","طيران","تأشيرة","نقل ومواصلات","برنامج سياحي","عمرة / حج","متابعة عميل","أخرى"];
+const TYPES = [["حجز فندق","hotel"],["طيران","flight"],["تأشيرة","visa"],["نقل ومواصلات","transport"],["برنامج سياحي","program"],["عمرة / حج","umrah"],["متابعة عميل","follow"],["أخرى","other"]];
+const typeCls = t => (TYPES.find(x => x[0] === t) || [0,"other"])[1];
 const ROLE = { supervisor:"مشرف التشغيل", manager:"المدير", employee:"موظف" };
+const AVC = ["hotel","flight","visa","transport","program","umrah","follow"];
 const NOW = { __now:true };
+const MIN = 60e3, HOUR = 3600e3, DAY = 864e5;
+
+const QUICK = {
+  employee:["بدأت فيها","كلمت العميل","مستني رد الفندق","مستني رد شركة الطيران","اتبعت للعميل","محتاج مساعدة"],
+  supervisor:["تمام، كمّل","تابع معايا أول بأول","لازم تخلص النهارده","كلمني ضروري","شغل ممتاز"],
+  manager:["إيه الأخبار؟","عاجلة لو سمحت","تمام، متشكر"]
+};
+
+const ICONS = {
+  bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M7 16v-5M12 16V7M17 16v-3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+  alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+  chat:'<path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.6A8.4 8.4 0 1 1 21 11.5z"/>',
+  star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+  out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  next:'<path d="m15 18-6-6 6-6"/>', prev:'<path d="m9 18 6-6-6-6"/>'
+};
+const ic = (n, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ms = t => t == null ? Date.now() : typeof t === "number" ? t : t.toMillis ? t.toMillis() : +new Date(t);
 const pad = n => String(n).padStart(4, "0");
-const todayStr = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
 const fmtNum = n => Number(n).toLocaleString("ar-EG");
+const dayKey = d => { d = new Date(d); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const toInput = v => { const d = new Date(v - new Date(v).getTimezoneOffset()*MIN); return d.toISOString().slice(0,16); };
+const dueMs = t => t.dueAt ? ms(t.dueAt) : t.due ? new Date(t.due + "T23:59").getTime() : null;
+const store = { get(k, d){ try { const v = localStorage.getItem("ops:"+k); return v == null ? d : JSON.parse(v); } catch { return d; } }, set(k, v){ try { localStorage.setItem("ops:"+k, JSON.stringify(v)); } catch {} } };
 const rtf = new Intl.RelativeTimeFormat("ar-EG", { numeric:"auto" });
 function ago(t){ const s = (ms(t) - Date.now())/1000, a = Math.abs(s);
   if (a < 60) return "الآن";
@@ -240,20 +373,34 @@ function ago(t){ const s = (ms(t) - Date.now())/1000, a = Math.abs(s);
   if (a < 86400) return rtf.format(Math.round(s/3600), "hour");
   if (a < 86400*30) return rtf.format(Math.round(s/86400), "day");
   return new Date(ms(t)).toLocaleDateString("ar-EG", { day:"numeric", month:"short" }); }
-function fullDate(t){ return new Date(ms(t)).toLocaleString("ar-EG", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }); }
-function dueInfo(t){
-  if (!t.due) return null;
-  const today = todayStr();
-  const days = Math.round((new Date(t.due) - new Date(today)) / 86400000);
-  const d = new Date(t.due + "T00:00").toLocaleDateString("ar-EG", { day:"numeric", month:"short" });
-  if (t.status === "closed") return { cls:"", txt:"التسليم " + d };
-  if (days < 0) return { cls:"late", txt: days === -1 ? "متأخرة يوم" : days === -2 ? "متأخرة يومين" : "متأخرة " + fmtNum(-days) + (-days <= 10 ? " أيام" : " يوم") };
-  if (days === 0) return { cls:"today", txt:"التسليم اليوم" };
-  if (days === 1) return { cls:"", txt:"التسليم بكرة" };
-  return { cls:"", txt:"التسليم " + d };
+function span(d){ // مدة بالعامية
+  const m = Math.round(d / MIN);
+  if (m < 60) return m <= 1 ? "دقيقة" : m === 2 ? "دقيقتين" : fmtNum(m) + (m <= 10 ? " دقايق" : " دقيقة");
+  const h = Math.round(d / HOUR);
+  if (h < 24) return h === 1 ? "ساعة" : h === 2 ? "ساعتين" : fmtNum(h) + (h <= 10 ? " ساعات" : " ساعة");
+  const dd = Math.round(d / DAY);
+  return dd === 1 ? "يوم" : dd === 2 ? "يومين" : fmtNum(dd) + (dd <= 10 ? " أيام" : " يوم");
 }
-const isLate = t => t.status !== "closed" && t.due && t.due < todayStr();
-function toast(msg){ const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2600); }
+const fullDate = t => new Date(ms(t)).toLocaleString("ar-EG", { weekday:"short", day:"numeric", month:"short", hour:"numeric", minute:"2-digit" });
+const alertBefore = () => store.get("before", 60) * MIN;
+function dueInfo(t){
+  const d = dueMs(t); if (!d) return null;
+  if (t.status === "closed") return { cls:"", txt:"الميعاد " + fullDate(d) };
+  const diff = d - Date.now();
+  if (diff < 0) return { cls:"late", txt:"متأخرة " + span(-diff) };
+  if (diff <= alertBefore()) return { cls:"soon", txt:"باقي " + span(diff) };
+  if (diff < DAY && dayKey(d) === dayKey(Date.now())) return { cls:"", txt:"النهارده " + new Date(d).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" }) };
+  return { cls:"", txt:fullDate(d) };
+}
+const isLate = t => t.status !== "closed" && dueMs(t) && dueMs(t) < Date.now();
+function avatar(name, uid, lg){ const h = [...String(uid || name || "")].reduce((a,c) => a + c.charCodeAt(0), 0);
+  return `<span class="av ${lg ? "lg" : ""} c-${AVC[h % AVC.length]}" aria-hidden="true">${esc(String(name || "؟").replace(/^أ\.\s*/,"").trim().charAt(0))}</span>`; }
+const starsSm = n => `<span class="stars-sm" aria-label="${n} من ٥">${[1,2,3,4,5].map(i => ic("star", "fill" + (i <= Math.round(n) ? "" : " off"))).join("")}</span>`;
+function toast(msg){ const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 3200); }
+let audioCtx = null;
+document.addEventListener("pointerdown", () => { if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {} }, { once:true });
+function beep(){ if (!audioCtx || !store.get("sound", true)) return; try { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.setValueAtTime(.15, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .5); o.start(); o.stop(audioCtx.currentTime + .5); } catch {} }
+const waLink = p => { let d = String(p).replace(/\D/g, ""); if (d.startsWith("00")) d = d.slice(2); else if (d.startsWith("0")) d = "20" + d.slice(1); return "https://wa.me/" + d; };
 
 /* ====================== Firebase ====================== */
 async function makeFirebase(){
@@ -263,7 +410,6 @@ async function makeFirebase(){
   const auth = A.getAuth(app), db = F.getFirestore(app);
   const fix = o => { const r = {}; for (const k in o) r[k] = o[k] === NOW ? F.serverTimestamp() : o[k]; return r; };
   const withId = d => ({ id:d.id, ...d.data() });
-
   async function loadProfile(u){
     const ref = F.doc(db, "users", u.uid);
     let s = await F.getDoc(ref);
@@ -321,8 +467,7 @@ async function makeFirebase(){
 
 /* ====================== نسخة تجريبية ====================== */
 function makeDemo(){
-  const H = 3600e3, D = 24*H, now = Date.now();
-  const day = o => { const d = new Date(Date.now() + o*D); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+  const now = Date.now();
   const users = [
     { uid:"sup", name:"خالد", email:OWNER_EMAIL, role:"supervisor", active:true },
     { uid:"mgr", name:"أ. هشام", email:"manager@example.com", role:"manager", active:true },
@@ -331,36 +476,47 @@ function makeDemo(){
   ];
   const U = id => users.find(u => u.uid === id);
   const tasks = [], updates = {};
-  let counter = 134;
+  let counter = 120;
+  // [من, نوع, نص, قبل كام ساعة]
   function seed(t, log){
     const id = "t" + (++counter);
     const base = { id, no:counter, details:"", client:"", phone:"", assignedTo:"", assignedToName:"", createdBy:"mgr", createdByName:"أ. هشام", createdByRole:"manager", ...t };
-    updates[id] = log.map(([who, kind, text, at]) => ({ id:Math.random().toString(36).slice(2), by:who, byName:U(who).name, role:U(who).role, kind, text, createdAt:now - at }));
-    const last = updates[id][updates[id].length - 1];
-    base.createdAt = updates[id][0].createdAt; base.updatedAt = last.createdAt;
+    if (t.dueH != null) base.dueAt = now + t.dueH * HOUR; delete base.dueH;
+    if (t.closedH != null) base.closedAt = now - t.closedH * HOUR; delete base.closedH;
+    updates[id] = log.map(([who, kind, text, h], i) => ({ id:id + i, by:who, byName:U(who).name, role:U(who).role, kind, text, createdAt:now - h * HOUR }));
+    const first = updates[id][0], last = updates[id][updates[id].length - 1];
+    base.createdAt = first.createdAt; base.updatedAt = last.createdAt;
+    if (base.assignedTo) base.assignedAt = (updates[id][1] || first).createdAt;
     base.lastUpdate = last.text; base.lastUpdateBy = last.byName; base.lastUpdateAt = last.createdAt;
     tasks.push(base);
   }
-  seed({ title:"تعديل اسم مسافر في حجز فلاي دبي", type:"طيران", priority:"high", status:"closed", client:"أ. ياسر فؤاد", assignedTo:"e2", assignedToName:"منى", due:day(-3), closedAt:now-2*D },
-    [["mgr","event","أنشأ المهمة",4*D],["sup","event","وزّع المهمة على منى",4*D-H],["e2","note","شركة الطيران عدلت الاسم وبعتت التذكرة الجديدة",2*D+3*H],["e2","event","أنهى المهمة وأرسلها للاعتماد",2*D+2*H],["sup","event","اعتمد الإغلاق",2*D]]);
-  seed({ title:"تأكيد حجز فندق بالمدينة المنورة لعائلة الشربيني", type:"حجز فندق", priority:"normal", status:"closed", client:"عائلة الشربيني - ٥ أفراد", assignedTo:"e1", assignedToName:"سارة", due:day(-2), closedAt:now-D },
-    [["mgr","event","أنشأ المهمة",3*D],["sup","event","وزّع المهمة على سارة",3*D-H],["e1","note","الحجز اتأكد ورقم التأكيد في ملف العميل",D+4*H],["e1","event","أنهى المهمة وأرسلها للاعتماد",D+2*H],["sup","event","اعتمد الإغلاق",D]]);
-  seed({ title:"الرد على استفسار عميل عن أسعار رحلة الأقصر وأسوان", type:"متابعة عميل", priority:"low", status:"assigned", client:"م. نادر حلمي", phone:"01001234567", assignedTo:"e2", assignedToName:"منى", due:day(5), createdBy:"sup", createdByName:"خالد", createdByRole:"supervisor" },
-    [["sup","event","أنشأ المهمة",D],["sup","event","وزّع المهمة على منى",D]]);
-  seed({ title:"تجهيز عرض برنامج شرم الشيخ ٥ أيام لشركة الأمل للأدوية", type:"برنامج سياحي", priority:"normal", status:"assigned", client:"شركة الأمل للأدوية", assignedTo:"e1", assignedToName:"سارة", due:day(3), details:"العرض يشمل الطيران والإقامة ٤ ليالي ورحلة رأس محمد. العدد المتوقع ٣٠ فرد." },
-    [["mgr","event","أنشأ المهمة",2*D],["sup","event","وزّع المهمة على سارة",2*D-2*H]]);
-  seed({ title:"حجز ميكروباص من مطار القاهرة لفندق الوفد", type:"نقل ومواصلات", priority:"normal", status:"in_progress", client:"وفد شركة النيل", assignedTo:"e2", assignedToName:"منى", due:day(-1) },
-    [["mgr","event","أنشأ المهمة",3*D],["sup","event","وزّع المهمة على منى",3*D-H],["e2","event","بدأ التنفيذ",2*D],["e2","note","مستنية رد شركة النقل على السعر النهائي",20*H]]);
-  seed({ title:"تأكيد حجز ٤ غرف في هيلتون مكة لوفد ٢٠ أكتوبر", type:"حجز فندق", priority:"urgent", status:"in_progress", client:"مجموعة الرحمة - ٨ أفراد", phone:"01112223344", assignedTo:"e1", assignedToName:"سارة", due:day(0), details:"٤ غرف مزدوجة، إطلالة على الحرم لو متاح، ٧ ليالي من ٢٠ أكتوبر." },
-    [["mgr","event","أنشأ المهمة",2*D],["sup","event","وزّع المهمة على سارة",2*D-H],["e1","event","بدأ التنفيذ",D+5*H],["e1","note","كلمت الفندق، مستنيين ردهم على التوافر لليلة ٢٠",3*H]]);
-  seed({ title:"إصدار ٣ تذاكر القاهرة – جدة لعائلة الأستاذ أحمد سمير", type:"طيران", priority:"high", status:"pending_approval", client:"أ. أحمد سمير", phone:"01223456789", assignedTo:"e2", assignedToName:"منى", due:day(1) },
-    [["mgr","event","أنشأ المهمة",D],["sup","event","وزّع المهمة على منى",D-H],["e2","event","بدأ التنفيذ",20*H],["e2","note","التذاكر اتصدرت واتبعتت للعميل على الواتساب",2*H],["e2","event","أنهى المهمة وأرسلها للاعتماد",2*H]]);
-  seed({ title:"متابعة تأشيرة عمرة لعملاء شركة النور", type:"تأشيرة", priority:"urgent", status:"new", client:"شركة النور - ١٢ معتمر", due:day(1), details:"الجوازات وصلت المكتب امبارح. لازم نتابع مع الوكيل النهارده." },
-    [["mgr","event","أنشأ المهمة",H]]);
+  const closed = (title, type, who, dueH, closedH, rating, note, pri = "normal") => seed(
+    { title, type, priority:pri, status:"closed", assignedTo:who, assignedToName:U(who).name, dueH, closedH, rating, ratingNote:note, closedBy:"خالد" },
+    [["mgr","event","أنشأ المهمة",closedH + 30],["sup","event","وزّع المهمة على " + U(who).name,closedH + 29],[who,"event","أنهى المهمة وأرسلها للاعتماد",closedH + 1],["sup","event","اعتمد الإغلاق",closedH]]);
+  closed("تعديل اسم مسافر في حجز فلاي دبي","طيران","e2",-40,44,5,"اتعملت بسرعة وبدقة","high");
+  closed("تأكيد حجز فندق بالمدينة لعائلة الشربيني","حجز فندق","e1",-20,24,4,"");
+  closed("إرسال برنامج الغردقة لعميل جديد","برنامج سياحي","e1",-70,60,5,"العميل اتبسط من العرض");
+  closed("تجديد تأشيرة زيارة لعميل الشركة","تأشيرة","e2",-100,90,3,"اتأخرت يوم عن الميعاد");
+  closed("حجز عربية من المطار لوفد الصيادلة","نقل ومواصلات","e1",-130,120,4,"");
+  closed("متابعة شكوى عميل عن غرفة الفندق","متابعة عميل","e2",-160,150,4,"","urgent");
+  seed({ title:"الرد على استفسار عميل عن أسعار رحلة الأقصر وأسوان", type:"متابعة عميل", priority:"low", status:"assigned", client:"م. نادر حلمي", phone:"01001234567", assignedTo:"e2", assignedToName:"منى", dueH:50, createdBy:"sup", createdByName:"خالد", createdByRole:"supervisor" },
+    [["sup","event","أنشأ المهمة ووزّعها على منى",20]]);
+  seed({ title:"تجهيز عرض برنامج شرم الشيخ ٥ أيام لشركة الأمل للأدوية", type:"برنامج سياحي", priority:"normal", status:"assigned", client:"شركة الأمل للأدوية", assignedTo:"e1", assignedToName:"سارة", dueH:28, details:"العرض يشمل الطيران والإقامة ٤ ليالي ورحلة رأس محمد. العدد المتوقع ٣٠ فرد." },
+    [["mgr","event","أنشأ المهمة",30],["sup","event","وزّع المهمة على سارة",28]]);
+  seed({ title:"حجز ميكروباص من مطار القاهرة لفندق الوفد", type:"نقل ومواصلات", priority:"normal", status:"in_progress", client:"وفد شركة النيل", phone:"01098765432", assignedTo:"e2", assignedToName:"منى", dueH:-5 },
+    [["mgr","event","أنشأ المهمة",48],["sup","event","وزّع المهمة على منى",47],["e2","event","بدأ التنفيذ",30],["e2","note","مستنية رد شركة النقل على السعر النهائي",6]]);
+  seed({ title:"تأكيد حجز ٤ غرف في هيلتون مكة لوفد ٢٠ أكتوبر", type:"حجز فندق", priority:"urgent", status:"in_progress", client:"مجموعة الرحمة - ٨ أفراد", phone:"01112223344", assignedTo:"e1", assignedToName:"سارة", dueH:0.7, details:"٤ غرف مزدوجة، إطلالة على الحرم لو متاح، ٧ ليالي من ٢٠ أكتوبر." },
+    [["mgr","event","أنشأ المهمة",40],["sup","event","وزّع المهمة على سارة",39],["e1","event","بدأ التنفيذ",30],["e1","note","كلمت الفندق، مستنيين ردهم على التوافر لليلة ٢٠",3]]);
+  seed({ title:"إصدار ٣ تذاكر القاهرة – جدة لعائلة الأستاذ أحمد سمير", type:"طيران", priority:"high", status:"pending_approval", client:"أ. أحمد سمير", phone:"01223456789", assignedTo:"e2", assignedToName:"منى", dueH:20 },
+    [["mgr","event","أنشأ المهمة",24],["sup","event","وزّع المهمة على منى",23],["e2","event","بدأ التنفيذ",20],["e2","note","التذاكر اتصدرت واتبعتت للعميل على الواتساب",2],["e2","event","أنهى المهمة وأرسلها للاعتماد",2]]);
+  seed({ title:"متابعة تأشيرة عمرة لعملاء شركة النور", type:"عمرة / حج", priority:"urgent", status:"new", client:"شركة النور - ١٢ معتمر", dueH:26, details:"الجوازات وصلت المكتب امبارح. لازم نتابع مع الوكيل النهارده." },
+    [["mgr","event","أنشأ المهمة",1]]);
+  seed({ title:"حجز فندق الإسكندرية لرحلة الموظفين آخر الشهر", type:"حجز فندق", priority:"normal", status:"assigned", client:"رحلة الشركة", assignedTo:"e1", assignedToName:"سارة", dueH:24*9 },
+    [["sup","event","أنشأ المهمة ووزّعها على سارة",5]]);
 
   let me = null, authCb = () => {};
   const tSubs = new Set(), uSubs = new Set(), upSubs = new Map();
-  const visible = (m) => m.role === "employee" ? tasks.filter(t => t.assignedTo === m.uid) : tasks;
+  const visible = m => m.role === "employee" ? tasks.filter(t => t.assignedTo === m.uid) : tasks;
   const emitT = () => tSubs.forEach(s => s.cb(visible(s.me).map(t => ({ ...t }))));
   const emitU = () => uSubs.forEach(cb => cb(users.map(u => ({ ...u }))));
   const emitUp = id => (upSubs.get(id) || new Set()).forEach(cb => cb([...(updates[id] || [])]));
@@ -376,7 +532,7 @@ function makeDemo(){
     watchUsers(cb){ uSubs.add(cb); emitU(); return () => uSubs.delete(cb); },
     watchUpdates(id, cb){ if (!upSubs.has(id)) upSubs.set(id, new Set()); upSubs.get(id).add(cb); cb([...(updates[id] || [])]); return () => upSubs.get(id).delete(cb); },
     createTask(data, m, text){ return later(() => { const id = "t" + (++counter); const n = Date.now();
-      tasks.push({ ...data, id, no:counter, createdAt:n, updatedAt:n, lastUpdate:text, lastUpdateBy:m.name, lastUpdateAt:n });
+      tasks.push({ ...fix(data), id, no:counter, createdAt:n, updatedAt:n, lastUpdate:text, lastUpdateBy:m.name, lastUpdateAt:n });
       updates[id] = [{ id:"x"+n, kind:"event", text, by:m.uid, byName:m.name, role:m.role, createdAt:n }]; emitT(); return id; }); },
     act(id, m, patch, entry){ return later(() => { const t = tasks.find(x => x.id === id); const n = Date.now();
       Object.assign(t, fix(patch), { updatedAt:n, lastUpdate:entry.text.slice(0,160), lastUpdateBy:m.name, lastUpdateAt:n });
@@ -388,39 +544,41 @@ function makeDemo(){
   };
 }
 
-/* ====================== الواجهة ====================== */
-const S = { me:null, tasks:[], users:[], tab:"open", emp:"", q:"", openId:null, updates:[], unsub:[], unsubUpd:null, armedDel:false };
+/* ====================== الحالة ====================== */
+const S = { me:null, tasks:[], users:[], view:"list", tab:"open", emp:"", q:"", openId:null, updates:[], unsub:[], unsubUpd:null, armedDel:false, stars:0,
+  calMonth:new Date(new Date().getFullYear(), new Date().getMonth(), 1), calDay:dayKey(Date.now()), perf:"this", firstLoad:true };
+let sheetEl = null;
 const api = DEMO ? makeDemo() : await makeFirebase();
 const app = $("#app");
 
-function cleanup(){ S.unsub.forEach(f => f && f()); S.unsub = []; if (S.unsubUpd) S.unsubUpd(); S.unsubUpd = null; S.openId = null; S.tasks = []; S.users = []; }
+function cleanup(){ S.unsub.forEach(f => f && f()); S.unsub = []; closeTask(); closePop(); S.tasks = []; S.users = []; S.firstLoad = true; }
 
 api.onAuth(p => {
   cleanup(); S.me = p && !p.blocked ? p : null;
   if (!S.me) return renderLogin(p && p.blocked);
-  S.tab = "open"; S.emp = ""; S.q = "";
+  S.view = "list"; S.tab = "open"; S.emp = ""; S.q = "";
   renderShell();
-  S.unsub.push(api.watchTasks(S.me, ts => { S.tasks = ts; renderBoard(); if (S.openId) renderDetail(); }));
-  if (S.me.role !== "employee") S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); }));
+  S.unsub.push(api.watchTasks(S.me, ts => { S.tasks = ts; renderView(); if (S.openId) renderDetail(); checkAlerts(S.firstLoad); S.firstLoad = false; }));
+  if (S.me.role !== "employee") S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); }));
 });
+setInterval(() => { if (S.me){ checkAlerts(false); if (S.view !== "perf") renderView(true); } }, 30e3);
 
 function demoStrip(){
   if (!DEMO) return "";
   const cur = S.me ? S.me.uid : "";
-  return `<div class="demo"><div class="wrap"><b>نسخة تجريبية</b><span>البيانات هنا أمثلة ومش بتتحفظ. جرّب السيستم بعين كل واحد:</span>
+  return `<div class="demo"><div class="wrap"><b>نسخة تجريبية</b><span>البيانات أمثلة ومش بتتحفظ. جرّب بعين كل واحد:</span>
     ${api.users.filter(u => ["sup","mgr","e1"].includes(u.uid)).map(u => `<button class="btn ${cur === u.uid ? "on" : ""}" data-demo="${u.uid}">${esc(u.name)} — ${ROLE[u.role]}</button>`).join("")}</div></div>`;
 }
-app.addEventListener("click", e => { const b = e.target.closest("[data-demo]"); if (b) api.demoLogin(b.dataset.demo); });
 
 function renderLogin(blocked){
   app.innerHTML = demoStrip() + `<div class="login"><div class="login-card">
-    <div><h1>مهام التشغيل</h1><p>متابعة مهام الحجوزات والعملاء بين المدير والمشرف والموظفين.</p></div>
+    <div style="display:flex;gap:12px;align-items:center"><span class="logo">م</span><div><h1>مهام التشغيل</h1><p>متابعة مهام الحجوزات والعملاء</p></div></div>
     ${DEMO ? `<div class="demo-pick">${api.users.map(u => `<button class="btn" data-demo="${u.uid}">ادخل باسم ${esc(u.name)} <span>${ROLE[u.role]}</span></button>`).join("")}</div>`
     : `<form id="loginForm" class="demo-pick" novalidate>
         <div class="field"><label for="lg-email">الإيميل</label><input id="lg-email" type="email" autocomplete="username" required dir="ltr"></div>
         <div class="field"><label for="lg-pass">كلمة السر</label><input id="lg-pass" type="password" autocomplete="current-password" required dir="ltr"></div>
         <p class="err" id="lg-err" ${blocked ? "" : "hidden"}>${esc(blocked || "")}</p>
-        <button class="btn primary" type="submit" style="justify-content:center">دخول</button></form>`}
+        <button class="btn primary" type="submit">دخول</button></form>`}
   </div></div>`;
   const f = $("#loginForm");
   if (f) f.addEventListener("submit", async e => {
@@ -433,52 +591,69 @@ function renderLogin(blocked){
 function renderShell(){
   const m = S.me, canCreate = m.role !== "employee";
   app.innerHTML = demoStrip() + `
-  <header class="top"><div class="wrap">
-    <div class="brand"><h1>مهام التشغيل</h1><span>${esc(m.name)} — ${ROLE[m.role]}</span></div>
+  <header class="top"><div class="wrap top-row">
+    <div class="brand"><span class="logo">م</span><div><h1>مهام التشغيل</h1><span>${esc(m.name)} — ${ROLE[m.role]}</span></div></div>
+    <nav class="views" aria-label="طريقة العرض">
+      <button data-view="list">${ic("list")}المهام</button>
+      <button data-view="cal">${ic("cal")}الكاليندر</button>
+      <button data-view="perf">${ic("chart")}${m.role === "employee" ? "أدائي" : "الأداء"}</button>
+    </nav>
     <div class="head-actions">
-      ${canCreate ? `<button class="btn primary" id="btnNew">+ مهمة جديدة</button>` : ""}
-      ${m.role === "supervisor" ? `<button class="btn" id="btnTeam">فريق العمل</button>` : ""}
-      ${DEMO ? "" : `<button class="btn ghost" id="btnOut">خروج</button>`}
+      <button class="hbtn" id="btnBell" aria-label="التنبيهات">${ic("bell")}<span class="badge" id="bellBadge" hidden></span></button>
+      ${canCreate ? `<button class="hbtn solid" id="btnNew">${ic("plus")}<span class="txt">مهمة جديدة</span></button>` : ""}
+      ${m.role === "supervisor" ? `<button class="hbtn" id="btnTeam" aria-label="فريق العمل">${ic("users")}<span class="txt">الفريق</span></button>` : ""}
+      ${DEMO ? "" : `<button class="hbtn" id="btnOut" aria-label="خروج">${ic("out")}</button>`}
     </div></div></header>
-  <main class="wrap"><nav class="tabs" id="tabs" aria-label="تصنيف المهام"></nav><div class="toolbar" id="toolbar"></div><div id="board"></div></main>`;
+  <main class="wrap" id="main"></main>`;
   $("#btnNew") && ($("#btnNew").onclick = openNewTask);
   $("#btnTeam") && ($("#btnTeam").onclick = openTeam);
   $("#btnOut") && ($("#btnOut").onclick = () => api.logout());
-  renderToolbar(); renderBoard();
+  $("#btnBell").onclick = togglePop;
+  renderView();
 }
 
+function renderView(soft){
+  const main = $("#main"); if (!main) return;
+  document.querySelectorAll("[data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === S.view));
+  if (S.view === "list"){
+    if (!$("#board") || !soft){ main.innerHTML = `<nav class="tabs" id="tabs" aria-label="تصنيف المهام"></nav><div class="toolbar" id="toolbar"></div><div id="strip"></div><div id="board"></div>`; renderToolbar(); }
+    renderBoard();
+  } else if (S.view === "cal") renderCalendar();
+  else renderPerf();
+}
+
+/* ---------- القائمة ---------- */
 function tabDefs(){
   const r = S.me.role, T = S.tasks, open = T.filter(t => t.status !== "closed");
-  const c = { open:open.length, new:T.filter(t => t.status === "new").length, approval:T.filter(t => t.status === "pending_approval").length, late:T.filter(isLate).length, closed:T.filter(t => t.status === "closed").length };
+  const c = { new:T.filter(t => t.status === "new").length, approval:T.filter(t => t.status === "pending_approval").length, late:T.filter(isLate).length, closed:T.filter(t => t.status === "closed").length };
   if (r === "employee") return [
-    { k:"open", l:"مهامي المفتوحة", n:open.filter(t => t.status !== "pending_approval").length },
-    { k:"late", l:"متأخرة", n:c.late, cls:"attn" },
-    { k:"approval", l:"مستنية الاعتماد", n:c.approval, cls:"waiting" },
-    { k:"closed", l:"اتقفلت", n:c.closed } ];
+    { k:"open", l:"مهامي المفتوحة", n:open.filter(t => t.status !== "pending_approval").length, s:"s-in_progress" },
+    { k:"late", l:"متأخرة", n:c.late, s:"s-new" },
+    { k:"approval", l:"مستنية الاعتماد", n:c.approval, s:"s-pending_approval" },
+    { k:"closed", l:"اتقفلت", n:c.closed, s:"s-closed" } ];
   return [
-    { k:"open", l:"كل المفتوحة", n:c.open },
-    { k:"new", l:"غير موزعة", n:c.new, cls:"attn" },
-    { k:"approval", l: r === "supervisor" ? "بانتظار اعتمادك" : "بانتظار الاعتماد", n:c.approval, cls:"waiting" },
-    { k:"late", l:"متأخرة", n:c.late, cls:"attn" },
-    { k:"closed", l:"المغلقة", n:c.closed } ];
+    { k:"open", l:"كل المفتوحة", n:open.length, s:"s-in_progress" },
+    { k:"new", l:"غير موزعة", n:c.new, s:"s-assigned" },
+    { k:"approval", l: r === "supervisor" ? "بانتظار اعتمادك" : "بانتظار الاعتماد", n:c.approval, s:"s-pending_approval" },
+    { k:"late", l:"متأخرة", n:c.late, s:"s-new" },
+    { k:"closed", l:"المغلقة", n:c.closed, s:"s-closed" } ];
 }
 function renderTabs(){
-  $("#tabs").innerHTML = tabDefs().map(d => `<button class="tab ${S.tab === d.k ? "on" : ""} ${d.n && d.cls ? d.cls : ""}" data-tab="${d.k}" aria-pressed="${S.tab === d.k}"><span class="n">${fmtNum(d.n)}</span><span class="l">${d.l}</span></button>`).join("");
+  const el = $("#tabs"); if (!el) return;
+  const defs = tabDefs();
+  el.style.gridTemplateColumns = `repeat(${defs.length},minmax(0,1fr))`;
+  el.innerHTML = defs.map(d => `<button class="tab ${d.s} ${S.tab === d.k ? "on" : ""} ${d.n ? "" : "zero"}" data-tab="${d.k}" aria-pressed="${S.tab === d.k}"><span class="dot">${fmtNum(d.n)}</span><span class="l">${d.l}</span></button>`).join("");
 }
 function staff(){ return S.users.filter(u => u.active !== false && (u.role === "employee" || u.role === "supervisor")); }
 function renderToolbar(){
   const tb = $("#toolbar"); if (!tb) return;
-  const keepQ = S.q;
   const empSel = S.me.role === "employee" ? "" : `<select id="empFilter" aria-label="فلترة بالموظف"><option value="">كل الموظفين</option>${staff().map(u => `<option value="${u.uid}" ${S.emp === u.uid ? "selected" : ""}>${esc(u.name)}</option>`).join("")}</select>`;
-  tb.innerHTML = `<input id="search" type="search" placeholder="بحث باسم العميل أو رقم المهمة أو التليفون" value="${esc(keepQ)}">${empSel}`;
+  tb.innerHTML = `<input id="search" type="search" placeholder="بحث باسم العميل أو رقم المهمة أو التليفون" value="${esc(S.q)}">${empSel}`;
   $("#search").oninput = e => { S.q = e.target.value; renderBoard(); };
   $("#empFilter") && ($("#empFilter").onchange = e => { S.emp = e.target.value; renderBoard(); });
 }
-document.addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b){ S.tab = b.dataset.tab; renderBoard(); } });
-
 function filtered(){
-  let t = S.tasks;
-  const k = S.tab;
+  let t = S.tasks; const k = S.tab;
   if (k === "open") t = t.filter(x => x.status !== "closed" && (S.me.role !== "employee" || x.status !== "pending_approval"));
   else if (k === "new") t = t.filter(x => x.status === "new");
   else if (k === "approval") t = t.filter(x => x.status === "pending_approval");
@@ -488,81 +663,226 @@ function filtered(){
   if (S.q.trim()){ const q = S.q.trim().toLowerCase();
     t = t.filter(x => [x.title, x.client, x.phone, x.details, x.type, x.assignedToName, "#"+x.no, String(x.no)].some(v => v && String(v).toLowerCase().includes(q))); }
   if (k === "closed") return t.sort((a,b) => ms(b.closedAt) - ms(a.closedAt));
-  return t.sort((a,b) => PRI[a.priority].r - PRI[b.priority].r || (a.due || "9999").localeCompare(b.due || "9999") || ms(a.createdAt) - ms(b.createdAt));
+  return t.sort(byPriority);
 }
-
+const byPriority = (a,b) => PRI[a.priority].r - PRI[b.priority].r || (dueMs(a) || 9e15) - (dueMs(b) || 9e15) || ms(a.createdAt) - ms(b.createdAt);
+function quickBtn(t){
+  const r = S.me.role;
+  if (r === "employee"){ if (t.status === "assigned") return `<button class="qbtn" data-quick="start" data-id="${t.id}">ابدأ</button>`;
+    if (t.status === "in_progress") return `<button class="qbtn ok" data-quick="done" data-id="${t.id}">خلصت</button>`; }
+  if (r === "supervisor"){ if (t.status === "pending_approval") return `<button class="qbtn ok" data-quick="open" data-id="${t.id}">اعتماد</button>`;
+    if (t.status === "new") return `<button class="qbtn" data-quick="open" data-id="${t.id}">توزيع</button>`; }
+  return "";
+}
 function rowHtml(t){
   const d = dueInfo(t);
-  const meta = [t.type, t.client, t.assignedToName ? "مع " + t.assignedToName : "لسه ما اتوزعتش"].filter(Boolean).map(esc).join("، ");
-  return `<button class="row" data-open="${t.id}">
+  return `<div class="row" data-open="${t.id}" role="button" tabindex="0">
+    ${t.assignedTo ? avatar(t.assignedToName, t.assignedTo) : `<span class="av c-other" aria-hidden="true">؟</span>`}
     <div class="row-main"><div class="row-top"><span class="ref">#${pad(t.no)}</span><span class="row-title">${esc(t.title)}</span></div>
-      <div class="row-meta">${meta}</div>
+      <div class="row-meta"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span>${t.client ? `<span>${esc(t.client)}</span>` : ""}<span>${t.assignedTo ? "مع " + esc(t.assignedToName) : "لسه ما اتوزعتش"}</span>${t.status === "closed" && t.rating ? starsSm(t.rating) : ""}</div>
       ${t.lastUpdate ? `<div class="row-last">${esc(t.lastUpdateBy)}: ${esc(t.lastUpdate)} — ${ago(t.lastUpdateAt)}</div>` : ""}</div>
-    <div class="row-side"><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.txt}</span>` : ""}</div></button>`;
+    <div class="row-side"><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}${quickBtn(t)}</div></div>`;
 }
 function renderBoard(){
   if (!$("#board")) return;
   renderTabs();
+  const late = S.tasks.filter(isLate).filter(t => S.me.role !== "employee" || t.status !== "pending_approval");
+  $("#strip").innerHTML = late.length && S.tab !== "late" ? `<button class="alert-strip" data-tab="late">${ic("alert")}${S.me.role === "employee" ? "عندك" : "فيه"} ${fmtNum(late.length)} ${late.length === 1 ? "مهمة متأخرة" : "مهام متأخرة"} عن ميعادها<span>اعرضها</span></button>` : "";
   const list = filtered();
   if (!list.length){
-    const msg = { open:["مفيش مهام مفتوحة", S.me.role === "employee" ? "أول ما المشرف يوزع عليك مهمة هتظهر هنا." : "اضغط «+ مهمة جديدة» عشان تضيف أول مهمة."],
+    const msg = { open:["مفيش مهام مفتوحة", S.me.role === "employee" ? "أول ما المشرف يوزع عليك مهمة هتظهر هنا." : "اضغط «مهمة جديدة» عشان تضيف أول مهمة."],
       new:["كل المهام اتوزعت","مفيش حاجة مستنية توزيع."], approval:["مفيش حاجة مستنية اعتماد","المهام اللي الموظفين يخلصوها هتظهر هنا."],
       late:["مفيش مهام متأخرة","كل المواعيد ماشية تمام."], closed:["مفيش مهام مغلقة لسه",""] }[S.tab];
-    $("#board").innerHTML = `<div class="list"><div class="empty"><b>${S.q || S.emp ? "مفيش نتايج" : msg[0]}</b>${S.q || S.emp ? "جرّب كلمة بحث تانية أو شيل الفلتر." : msg[1]}</div></div>`;
+    $("#board").innerHTML = `<div class="list" style="margin-top:16px"><div class="empty"><b>${S.q || S.emp ? "مفيش نتايج" : msg[0]}</b>${S.q || S.emp ? "جرّب كلمة بحث تانية أو شيل الفلتر." : msg[1]}</div></div>`;
     return;
   }
-  if (S.tab === "closed"){ $("#board").innerHTML = `<div class="list">${list.map(rowHtml).join("")}</div>`; return; }
+  if (S.tab === "closed"){ $("#board").innerHTML = `<div class="list" style="margin-top:16px">${list.map(rowHtml).join("")}</div>`; return; }
   const groups = Object.keys(PRI).map(p => ({ p, items:list.filter(t => t.priority === p) })).filter(g => g.items.length);
-  $("#board").innerHTML = groups.map(g => `<section class="group"><h3 class="group-h"><span class="sw ${g.p}"></span>${PRI[g.p].l} (${fmtNum(g.items.length)})</h3><div class="list">${g.items.map(rowHtml).join("")}</div></section>`).join("");
+  $("#board").innerHTML = groups.map(g => `<section class="group"><h3 class="group-h p-${g.p}">${PRI[g.p].l} (${fmtNum(g.items.length)})</h3><div class="list">${g.items.map(rowHtml).join("")}</div></section>`).join("");
 }
-document.addEventListener("click", e => { const r = e.target.closest("[data-open]"); if (r) openTask(r.dataset.open); });
+
+/* ---------- الكاليندر ---------- */
+const DAYN = ["السبت","الأحد","الاتنين","التلات","الأربع","الخميس","الجمعة"];
+function renderCalendar(){
+  const main = $("#main"), y = S.calMonth.getFullYear(), m = S.calMonth.getMonth();
+  const off = (new Date(y, m, 1).getDay() + 1) % 7, nd = new Date(y, m + 1, 0).getDate();
+  let T = S.tasks.filter(t => dueMs(t)); if (S.emp) T = T.filter(t => t.assignedTo === S.emp);
+  const by = {}; T.forEach(t => (by[dayKey(dueMs(t))] ||= []).push(t));
+  Object.values(by).forEach(a => a.sort((x,z) => (x.status === "closed") - (z.status === "closed") || byPriority(x,z)));
+  const today = dayKey(Date.now()); const cells = [];
+  for (let i = 0; i < off; i++) cells.push(`<div class="cal-cell blank"></div>`);
+  for (let d = 1; d <= nd; d++){
+    const k = dayKey(new Date(y, m, d)), items = by[k] || [];
+    cells.push(`<button class="cal-cell ${k === today ? "today" : ""} ${k === S.calDay ? "sel" : ""}" data-day="${k}" aria-label="${d} — ${items.length} مهام">
+      <span class="cal-n">${fmtNum(d)}</span>
+      <div class="cal-items">${items.slice(0,3).map(t => `<div class="cal-chip ${isLate(t) ? "p-urgent" : "p-" + t.priority} ${t.status === "closed" ? "done" : ""}">${esc(t.title)}</div>`).join("")}${items.length > 3 ? `<div class="cal-more">+${fmtNum(items.length - 3)} كمان</div>` : ""}</div>
+      <div class="cal-dots">${items.slice(0,6).map(t => `<i class="${isLate(t) ? "p-urgent" : "p-" + t.priority} ${t.status === "closed" ? "done" : ""}"></i>`).join("")}</div></button>`);
+  }
+  while (cells.length % 7) cells.push(`<div class="cal-cell blank"></div>`);
+  const sel = (by[S.calDay] || []);
+  const selD = new Date(S.calDay + "T00:00").toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long" });
+  const empSel = S.me.role === "employee" ? "" : `<select id="calEmp" class="btn" aria-label="فلترة بالموظف"><option value="">كل الموظفين</option>${staff().map(u => `<option value="${u.uid}" ${S.emp === u.uid ? "selected" : ""}>${esc(u.name)}</option>`).join("")}</select>`;
+  main.innerHTML = `<div class="cal-head"><h2>${S.calMonth.toLocaleDateString("ar-EG", { month:"long", year:"numeric" })}</h2>
+      ${empSel}<div class="cal-nav"><button class="btn sm" data-cal="prev" aria-label="الشهر اللي فات">${ic("prev")}</button><button class="btn sm" data-cal="today">النهارده</button><button class="btn sm" data-cal="next" aria-label="الشهر الجاي">${ic("next")}</button></div></div>
+    <div class="cal"><div class="cal-grid">${DAYN.map(d => `<div class="cal-dn">${d}</div>`).join("")}${cells.join("")}</div></div>
+    <div class="day-h"><h3>${selD}</h3><span>${sel.length ? fmtNum(sel.length) + (sel.length === 1 ? " مهمة" : " مهام") : "مفيش مهام ميعادها اليوم ده"}</span></div>
+    ${sel.length ? `<div class="list">${sel.map(rowHtml).join("")}</div>` : ""}`;
+  $("#calEmp") && ($("#calEmp").onchange = e => { S.emp = e.target.value; renderCalendar(); });
+}
+
+/* ---------- الأداء ---------- */
+function perfRange(){
+  const n = new Date();
+  if (S.perf === "this") return [new Date(n.getFullYear(), n.getMonth(), 1).getTime(), Infinity];
+  if (S.perf === "last") return [new Date(n.getFullYear(), n.getMonth() - 1, 1).getTime(), new Date(n.getFullYear(), n.getMonth(), 1).getTime()];
+  return [0, Infinity];
+}
+function statsFor(uid){
+  const [a, b] = perfRange();
+  const mine = S.tasks.filter(t => t.assignedTo === uid);
+  const closed = mine.filter(t => t.status === "closed" && t.closedAt && ms(t.closedAt) >= a && ms(t.closedAt) < b);
+  const withDue = closed.filter(t => dueMs(t));
+  const onTime = withDue.filter(t => ms(t.closedAt) <= dueMs(t));
+  const rated = closed.filter(t => t.rating);
+  const dur = closed.filter(t => t.assignedAt).map(t => ms(t.closedAt) - ms(t.assignedAt));
+  return { closed:closed.length, onTimePct: withDue.length ? Math.round(onTime.length / withDue.length * 100) : null,
+    avg: rated.length ? rated.reduce((s,t) => s + t.rating, 0) / rated.length : null, nRated:rated.length,
+    avgDur: dur.length ? dur.reduce((s,x) => s + x, 0) / dur.length : null,
+    open: mine.filter(t => t.status !== "closed").length, late: mine.filter(isLate).length,
+    recent: rated.sort((x,z) => ms(z.closedAt) - ms(x.closedAt)).slice(0,3) };
+}
+function renderPerf(){
+  const main = $("#main");
+  let people = S.me.role === "employee" ? [S.me] : S.users.filter(u => u.role === "employee" || S.tasks.some(t => t.assignedTo === u.uid));
+  const cards = people.map(u => { const s = statsFor(u.uid);
+    return `<article class="pcard"><div class="pcard-h">${avatar(u.name, u.uid, true)}<div><b>${esc(u.name)}</b><span>${ROLE[u.role]}${u.active === false ? " — متوقف" : ""}</span></div></div>
+      <div class="rating-big">${s.avg ? `<strong>${fmtNum(s.avg.toFixed(1))}</strong>${starsSm(s.avg)}<small>من ${fmtNum(s.nRated)} تقييم</small>` : `<small>لسه مفيش تقييمات في الفترة دي</small>`}</div>
+      <div><div class="bar-l"><span>اتسلمت في ميعادها</span><span>${s.onTimePct == null ? "—" : fmtNum(s.onTimePct) + "٪"}</span></div><div class="bar"><i style="width:${s.onTimePct || 0}%"></i></div></div>
+      <dl class="kv"><div><dt>مهام اتقفلت</dt><dd>${fmtNum(s.closed)}</dd></div><div><dt>متوسط وقت التنفيذ</dt><dd>${s.avgDur ? span(s.avgDur) : "—"}</dd></div>
+        <div><dt>مفتوحة دلوقتي</dt><dd>${fmtNum(s.open)}</dd></div><div><dt>متأخرة دلوقتي</dt><dd class="${s.late ? "bad" : ""}">${fmtNum(s.late)}</dd></div></dl>
+      ${s.recent.length ? `<ul class="recent">${s.recent.map(t => `<li>${starsSm(t.rating)}<span>${esc(t.ratingNote || t.title)}</span></li>`).join("")}</ul>` : ""}</article>`; }).join("");
+  main.innerHTML = `<div class="perf-head"><h2>${S.me.role === "employee" ? "أدائي" : "أداء الفريق"}</h2>
+      <div class="chips-row">${[["this","الشهر ده"],["last","الشهر اللي فات"],["all","من الأول"]].map(([k,l]) => `<button class="chip ${S.perf === k ? "on" : ""}" data-perf="${k}">${l}</button>`).join("")}</div></div>
+    <p class="perf-note">التقييم من ٥ نجوم بيتحط لما المشرف يعتمد إغلاق المهمة. «في ميعادها» يعني اتقفلت قبل ميعاد التنفيذ.</p>
+    <div class="perf-grid">${cards || `<div class="list"><div class="empty"><b>مفيش موظفين لسه</b>ضيف الموظفين من زرار «الفريق».</div></div>`}</div>`;
+}
+
+/* ---------- التنبيهات ---------- */
+function alertList(){
+  const now = Date.now(), lim = alertBefore();
+  const mine = S.tasks.filter(t => t.status !== "closed" && dueMs(t) && !(S.me.role === "employee" && t.status === "pending_approval"));
+  return { late: mine.filter(t => dueMs(t) < now).sort((a,b) => dueMs(a) - dueMs(b)),
+           soon: mine.filter(t => dueMs(t) >= now && dueMs(t) - now <= lim).sort((a,b) => dueMs(a) - dueMs(b)) };
+}
+function checkAlerts(silent){
+  if (!S.me) return;
+  const { late, soon } = alertList();
+  const b = $("#bellBadge"); if (b){ const n = late.length + soon.length; b.hidden = !n; b.textContent = fmtNum(n); }
+  if ($(".pop")) renderPop();
+  const seen = store.get("seen:" + S.me.uid, {}), fresh = [];
+  late.forEach(t => { const k = t.id + ":late"; if (seen[k] !== dueMs(t)){ seen[k] = dueMs(t); fresh.push([t,"late"]); } });
+  soon.forEach(t => { const k = t.id + ":soon"; if (seen[k] !== dueMs(t)){ seen[k] = dueMs(t); fresh.push([t,"soon"]); } });
+  store.set("seen:" + S.me.uid, seen);
+  if (silent || !fresh.length) return;
+  const [t, k] = fresh.find(f => f[1] === "late") || fresh[0];
+  const title = k === "late" ? "مهمة عدّى ميعادها" : "مهمة قرّب ميعادها";
+  const body = `#${pad(t.no)} ${t.title}` + (fresh.length > 1 ? ` (و${fmtNum(fresh.length - 1)} غيرها)` : "");
+  toast(title + ": " + body); beep();
+  try { if ("Notification" in window && Notification.permission === "granted"){ const n = new Notification(title, { body, tag:"ops-" + t.id }); n.onclick = () => { window.focus(); openTask(t.id); }; } } catch {}
+}
+function togglePop(){ if ($(".pop")) closePop(); else { const p = document.createElement("div"); p.className = "pop"; p.setAttribute("role","dialog"); p.setAttribute("aria-label","التنبيهات"); document.body.appendChild(p); renderPop(); } }
+function closePop(){ const p = $(".pop"); if (p) p.remove(); }
+function renderPop(){
+  const p = $(".pop"); if (!p) return;
+  const { late, soon } = alertList();
+  const item = t => `<button class="pop-item" data-open="${t.id}"><b>#${pad(t.no)} ${esc(t.title)}</b><span class="due ${dueInfo(t).cls}">${dueInfo(t).txt}${t.assignedToName ? " — مع " + esc(t.assignedToName) : ""}</span></button>`;
+  const perm = !("Notification" in window) ? "unsupported" : Notification.permission;
+  p.innerHTML = `${late.length ? `<h3 class="late">عدّى ميعادها (${fmtNum(late.length)})</h3>${late.map(item).join("")}` : ""}
+    ${soon.length ? `<h3 class="soon">قرّب ميعادها (${fmtNum(soon.length)})</h3>${soon.map(item).join("")}` : ""}
+    ${!late.length && !soon.length ? `<div class="pop-empty">مفيش تنبيهات دلوقتي. كل المهام ماشية في ميعادها.</div>` : ""}
+    <div class="pop-set">
+      <label for="alertBefore">نبّهني قبل الميعاد بـ <select id="alertBefore">${[[15,"ربع ساعة"],[30,"نص ساعة"],[60,"ساعة"],[120,"ساعتين"],[240,"٤ ساعات"],[1440,"يوم"]].map(([v,l]) => `<option value="${v}" ${store.get("before",60) === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label><input type="checkbox" id="alertSound" ${store.get("sound", true) ? "checked" : ""}> صوت تنبيه</label>
+      ${perm === "granted" ? `<span>إشعارات الجهاز شغالة.</span>` : perm === "denied" ? `<span>إشعارات الجهاز مقفولة من إعدادات المتصفح.</span>` : perm === "unsupported" ? `<span>المتصفح ده مش بيدعم إشعارات الجهاز، هتظهر التنبيهات جوه الصفحة بس.</span>` : `<button class="btn sm" id="enableNotif">${ic("bell")}تفعيل إشعارات الجهاز</button>`}
+      <span class="hint">التنبيهات بتشتغل طول ما الصفحة مفتوحة.</span>
+    </div>`;
+  $("#alertBefore").onchange = e => { store.set("before", +e.target.value); store.set("seen:" + S.me.uid, {}); checkAlerts(false); renderView(true); };
+  $("#alertSound").onchange = e => store.set("sound", e.target.checked);
+  $("#enableNotif") && ($("#enableNotif").onclick = async () => { try { await Notification.requestPermission(); } catch {} renderPop(); });
+}
+
+/* ---------- أحداث عامة ---------- */
+document.addEventListener("click", async e => {
+  const t = e.target;
+  const demo = t.closest("[data-demo]"); if (demo) return api.demoLogin(demo.dataset.demo);
+  const q = t.closest("[data-quick]");
+  if (q){ e.stopPropagation(); const task = S.tasks.find(x => x.id === q.dataset.id); if (!task) return;
+    if (q.dataset.quick === "open") return openTask(task.id);
+    q.disabled = true; await runAct(task, q.dataset.quick, {}); return; }
+  const op = t.closest("[data-open]"); if (op){ closePop(); return openTask(op.dataset.open); }
+  const tab = t.closest("[data-tab]"); if (tab){ S.tab = tab.dataset.tab; S.view = "list"; return renderView(); }
+  const v = t.closest("[data-view]"); if (v){ S.view = v.dataset.view; return renderView(); }
+  const d = t.closest("[data-day]"); if (d){ S.calDay = d.dataset.day; return renderCalendar(); }
+  const c = t.closest("[data-cal]"); if (c){ const k = c.dataset.cal;
+    if (k === "today"){ const n = new Date(); S.calMonth = new Date(n.getFullYear(), n.getMonth(), 1); S.calDay = dayKey(n); }
+    else S.calMonth = new Date(S.calMonth.getFullYear(), S.calMonth.getMonth() + (k === "next" ? 1 : -1), 1);
+    return renderCalendar(); }
+  const pf = t.closest("[data-perf]"); if (pf){ S.perf = pf.dataset.perf; return renderPerf(); }
+  if ($(".pop") && !t.closest(".pop") && !t.closest("#btnBell")) closePop();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape"){ if ($(".modal")) $(".modal").remove(); else if ($(".pop")) closePop(); else if (sheetEl) closeTask(); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches(".row[data-open]")){ e.preventDefault(); openTask(e.target.dataset.open); }
+});
 
 /* ---------- تفاصيل المهمة ---------- */
-let sheetEl = null;
 function openTask(id){
-  closeTask(true);
-  S.openId = id; S.updates = []; S.armedDel = false;
+  closeTask();
+  S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0;
+  const qs = QUICK[S.me.role] || [];
   sheetEl = document.createElement("div");
   sheetEl.innerHTML = `<div class="backdrop" data-close></div>
     <aside class="sheet" role="dialog" aria-modal="true" aria-label="تفاصيل المهمة">
       <div class="sheet-bar"><button class="btn ghost sm" data-close aria-label="إغلاق">✕ رجوع</button><span class="ref" id="sheetRef"></span></div>
       <div class="sheet-body" id="sheetBody"></div>
-      <form class="composer" id="composer"><textarea id="updText" rows="1" placeholder="اكتب تحديث أو ملاحظة…"></textarea><button class="btn primary" type="submit">إرسال</button></form>
+      <form class="composer" id="composer">
+        <div class="quick" aria-label="ردود سريعة">${qs.map(x => `<button type="button" class="chip" data-reply="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+        <div class="comp-row"><textarea id="updText" rows="1" placeholder="اكتب تحديث أو ملاحظة…"></textarea><button class="btn primary" type="submit">إرسال</button></div>
+      </form>
     </aside>`;
   document.body.appendChild(sheetEl);
   sheetEl.addEventListener("click", onSheetClick);
-  sheetEl.addEventListener("change", onSheetChange);
+  sheetEl.addEventListener("change", e => { if (e.target.id === "priSel") doAct("priority", null, e.target.value); });
   $("#composer").addEventListener("submit", e => { e.preventDefault(); doAct("note"); });
   S.unsubUpd = api.watchUpdates(id, ups => { S.updates = ups; renderDetail(); });
   renderDetail();
 }
-function closeTask(silent){
+function closeTask(){
   if (S.unsubUpd) S.unsubUpd(); S.unsubUpd = null;
   if (sheetEl){ sheetEl.remove(); sheetEl = null; }
   S.openId = null;
 }
-document.addEventListener("keydown", e => { if (e.key === "Escape"){ if ($(".modal")) $(".modal").remove(); else if (sheetEl) closeTask(); } });
-
+const starsPick = () => `<div class="stars" role="radiogroup" aria-label="التقييم">${[1,2,3,4,5].map(i => `<button type="button" data-star="${i}" class="${i <= S.stars ? "on" : ""}" aria-label="${i} من ٥">${ic("star","fill")}</button>`).join("")}</div>`;
 function actionsHtml(t){
   const r = S.me.role, st = t.status, out = [];
   if (r === "supervisor"){
+    if (st === "pending_approval") out.push(`<div class="approve-box"><b>${esc(t.assignedToName)} خلّص المهمة</b><p class="hint">قيّم الشغل واعتمد الإغلاق. ولو فيه حاجة ناقصة، اكتب السبب تحت ورجّعها.</p>${starsPick()}<input id="rateNote" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface)" placeholder="ملاحظة على التقييم (اختياري)"><div class="act-row"><button class="btn ok" data-act="approve">اعتماد وإغلاق</button><button class="btn" data-act="return">إرجاع للموظف</button></div></div>`);
     if (st !== "closed"){
       out.push(`<div class="act-row"><select id="assignSel" aria-label="توزيع على"><option value="">${t.assignedTo ? "تحويل لموظف تاني…" : "اختار الموظف…"}</option>${staff().filter(u => u.uid !== t.assignedTo).map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select><button class="btn primary" data-act="assign">${t.assignedTo ? "تحويل" : "توزيع"}</button></div>`);
-      out.push(`<div class="act-row"><label for="priSel" class="hint">الأولوية</label><select id="priSel">${Object.keys(PRI).map(p => `<option value="${p}" ${t.priority === p ? "selected" : ""}>${PRI[p].l}</option>`).join("")}</select></div>`);
+      out.push(`<div class="act-row"><select id="priSel" aria-label="الأولوية">${Object.keys(PRI).map(p => `<option value="${p}" ${t.priority === p ? "selected" : ""}>الأولوية: ${PRI[p].l}</option>`).join("")}</select></div>`);
+      out.push(`<div class="act-row"><input type="datetime-local" id="dueEdit" aria-label="ميعاد التنفيذ" value="${dueMs(t) ? toInput(dueMs(t)) : ""}"><button class="btn" data-act="due">${ic("clock")}${dueMs(t) ? "تغيير الميعاد" : "تحديد ميعاد"}</button></div>`);
+      if (st === "in_progress" || st === "assigned") out.push(`<div class="act-row"><button class="btn" data-act="approve">إغلاق المهمة مباشرة</button></div>`);
     }
-    if (st === "pending_approval") out.push(`<p class="hint">${esc(t.assignedToName)} خلّصت المهمة. اعتمد الإغلاق، أو اكتب السبب تحت ورجّعها.</p><div class="act-row"><button class="btn ok" data-act="approve">اعتماد وإغلاق</button><button class="btn" data-act="return">إرجاع للموظف</button></div>`);
-    else if (st === "in_progress" || st === "assigned") out.push(`<div class="act-row"><button class="btn" data-act="approve">إغلاق المهمة مباشرة</button></div>`);
+    if (st === "closed" && !t.rating) out.push(`<p class="hint">المهمة اتقفلت من غير تقييم. تقدر تقيّمها دلوقتي:</p>${starsPick()}<input id="rateNote" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface)" placeholder="ملاحظة (اختياري)"><div class="act-row"><button class="btn primary" data-act="rate">حفظ التقييم</button></div>`);
     if (st === "closed") out.push(`<div class="act-row"><button class="btn" data-act="reopen">إعادة فتح</button></div>`);
     out.push(`<div class="act-row"><button class="btn danger sm ${S.armedDel ? "armed" : ""}" data-act="delete">${S.armedDel ? "اضغط تاني لتأكيد الحذف" : "حذف المهمة"}</button></div>`);
   } else if (r === "employee"){
     if (st === "assigned") out.push(`<div class="act-row"><button class="btn primary" data-act="start">بدء التنفيذ</button></div>`);
     if (st === "in_progress") out.push(`<p class="hint">لما تخلص اكتب ملخص اللي عملته تحت (اختياري) واضغط الزرار.</p><div class="act-row"><button class="btn ok" data-act="done">خلصت — إرسال للاعتماد</button></div>`);
     if (st === "pending_approval") out.push(`<p class="hint">المهمة مستنية اعتماد المشرف. هتفضل ظاهرة لحد ما يقفلها.</p>`);
-    if (st === "closed") out.push(`<p class="hint">المهمة اتقفلت.</p>`);
   } else {
     if (st === "new") out.push(`<p class="hint">المهمة وصلت للمشرف ومستنية التوزيع.</p>`);
-    else if (st === "closed") out.push(`<p class="hint">المهمة اتقفلت.</p>`);
-    else out.push(`<p class="hint">تقدر تكتب ملاحظة أو استفسار تحت، وهيوصل للمشرف والموظف.</p>`);
+    else if (st !== "closed") out.push(`<p class="hint">تقدر تكتب ملاحظة أو تستخدم الردود السريعة تحت، وهتوصل للمشرف والموظف.</p>`);
   }
   return out.length ? `<section class="actions"><h3>الإجراءات</h3>${out.join("")}</section>` : "";
 }
@@ -570,57 +890,73 @@ function renderDetail(){
   if (!sheetEl) return;
   const t = S.tasks.find(x => x.id === S.openId);
   if (!t){ closeTask(); return; }
+  const keepNote = $("#rateNote") ? $("#rateNote").value : "";
   const d = dueInfo(t);
   $("#sheetRef").textContent = "#" + pad(t.no);
-  const facts = [["النوع", t.type], ["العميل", t.client], ["التليفون", t.phone ? `<span dir="ltr">${esc(t.phone)}</span>` : ""], ["مع", t.assignedToName || "لسه ما اتوزعتش"],
-    ["أرسلها", t.createdByName], ["اتعملت", fullDate(t.createdAt)], ["موعد التسليم", t.due ? new Date(t.due+"T00:00").toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long"}) : ""],
+  const facts = [["العميل", esc(t.client)], ["مع", t.assignedTo ? avatar(t.assignedToName, t.assignedTo) + esc(t.assignedToName) : "لسه ما اتوزعتش"],
+    ["أرسلها", esc(t.createdByName)], ["اتعملت", fullDate(t.createdAt)], ["ميعاد التنفيذ", dueMs(t) ? fullDate(dueMs(t)) : ""],
     t.closedAt && t.status === "closed" ? ["اتقفلت", fullDate(t.closedAt)] : null].filter(f => f && f[1]);
   $("#sheetBody").innerHTML = `
-    <div class="d-head"><h2>${esc(t.title)}</h2><div class="chips"><span class="pri ${t.priority}">${PRI[t.priority].l}</span><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.txt}</span>` : ""}</div></div>
-    <dl class="facts">${facts.map(([k,v]) => `<div><dt>${k}</dt><dd>${k === "التليفون" ? v : esc(v)}</dd></div>`).join("")}</dl>
+    <div class="d-head"><h2>${esc(t.title)}</h2><div class="chips"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span><span class="pri p-${t.priority}">${PRI[t.priority].l}</span><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}</div></div>
+    ${t.phone ? `<div class="contact"><a href="tel:${esc(t.phone)}">${ic("phone")}<span dir="ltr">${esc(t.phone)}</span></a><a class="wa" href="${waLink(t.phone)}" target="_blank" rel="noopener">${ic("chat")}واتساب العميل</a></div>` : ""}
+    <dl class="facts">${facts.map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     ${t.details ? `<p class="details">${esc(t.details)}</p>` : ""}
+    ${t.rating ? `<div class="rated"><span>${starsSm(t.rating)} تقييم المشرف</span>${t.ratingNote ? `<span>${esc(t.ratingNote)}</span>` : ""}</div>` : ""}
     ${actionsHtml(t)}
     <section><h3 class="timeline-h">سجل المتابعة</h3>
       <ol class="timeline">${S.updates.map(u => `<li class="${u.kind}"><div class="tl-meta"><b>${esc(u.byName)}</b> (${ROLE[u.role] || ""}) — ${ago(u.createdAt)}</div><div class="tl-text">${esc(u.text)}</div></li>`).join("") || `<li class="event"><div class="tl-text">لسه مفيش تحديثات.</div></li>`}</ol></section>`;
-  const comp = $("#composer");
-  comp.hidden = t.status === "closed" && S.me.role === "employee";
+  if ($("#rateNote")) $("#rateNote").value = keepNote;
+  $("#composer").hidden = t.status === "closed" && S.me.role === "employee";
 }
 function onSheetClick(e){
   if (e.target.closest("[data-close]")) return closeTask();
+  const s = e.target.closest("[data-star]");
+  if (s){ S.stars = +s.dataset.star; sheetEl.querySelectorAll("[data-star]").forEach(b => b.classList.toggle("on", +b.dataset.star <= S.stars)); return; }
+  const rp = e.target.closest("[data-reply]"); if (rp) return doAct("note", rp, rp.dataset.reply);
   const b = e.target.closest("[data-act]"); if (b) doAct(b.dataset.act, b);
-}
-function onSheetChange(e){
-  if (e.target.id === "priSel"){ const p = e.target.value; doAct("priority", null, p); }
 }
 async function doAct(kind, btn, val){
   const t = S.tasks.find(x => x.id === S.openId); if (!t) return;
-  const me = S.me, txtEl = $("#updText"), text = txtEl.value.trim();
-  let patch = {}, entry = null;
+  const txtEl = $("#updText");
+  const opts = { text: kind === "note" && val ? val : txtEl.value.trim(), val, btn };
+  const ok = await runAct(t, kind, opts);
+  if (ok && ["note","done","approve","return","reopen","rate"].includes(kind) && !(kind === "note" && val)) txtEl.value = "";
+}
+async function runAct(t, kind, { text = "", val, btn } = {}){
+  const me = S.me; let patch = {}, entry = null;
   switch (kind){
-    case "note": if (!text) return toast("اكتب التحديث الأول"); entry = { kind:"note", text }; break;
+    case "note": if (!text){ toast("اكتب التحديث الأول"); return false; } entry = { kind:"note", text }; break;
     case "assign": {
-      const uid = $("#assignSel").value; if (!uid) return toast("اختار الموظف الأول");
+      const uid = $("#assignSel").value; if (!uid){ toast("اختار الموظف الأول"); return false; }
       const u = S.users.find(x => x.uid === uid);
-      patch = { assignedTo:uid, assignedToName:u.name, status: t.status === "new" ? "assigned" : t.status };
+      patch = { assignedTo:uid, assignedToName:u.name, assignedAt:NOW, status: t.status === "new" ? "assigned" : t.status };
       entry = { kind:"event", text:(t.assignedTo ? "حوّل المهمة من " + t.assignedToName + " إلى " : "وزّع المهمة على ") + u.name }; break; }
     case "priority": patch = { priority:val }; entry = { kind:"event", text:"غيّر الأولوية إلى «" + PRI[val].l + "»" }; break;
+    case "due": { const v = $("#dueEdit").value; if (!v){ toast("اختار الميعاد الأول"); return false; }
+      const at = new Date(v).getTime(); patch = { dueAt:at }; entry = { kind:"event", text:"حدد ميعاد التنفيذ: " + fullDate(at) }; break; }
     case "start": patch = { status:"in_progress" }; entry = { kind:"event", text:"بدأ التنفيذ" }; break;
     case "done": patch = { status:"pending_approval" }; entry = { kind:"event", text:"أنهى المهمة وأرسلها للاعتماد" + (text ? ":\n" + text : "") }; break;
-    case "approve": patch = { status:"closed", closedAt:NOW, closedBy:me.name }; entry = { kind:"event", text:"اعتمد الإغلاق" + (text ? ":\n" + text : "") }; break;
-    case "return": if (!text) { txtEl.focus(); return toast("اكتب سبب الإرجاع في خانة التحديث تحت"); }
+    case "approve": case "rate": {
+      const note = $("#rateNote") ? $("#rateNote").value.trim() : "";
+      if (kind === "rate" && !S.stars){ toast("اختار عدد النجوم الأول"); return false; }
+      patch = kind === "approve" ? { status:"closed", closedAt:NOW, closedBy:me.name } : {};
+      if (S.stars){ patch.rating = S.stars; patch.ratingNote = note; }
+      entry = { kind:"event", text:(kind === "approve" ? "اعتمد الإغلاق" : "قيّم المهمة") + (S.stars ? " — التقييم " + fmtNum(S.stars) + " من ٥" : "") + (note ? ": " + note : "") + (text ? "\n" + text : "") }; break; }
+    case "return": if (!text){ $("#updText").focus(); toast("اكتب سبب الإرجاع في خانة التحديث تحت"); return false; }
       patch = { status:"in_progress" }; entry = { kind:"event", text:"رجّع المهمة للتعديل:\n" + text }; break;
     case "reopen": patch = { status: t.assignedTo ? "assigned" : "new" }; entry = { kind:"event", text:"أعاد فتح المهمة" + (text ? ":\n" + text : "") }; break;
     case "delete":
-      if (!S.armedDel){ S.armedDel = true; renderDetail(); setTimeout(() => { if (S.armedDel){ S.armedDel = false; renderDetail(); } }, 4000); return; }
+      if (!S.armedDel){ S.armedDel = true; renderDetail(); setTimeout(() => { if (S.armedDel){ S.armedDel = false; renderDetail(); } }, 4000); return false; }
       try { await api.deleteTask(t.id); closeTask(); toast("المهمة اتحذفت"); } catch(x){ console.error(x); toast("الحذف ما نجحش"); }
-      return;
+      return true;
   }
   if (btn) btn.disabled = true;
   try {
     await api.act(t.id, me, patch, entry);
-    if (["note","done","approve","return","reopen"].includes(kind)) txtEl.value = "";
-    toast({ note:"التحديث اتبعت", assign:"المهمة اتوزعت", priority:"الأولوية اتغيرت", start:"بالتوفيق!", done:"اتبعتت للمشرف للاعتماد", approve:"المهمة اتقفلت", return:"المهمة رجعت للموظف", reopen:"المهمة اتفتحت تاني" }[kind]);
-  } catch(x){ console.error(x); toast("العملية ما نجحتش، جرّب تاني"); }
+    toast({ note:"التحديث اتبعت", assign:"المهمة اتوزعت", priority:"الأولوية اتغيرت", due:"الميعاد اتحدد", start:"بالتوفيق!", done:"اتبعتت للمشرف للاعتماد", approve:"المهمة اتقفلت", rate:"التقييم اتحفظ", return:"المهمة رجعت للموظف", reopen:"المهمة اتفتحت تاني" }[kind]);
+    if (kind === "approve" || kind === "rate") S.stars = 0;
+    return true;
+  } catch(x){ console.error(x); toast("العملية ما نجحتش، جرّب تاني"); return false; }
   finally { if (btn) btn.disabled = false; }
 }
 
@@ -631,31 +967,47 @@ function modal(title, body){
   m.addEventListener("click", e => { if (e.target === m || e.target.closest("[data-x]")) m.remove(); });
   document.body.appendChild(m); return m;
 }
+const DEADLINES = [
+  ["خلال ساعة", () => Date.now() + HOUR],
+  ["خلال ٣ ساعات", () => Date.now() + 3*HOUR],
+  ["آخر اليوم", () => { const d = new Date(); d.setHours(17,0,0,0); return d.getTime() > Date.now() + 30*MIN ? d.getTime() : (d.setHours(22,0,0,0), Math.max(d.getTime(), Date.now() + HOUR)); }],
+  ["بكرة", () => { const d = new Date(Date.now() + DAY); d.setHours(14,0,0,0); return d.getTime(); }],
+  ["بعد يومين", () => { const d = new Date(Date.now() + 2*DAY); d.setHours(14,0,0,0); return d.getTime(); }]
+];
 function openNewTask(){
   const sup = S.me.role === "supervisor";
+  let type = TYPES[0][0];
   const m = modal("مهمة جديدة", `<form class="form" id="ntForm" novalidate>
     <div class="field full"><label for="nt-title">المهمة *</label><input id="nt-title" required placeholder="مثلاً: تأكيد حجز فندق لوفد يوم ٢٠"></div>
-    <div class="field"><label for="nt-type">النوع</label><select id="nt-type">${TYPES.map(x => `<option>${x}</option>`).join("")}</select></div>
-    <div class="field"><label for="nt-pri">الأولوية</label><select id="nt-pri">${Object.keys(PRI).map(p => `<option value="${p}" ${p === "normal" ? "selected" : ""}>${PRI[p].l}</option>`).join("")}</select></div>
+    <div class="field full"><span class="lbl">النوع</span><div class="type-pick" id="nt-type">${TYPES.map(([k,c], i) => `<button type="button" class="c-${c} ${i ? "" : "on"}" data-type="${esc(k)}">${esc(k)}</button>`).join("")}</div></div>
+    <div class="field full"><span class="lbl">الأولوية</span><div class="type-pick" id="nt-pri">${Object.keys(PRI).map(p => `<button type="button" class="p-${p} ${p === "normal" ? "on" : ""}" data-pri="${p}">${PRI[p].l}</button>`).join("")}</div></div>
+    <div class="field full"><label for="nt-due">ميعاد التنفيذ</label><div class="chips-row">${DEADLINES.map((d,i) => `<button type="button" class="chip" data-dl="${i}">${d[0]}</button>`).join("")}</div><input id="nt-due" type="datetime-local"></div>
     <div class="field"><label for="nt-client">العميل</label><input id="nt-client"></div>
-    <div class="field"><label for="nt-phone">التليفون</label><input id="nt-phone" type="tel" dir="ltr"></div>
-    <div class="field"><label for="nt-due">موعد التسليم</label><input id="nt-due" type="date" min="${todayStr()}"></div>
-    ${sup ? `<div class="field"><label for="nt-assign">توزيع على</label><select id="nt-assign"><option value="">بعدين</option>${staff().map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select></div>` : `<div class="field"></div>`}
-    <div class="field full"><label for="nt-details">التفاصيل</label><textarea id="nt-details" rows="4"></textarea></div>
+    <div class="field"><label for="nt-phone">تليفون العميل</label><input id="nt-phone" type="tel" dir="ltr" placeholder="01xxxxxxxxx"></div>
+    ${sup ? `<div class="field full"><label for="nt-assign">توزيع على</label><select id="nt-assign"><option value="">بعدين</option>${staff().map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select></div>` : ""}
+    <div class="field full"><label for="nt-details">التفاصيل</label><textarea id="nt-details" rows="3"></textarea></div>
     <p class="err" id="nt-err" hidden></p>
     </form><div class="form-foot"><button class="btn primary" id="ntSave">${sup ? "حفظ المهمة" : "إرسال للمشرف"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  let pri = "normal";
+  m.addEventListener("click", e => {
+    const ty = e.target.closest("[data-type]"); if (ty){ type = ty.dataset.type; m.querySelectorAll("[data-type]").forEach(b => b.classList.toggle("on", b === ty)); }
+    const pr = e.target.closest("[data-pri]"); if (pr){ pri = pr.dataset.pri; m.querySelectorAll("[data-pri]").forEach(b => b.classList.toggle("on", b === pr)); }
+    const dl = e.target.closest("[data-dl]"); if (dl){ $("#nt-due").value = toInput(DEADLINES[+dl.dataset.dl][1]()); m.querySelectorAll("[data-dl]").forEach(b => b.classList.toggle("on", b === dl)); }
+  });
   $("#nt-title").focus();
   const save = async () => {
     const title = $("#nt-title").value.trim(), er = $("#nt-err");
     if (!title){ er.textContent = "اكتب عنوان المهمة."; er.hidden = false; return; }
     const aid = sup ? $("#nt-assign").value : "", au = S.users.find(u => u.uid === aid);
-    const data = { title, type:$("#nt-type").value, priority:$("#nt-pri").value, client:$("#nt-client").value.trim(), phone:$("#nt-phone").value.trim(),
-      due:$("#nt-due").value || "", details:$("#nt-details").value.trim(), status: au ? "assigned" : "new", assignedTo: au ? au.uid : "", assignedToName: au ? au.name : "",
+    const dv = $("#nt-due").value;
+    const data = { title, type, priority:pri, client:$("#nt-client").value.trim(), phone:$("#nt-phone").value.trim(),
+      dueAt: dv ? new Date(dv).getTime() : null, details:$("#nt-details").value.trim(), status: au ? "assigned" : "new", assignedTo: au ? au.uid : "", assignedToName: au ? au.name : "",
       createdBy:S.me.uid, createdByName:S.me.name, createdByRole:S.me.role };
+    if (au) data.assignedAt = NOW;
     $("#ntSave").disabled = true;
     try {
-      const id = await api.createTask(data, S.me, au ? "أنشأ المهمة ووزّعها على " + au.name : "أنشأ المهمة");
-      m.remove(); toast(sup ? "المهمة اتحفظت" : "المهمة اتبعتت للمشرف"); S.tab = "open"; renderBoard();
+      await api.createTask(data, S.me, au ? "أنشأ المهمة ووزّعها على " + au.name : "أنشأ المهمة");
+      m.remove(); toast(sup ? "المهمة اتحفظت" : "المهمة اتبعتت للمشرف"); S.tab = "open"; S.view = "list"; renderView();
     } catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت وجرّب تاني."; er.hidden = false; $("#ntSave").disabled = false; }
   };
   $("#ntSave").onclick = save;
@@ -673,10 +1025,11 @@ function openTeam(){
       <div class="field"><label for="u-pass">كلمة السر (٦ حروف على الأقل)</label><input id="u-pass" type="text" dir="ltr" required></div>
       <p class="err" id="u-err" hidden></p>
     </form><div class="form-foot"><button class="btn primary" id="uSave">إضافة الحساب</button></div>`);
+  const order = ["supervisor","manager","employee"];
   const draw = () => {
     if (!document.body.contains(m)) return;
-    $("#uList").innerHTML = S.users.slice().sort((a,b) => ["supervisor","manager","employee"].indexOf(a.role) - ["supervisor","manager","employee"].indexOf(b.role))
-      .map(u => `<li class="${u.active === false ? "off" : ""}"><div class="u-main"><b>${esc(u.name)}</b><span>${ROLE[u.role]} — <span dir="ltr">${esc(u.email)}</span>${u.active === false ? " — متوقف" : ""}</span></div>
+    $("#uList").innerHTML = S.users.slice().sort((a,b) => order.indexOf(a.role) - order.indexOf(b.role))
+      .map(u => `<li class="${u.active === false ? "off" : ""}">${avatar(u.name, u.uid)}<div class="u-main"><b>${esc(u.name)}</b><span>${ROLE[u.role]} — <span dir="ltr">${esc(u.email)}</span>${u.active === false ? " — متوقف" : ""}</span></div>
         ${u.uid === S.me.uid ? "" : `<button class="btn sm" data-reset="${esc(u.email)}">إعادة تعيين كلمة السر</button><button class="btn sm" data-toggle="${u.uid}">${u.active === false ? "تفعيل" : "إيقاف"}</button>`}</li>`).join("");
   };
   draw(); const un = api.watchUsers(us => { S.users = us; draw(); });
@@ -697,7 +1050,6 @@ function openTeam(){
   };
 }
 
-// في النسخة التجريبية: افتح على حساب المشرف مباشرة
 if (DEMO) api.demoLogin("sup");
 </script>
 </body>
