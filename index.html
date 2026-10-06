@@ -647,6 +647,7 @@ function renderShell(){
     <div class="head-actions">
       <button class="hbtn" id="btnBell" aria-label="التنبيهات">${ic("bell")}<span class="badge" id="bellBadge" hidden></span></button>
       ${canCreate ? `<button class="hbtn solid" id="btnNew">${ic("plus")}<span class="txt">مهمة جديدة</span></button>` : ""}
+      <a class="hbtn" href="archive.html" target="_blank" rel="noopener" aria-label="أرشيف الملفات" style="text-decoration:none">${ic("chart").replace(ICONS.chart, '<path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/>')}<span class="txt">الأرشيف</span></a>
       ${m.role === "supervisor" ? `<button class="hbtn" id="btnTeam" aria-label="فريق العمل">${ic("users")}<span class="txt">الفريق</span></button>` : ""}
       ${DEMO ? "" : `<button class="hbtn" id="btnOut" aria-label="خروج">${ic("out")}</button>`}
     </div></div></header>
