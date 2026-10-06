@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>أرشيف الملفات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
+<style>
+/* Layout: same header band as the tasks app; upload card and lookup card side by side, recent uploads below */
+:root{
+  --bg:#edf2f2; --surface:#ffffff; --surface-2:#f4f7f7; --ink:#10252b; --muted:#5a6e74; --line:#d6e0e1;
+  --brand:#0a4c54; --brand-2:#0e5f68; --brand-ink:#ffffff; --brand-muted:#a9cfd2;
+  --accent:#0b7a80; --accent-ink:#ffffff; --accent-soft:#d8eeee; --gold:#d8961a; --bad:#c3312a; --ok:#25804c; --file:#4b7795;
+  --shadow:0 14px 44px rgba(10,40,46,.2);
+  --f-display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1417; --surface:#132025; --surface-2:#18272d; --ink:#e2ebed; --muted:#8fa3a9; --line:#243840;
+  --brand:#0a3439; --brand-2:#10454b; --brand-ink:#e9f6f6; --brand-muted:#8cbcc0;
+  --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440; --bad:#f07468; --ok:#62c48b; --file:#8fb4cf;
+  --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1417; --surface:#132025; --surface-2:#18272d; --ink:#e2ebed; --muted:#8fa3a9; --line:#243840;
+  --brand:#0a3439; --brand-2:#10454b; --brand-ink:#e9f6f6; --brand-muted:#8cbcc0;
+  --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440; --bad:#f07468; --ok:#62c48b; --file:#8fb4cf;
+  --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--f-body)}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.3;text-wrap:balance}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px}
+header{background:var(--brand);color:var(--brand-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header .wrap{display:flex;align-items:center;gap:12px;padding-block:12px;flex-wrap:wrap}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--gold);color:var(--brand);display:grid;place-items:center;font:700 19px/1 var(--f-display)}
+header h1{font-size:18px}
+header span{font-size:12px;color:var(--brand-muted);display:block}
+header a{margin-inline-start:auto;color:var(--brand-ink);text-decoration:none;border:1px solid color-mix(in srgb,var(--brand-ink) 25%,transparent);border-radius:9px;padding:7px 12px;font-weight:500}
+main{padding-block:20px 56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.full{grid-column:1/-1}
+.card h2{font-size:18px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:26px 16px;text-align:center;color:var(--muted);background:var(--surface-2);cursor:pointer}
+.drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.drop b{display:block;color:var(--ink);font-family:var(--f-display);font-size:16px}
+.picked{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.picked li{display:flex;gap:8px;align-items:center;font-size:14px;background:var(--surface-2);border-radius:8px;padding:6px 10px;min-width:0}
+.picked li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.picked small{color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text],input[type=search],input[type=email],input[type=password],textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:8px 12px;min-width:0;flex:1 1 160px}
+label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px;flex:1 1 160px}
+label input{flex:none;width:100%}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;font-weight:500;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.result{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:14px;background:color-mix(in srgb,var(--ok) 12%,var(--surface));text-align:center;align-items:center}
+.ref-big{font:700 34px/1.1 var(--f-display);letter-spacing:.04em;direction:ltr;color:var(--ok)}
+.meta{font-size:13px;color:var(--muted)}
+.files{display:flex;flex-direction:column;gap:10px}
+.file{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.file-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.file-h b{overflow-wrap:anywhere;flex:1 1 160px;min-width:0}
+.file img{max-width:100%;border-radius:8px;background:var(--surface-2)}
+.recent{list-style:none;margin:0;padding:0}
+.recent li{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line)}
+.recent li:last-child{border-bottom:0}
+.recent .r{font:600 15px/1 var(--f-display);direction:ltr;color:var(--file);background:color-mix(in srgb,var(--file) 12%,transparent);padding:5px 10px;border-radius:8px;border:0}
+.recent .d{flex:1 1 200px;min-width:0;font-size:14px;overflow-wrap:anywhere}
+.recent .d small{display:block;color:var(--muted);font-size:12px}
+.err{color:var(--bad);font-size:13px;margin:0}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.login{min-height:100%;display:grid;place-items:center;padding:24px 16px;background:var(--brand)}
+.login form{width:min(380px,100%);background:var(--surface);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px}
+#toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:10px;z-index:40;font-size:14px;max-width:calc(100% - 32px)}
+@media (max-width:760px){ main{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div id="app" dir="rtl" lang="ar"></div>
+<div id="toast" hidden></div>
+<script type="module">
+/* نفس إعدادات صفحة المهام */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD-7latIkGl3vQ4dE8lapKDOIREBMkz-hg",
+  authDomain: "tasks-ops.firebaseapp.com",
+  projectId: "tasks-ops",
+  storageBucket: "tasks-ops.firebasestorage.app",
+  messagingSenderId: "773091705898",
+  appId: "1:773091705898:web:4ae08acc81d0067dd2ef53"
+};
+const OWNER_EMAIL = "khaledalhadedy001@gmail.com";
+const DEMO = location.protocol === "file:" || FIREBASE_CONFIG.apiKey.startsWith("PASTE");
+const CHUNK = 700000;           // حروف في كل جزء (أقل من حد Firestore)
+const MAX_FILE = 6 * 1024 * 1024; // أقصى حجم للملف بعد الضغط
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const size = b => b < 1024*1024 ? Math.max(1, Math.round(b/1024)).toLocaleString("ar-EG") + " ك.ب" : (b/1024/1024).toFixed(1).replace(".", "٫") + " م.ب";
+const ms = t => t == null ? Date.now() : typeof t === "number" ? t : t.toMillis ? t.toMillis() : +new Date(t);
+const when = t => new Date(ms(t)).toLocaleString("ar-EG", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" });
+const normRef = v => { v = String(v || "").trim().toUpperCase().replace(/\s/g, ""); if (/^\d+$/.test(v)) v = "A-" + v.padStart(4, "0"); if (/^A\d+$/.test(v)) v = "A-" + v.slice(1).padStart(4, "0"); return v; };
+function toast(m){ const el = $("#toast"); el.textContent = m; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 3000); }
+
+/* ---------- التخزين ---------- */
+async function makeFirebase(){
+  const base = "https://www.gstatic.com/firebasejs/10.12.2/";
+  const [AP, A, F] = await Promise.all([import(base+"firebase-app.js"), import(base+"firebase-auth.js"), import(base+"firebase-firestore.js")]);
+  const app = AP.initializeApp(FIREBASE_CONFIG), auth = A.getAuth(app), db = F.getFirestore(app);
+  return {
+    onAuth(cb){ A.onAuthStateChanged(auth, async u => { if (!u) return cb(null);
+      const s = await F.getDoc(F.doc(db, "users", u.uid)).catch(() => null);
+      const p = s && s.exists() ? s.data() : (u.email || "").toLowerCase() === OWNER_EMAIL ? { name:"مدير التشغيل", role:"supervisor", active:true } : null;
+      cb(p && p.active !== false ? { uid:u.uid, ...p } : { blocked:true }); }); },
+    login:(e,p) => A.signInWithEmailAndPassword(auth, e, p),
+    async upload(meta, parts, onProgress){
+      const counter = F.doc(db, "meta", "archiveCounter");
+      const n = await F.runTransaction(db, async tx => { const c = await tx.get(counter); const n = (c.exists() ? c.data().n : 0) + 1; tx.set(counter, { n }); return n; });
+      const ref = "A-" + String(n).padStart(4, "0");
+      let done = 0;
+      for (const [id, d] of parts){ await F.setDoc(F.doc(db, "archive", ref, "chunks", id), { d }); onProgress(++done / parts.length); }
+      await F.setDoc(F.doc(db, "archive", ref), { ...meta, ref, no:n, createdAt:F.serverTimestamp() });
+      return ref;
+    },
+    async get(ref){ const d = await F.getDoc(F.doc(db, "archive", ref)); return d.exists() ? d.data() : null; },
+    async chunk(ref, id){ const d = await F.getDoc(F.doc(db, "archive", ref, "chunks", id)); return d.exists() ? d.data().d : ""; },
+    async recent(){ const q = F.query(F.collection(db, "archive"), F.orderBy("createdAt", "desc"), F.limit(20)); return (await F.getDocs(q)).docs.map(d => d.data()); },
+    async remove(ref, meta){ for (let fi = 0; fi < meta.files.length; fi++) for (let ci = 0; ci < meta.files[fi].chunks; ci++) await F.deleteDoc(F.doc(db, "archive", ref, "chunks", fi + "_" + ci)); await F.deleteDoc(F.doc(db, "archive", ref)); }
+  };
+}
+function makeDemo(){
+  const db = {}, chunks = {}; let n = 0;
+  return {
+    onAuth(cb){ cb({ uid:"sup", name:"خالد", role:"supervisor" }); },
+    async upload(meta, parts, onProgress){ const ref = "A-" + String(++n).padStart(4, "0"); parts.forEach(([id, d], i) => { chunks[ref + "/" + id] = d; onProgress((i + 1) / parts.length); }); db[ref] = { ...meta, ref, no:n, createdAt:Date.now() }; return ref; },
+    async get(ref){ return db[ref] || null; }, async chunk(ref, id){ return chunks[ref + "/" + id] || ""; },
+    async recent(){ return Object.values(db).sort((a,b) => b.no - a.no); }, async remove(ref){ delete db[ref]; }
+  };
+}
+
+/* ---------- قراءة وضغط الملفات ---------- */
+const readURL = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+async function prepare(f){
+  if (/^image\/(jpeg|png|webp)$/.test(f.type)){
+    const url = await readURL(f); const img = new Image(); img.src = url; await img.decode();
+    const k = Math.min(1, 1800 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const out = c.toDataURL("image/jpeg", .82);
+    if (out.length < url.length) return { name:f.name.replace(/\.(png|webp)$/i, ".jpg"), type:"image/jpeg", data:out };
+    return { name:f.name, type:f.type, data:url };
+  }
+  return { name:f.name, type:f.type || "application/octet-stream", data:await readURL(f) };
+}
+
+/* ---------- الواجهة ---------- */
+const api = DEMO ? makeDemo() : await makeFirebase();
+const app = $("#app");
+const task = new URLSearchParams(location.search).get("task") || "";
+let me = null, picked = [];
+
+api.onAuth(p => { me = p && !p.blocked ? p : null; if (!me) return renderLogin(p && p.blocked); render(); });
+
+function renderLogin(blocked){
+  app.innerHTML = `<div class="login"><form id="lf" novalidate><div style="display:flex;gap:10px;align-items:center"><span class="logo">م</span><h1 style="font-size:22px">أرشيف الملفات</h1></div>
+    <p class="hint">ادخل بنفس حساب سيستم المهام.</p>
+    <label>الإيميل<input id="le" type="email" dir="ltr" autocomplete="username"></label>
+    <label>كلمة السر<input id="lp" type="password" dir="ltr" autocomplete="current-password"></label>
+    <p class="err" id="lerr" ${blocked ? "" : "hidden"}>${blocked ? "الحساب ده مش متسجل أو متوقف." : ""}</p>
+    <button class="btn primary">دخول</button></form></div>`;
+  $("#lf").onsubmit = async e => { e.preventDefault(); try { await api.login($("#le").value.trim(), $("#lp").value); } catch { $("#lerr").textContent = "الإيميل أو كلمة السر غلط."; $("#lerr").hidden = false; } };
+}
+
+function render(){
+  app.innerHTML = `<header><div class="wrap"><span class="logo">م</span><div><h1>أرشيف الملفات</h1><span>${esc(me.name)}</span></div><a href="./">رجوع للمهام</a></div></header>
+  <main class="wrap">
+    <section class="card" aria-labelledby="upH"><h2 id="upH">رفع ملفات</h2>
+      <p class="hint">صور، PDF، أو أي ملف لحد ٦ ميجا. الصور بتتصغّر تلقائياً. كل رفعة بتاخد رقم واحد تلصقه في المهمة.</p>
+      <div class="drop" id="drop" tabindex="0" role="button"><b>اسحب الملفات هنا</b>أو دوس عشان تختار من الجهاز</div>
+      <input type="file" id="fileIn" multiple hidden>
+      <ul class="picked" id="picked"></ul>
+      <div class="row"><label>رقم المهمة (اختياري)<input type="text" id="taskNo" dir="ltr" value="${esc(task)}" placeholder="مثلاً 132"></label><label>وصف قصير (اختياري)<input type="text" id="note" placeholder="مثلاً: إيصال تحويل العميل"></label></div>
+      <div class="bar" id="bar" hidden><i></i></div>
+      <p class="err" id="upErr" hidden></p>
+      <div class="row"><button class="btn primary" id="upBtn" disabled>رفع للأرشيف</button></div>
+      <div id="upRes"></div>
+    </section>
+    <section class="card" aria-labelledby="fdH"><h2 id="fdH">البحث برقم الرفع</h2>
+      <div class="row"><input type="search" id="q" dir="ltr" placeholder="A-0012 أو 12"><button class="btn primary" id="qBtn">عرض</button></div>
+      <div id="found"><p class="hint">اكتب رقم الرفع عشان تشوف الملفات وتفتحها أو تنزّلها.</p></div>
+    </section>
+    <section class="card full" aria-labelledby="rcH"><h2 id="rcH">آخر الرفعات</h2><ul class="recent" id="recent"><li class="hint">بيحمّل…</li></ul></section>
+  </main>`;
+  const drop = $("#drop"), fi = $("#fileIn");
+  drop.onclick = () => fi.click(); drop.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); fi.click(); } };
+  fi.onchange = () => addFiles(fi.files);
+  ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+  $("#upBtn").onclick = doUpload;
+  $("#qBtn").onclick = () => find($("#q").value);
+  $("#q").onkeydown = e => { if (e.key === "Enter") find($("#q").value); };
+  loadRecent();
+  const h = decodeURIComponent(location.hash.slice(1)); if (h){ $("#q").value = h; find(h); }
+}
+window.addEventListener("hashchange", () => { const h = decodeURIComponent(location.hash.slice(1)); if (h && $("#q")){ $("#q").value = h; find(h); } });
+
+function addFiles(list){ picked.push(...list); drawPicked(); }
+function drawPicked(){
+  $("#picked").innerHTML = picked.map((f,i) => `<li><span>${esc(f.name)}</span><small>${size(f.size)}</small><button class="btn sm" data-rm="${i}" aria-label="شيل ${esc(f.name)}">✕</button></li>`).join("");
+  $("#picked").querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { picked.splice(+b.dataset.rm, 1); drawPicked(); });
+  $("#upBtn").disabled = !picked.length;
+}
+async function doUpload(){
+  const err = $("#upErr"), btn = $("#upBtn"), bar = $("#bar"); err.hidden = true;
+  btn.disabled = true; bar.hidden = false; bar.firstElementChild.style.width = "5%";
+  try {
+    const prepared = [];
+    for (const f of picked){ const p = await prepare(f); const bytes = Math.round(p.data.length * .75);
+      if (bytes > MAX_FILE) throw new Error("الملف «" + f.name + "» أكبر من ٦ ميجا. صغّره أو قسّمه."); prepared.push({ ...p, size:bytes }); }
+    const parts = [], files = [];
+    prepared.forEach((p, fi) => { const n = Math.ceil(p.data.length / CHUNK); files.push({ name:p.name, type:p.type, size:p.size, chunks:n });
+      for (let ci = 0; ci < n; ci++) parts.push([fi + "_" + ci, p.data.slice(ci * CHUNK, (ci + 1) * CHUNK)]); });
+    const meta = { files, note:$("#note").value.trim(), taskNo:$("#taskNo").value.trim(), by:me.uid, byName:me.name };
+    const ref = await api.upload(meta, parts, x => bar.firstElementChild.style.width = Math.max(5, x * 100) + "%");
+    picked = []; drawPicked(); $("#note").value = "";
+    $("#upRes").innerHTML = `<div class="result"><span>اترفع بنجاح. رقم الرفع:</span><span class="ref-big">${ref}</span>
+      <div class="row" style="justify-content:center"><button class="btn primary" id="copyRef">نسخ الرقم</button></div>
+      <span class="hint">الصق الرقم ده في خانة «المرفقات من الأرشيف» جوه المهمة${meta.taskNo ? " رقم " + esc(meta.taskNo) : ""}.</span><span class="hint" id="copyHint" hidden></span></div>`;
+    $("#copyRef").onclick = async () => { try { await navigator.clipboard.writeText(ref); toast("الرقم اتنسخ"); } catch { $("#copyHint").textContent = "انسخ الرقم يدوي: " + ref; $("#copyHint").hidden = false; } };
+    loadRecent();
+  } catch(x){ console.error(x); err.textContent = x.message && /ميجا/.test(x.message) ? x.message : "الرفع ما نجحش. اتأكد من النت وإن قواعد Firestore الجديدة اتنشرت."; err.hidden = false; }
+  finally { btn.disabled = !picked.length; setTimeout(() => bar.hidden = true, 600); }
+}
+async function loadRecent(){
+  try { const list = await api.recent();
+    $("#recent").innerHTML = list.length ? list.map(a => `<li><button class="r" data-ref="${esc(a.ref)}">${esc(a.ref)}</button><div class="d">${esc(a.files.map(f => f.name).join("، "))}<small>${esc(a.byName)} — ${when(a.createdAt)}${a.taskNo ? " — مهمة #" + esc(a.taskNo) : ""}${a.note ? " — " + esc(a.note) : ""}</small></div></li>`).join("") : `<li class="hint">لسه مفيش ملفات في الأرشيف.</li>`;
+    $("#recent").querySelectorAll("[data-ref]").forEach(b => b.onclick = () => { $("#q").value = b.dataset.ref; find(b.dataset.ref); $("#fdH").scrollIntoView({ behavior:"smooth" }); });
+  } catch(x){ console.error(x); $("#recent").innerHTML = `<li class="err">مش قادر يجيب آخر الرفعات.</li>`; }
+}
+async function fileURL(ref, f, fi){
+  let data = ""; for (let ci = 0; ci < f.chunks; ci++) data += await api.chunk(ref, fi + "_" + ci);
+  const blob = await (await fetch(data)).blob(); return URL.createObjectURL(blob);
+}
+async function find(v){
+  const ref = normRef(v), box = $("#found"); if (!ref) return;
+  box.innerHTML = `<p class="hint">بيدوّر على ${esc(ref)}…</p>`;
+  let a = null; try { a = await api.get(ref); } catch(x){ console.error(x); }
+  if (!a){ box.innerHTML = `<p class="err">رقم الرفع ${esc(ref)} مش موجود.</p>`; return; }
+  box.innerHTML = `<div class="meta"><b style="color:var(--ink);direction:ltr;display:inline-block">${esc(a.ref)}</b> — رفعه ${esc(a.byName)} ${when(a.createdAt)}${a.taskNo ? " — مهمة #" + esc(a.taskNo) : ""}${a.note ? "<br>" + esc(a.note) : ""}</div>
+    <div class="files">${a.files.map((f, i) => `<div class="file" data-fi="${i}"><div class="file-h"><b>${esc(f.name)}</b><span class="meta">${size(f.size)}</span><button class="btn sm primary" data-show="${i}">فتح</button></div><div class="view"></div></div>`).join("")}</div>
+    ${me.role === "supervisor" ? `<div class="row"><button class="btn danger sm" id="delRef">حذف الرفعة دي</button></div>` : ""}`;
+  box.querySelectorAll("[data-show]").forEach(b => b.onclick = async () => {
+    const i = +b.dataset.show, f = a.files[i], view = b.closest(".file").querySelector(".view"); b.disabled = true; b.textContent = "بيحمّل…";
+    try { const url = await fileURL(a.ref, f, i);
+      view.innerHTML = (f.type.startsWith("image/") ? `<img src="${url}" alt="${esc(f.name)}">` : "") + `<div class="row"><a class="btn sm" href="${url}" target="_blank" rel="noopener">فتح في صفحة جديدة</a><a class="btn sm" href="${url}" download="${esc(f.name)}">تنزيل</a></div>`;
+      b.remove();
+    } catch(x){ console.error(x); b.disabled = false; b.textContent = "فتح"; toast("ما قدرتش أفتح الملف"); }
+  });
+  const del = $("#delRef");
+  if (del) del.onclick = async () => { if (del.dataset.armed !== "1"){ del.dataset.armed = "1"; del.textContent = "اضغط تاني لتأكيد الحذف"; return; }
+    try { await api.remove(a.ref, a); box.innerHTML = `<p class="hint">الرفعة ${esc(a.ref)} اتحذفت.</p>`; loadRecent(); } catch(x){ console.error(x); toast("الحذف ما نجحش"); } };
+}
+</script>
+</body>
+</html>

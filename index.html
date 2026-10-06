@@ -13,7 +13,7 @@
   --bg:#edf2f2; --surface:#ffffff; --surface-2:#f4f7f7; --ink:#10252b; --muted:#5a6e74; --line:#d6e0e1;
   --brand:#0a4c54; --brand-2:#0e5f68; --brand-ink:#ffffff; --brand-muted:#a9cfd2;
   --accent:#0b7a80; --accent-ink:#ffffff; --accent-soft:#d8eeee; --gold:#d8961a;
-  --p-urgent:#c3312a; --p-high:#c66a0c; --p-normal:#2f69a6; --p-low:#77858b;
+  --p-immediate:#a3175a; --p-urgent:#c3312a; --p-high:#c66a0c; --p-normal:#2f69a6; --p-low:#77858b;
   --ok:#25804c; --warn:#a35f00; --on-hue:#ffffff;
   --t-hotel:#0f8a7e; --t-flight:#2f6fd1; --t-visa:#8a4fc4; --t-transport:#d46a12; --t-program:#3a943a; --t-umrah:#b0840c; --t-follow:#4b7795; --t-other:#7a868a;
   --shadow:0 14px 44px rgba(10,40,46,.2);
@@ -24,7 +24,7 @@
   --bg:#0c1417; --surface:#132025; --surface-2:#18272d; --ink:#e2ebed; --muted:#8fa3a9; --line:#243840;
   --brand:#0a3439; --brand-2:#10454b; --brand-ink:#e9f6f6; --brand-muted:#8cbcc0;
   --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440;
-  --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
+  --p-immediate:#f27cb0; --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
   --ok:#62c48b; --warn:#e8b257; --on-hue:#0c1417;
   --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3;
   --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}}
@@ -32,7 +32,7 @@
   --bg:#0c1417; --surface:#132025; --surface-2:#18272d; --ink:#e2ebed; --muted:#8fa3a9; --line:#243840;
   --brand:#0a3439; --brand-2:#10454b; --brand-ink:#e9f6f6; --brand-muted:#8cbcc0;
   --accent:#41b5b0; --accent-ink:#04201e; --accent-soft:#113a3c; --gold:#f0b440;
-  --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
+  --p-immediate:#f27cb0; --p-urgent:#f07468; --p-high:#eb9d47; --p-normal:#77a7dc; --p-low:#9aa8ad;
   --ok:#62c48b; --warn:#e8b257; --on-hue:#0c1417;
   --t-hotel:#3fc2b3; --t-flight:#79a6f0; --t-visa:#b98ae8; --t-transport:#f0a05a; --t-program:#78c978; --t-umrah:#e3bb4b; --t-follow:#8fb4cf; --t-other:#a3afb3;
   --shadow:0 14px 44px rgba(0,0,0,.55); color-scheme:dark}
@@ -50,7 +50,7 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.3
 
 /* hue helpers: color per travel type / person */
 .c-hotel{--h:var(--t-hotel)}.c-flight{--h:var(--t-flight)}.c-visa{--h:var(--t-visa)}.c-transport{--h:var(--t-transport)}.c-program{--h:var(--t-program)}.c-umrah{--h:var(--t-umrah)}.c-follow{--h:var(--t-follow)}.c-other{--h:var(--t-other)}
-.p-urgent{--h:var(--p-urgent)}.p-high{--h:var(--p-high)}.p-normal{--h:var(--p-normal)}.p-low{--h:var(--p-low)}
+.p-immediate{--h:var(--p-immediate)}.p-urgent{--h:var(--p-urgent)}.p-high{--h:var(--p-high)}.p-normal{--h:var(--p-normal)}.p-low{--h:var(--p-low)}
 .s-new{--h:var(--p-urgent)}.s-assigned{--h:var(--p-normal)}.s-in_progress{--h:var(--accent)}.s-pending_approval{--h:var(--warn)}.s-closed{--h:var(--ok)}
 .tag,.pill,.pri{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;color:var(--h);background:color-mix(in srgb,var(--h) 14%,transparent)}
 .pri::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
@@ -60,6 +60,7 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.3
 /* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;font-weight:500;white-space:nowrap}
 .btn:hover{border-color:var(--muted)}
+a.btn{text-decoration:none;color:var(--ink)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.primary:hover,.btn.ok:hover{filter:brightness(1.08)}
 .btn.ok{background:var(--ok);border-color:var(--ok);color:var(--surface)}
@@ -276,6 +277,35 @@ main{padding-bottom:56px}
 .demo-pick .btn{justify-content:space-between}
 .demo-pick .btn span{color:var(--muted);font-size:13px}
 
+/* urgent section, day summary, handoff, files */
+.hot{margin-top:18px;border-radius:16px;padding:12px;background:color-mix(in srgb,var(--p-urgent) 8%,var(--bg));border:1px solid color-mix(in srgb,var(--p-urgent) 30%,transparent)}
+.hot-h{display:flex;align-items:center;gap:8px;color:var(--p-urgent);font:600 16px/1.3 var(--f-display);padding:2px 4px 4px}
+.hot .group:first-of-type{margin-top:8px}
+.today{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.today h2{grid-column:1/-1;font-size:16px}
+.today div{display:flex;flex-direction:column;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--h) 10%,transparent);min-width:0}
+.today b{font:600 22px/1.2 var(--f-display);color:var(--h);font-variant-numeric:tabular-nums}
+.today span{font-size:12px;color:var(--muted)}
+.flag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:1px 8px;border-radius:6px;color:var(--h);background:color-mix(in srgb,var(--h) 12%,transparent)}
+.f-hand{--h:var(--t-visa)}.f-ext{--h:var(--warn)}.f-stale{--h:var(--t-transport)}.f-file{--h:var(--t-follow)}
+.handbox{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;background:color-mix(in srgb,var(--t-visa) 10%,var(--surface))}
+.handbox textarea,.extbox textarea,.extbox input{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface);min-width:0;width:100%}
+.extbox{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;background:color-mix(in srgb,var(--warn) 10%,var(--surface))}
+.files{display:flex;flex-direction:column;gap:8px}
+.file-chips{display:flex;gap:6px;flex-wrap:wrap}
+.file-chips a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;color:var(--t-follow);background:color-mix(in srgb,var(--t-follow) 12%,transparent);direction:ltr}
+.check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+/* deadline popup */
+.dl-modal{position:fixed;inset:0;z-index:35;display:grid;place-items:center;padding:16px;background:rgba(60,8,8,.55)}
+.dl-card{width:min(520px,100%);max-height:calc(100% - 16px);overflow-y:auto;background:var(--surface);border-radius:18px;box-shadow:var(--shadow);border-top:6px solid var(--p-urgent);display:flex;flex-direction:column}
+.dl-top{display:flex;gap:12px;align-items:flex-start;padding:18px 18px 8px}
+.dl-top .ic{width:34px;height:34px;color:var(--p-urgent)}
+.dl-top h2{font-size:20px;color:var(--p-urgent)}
+.dl-top p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.dl-item{margin:8px 18px;padding:12px;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;gap:8px}
+.dl-item b{overflow-wrap:anywhere}
+.dl-foot{padding:10px 18px 18px;display:flex;justify-content:flex-start}
+@media (prefers-reduced-motion:no-preference){ .dl-card{animation:pop .25s ease-out} @keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}} }
 #toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:10px;z-index:40;font-size:14px;max-width:calc(100% - 32px)}
 
 @media (max-width:760px){
@@ -289,6 +319,7 @@ main{padding-bottom:56px}
   .cal-items{display:none}
   .cal-dots{display:flex}
   .cal-dn{font-size:11px;padding:6px 2px}
+  .today{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:620px){
   .row{grid-template-columns:auto 1fr}
@@ -317,7 +348,7 @@ const FIREBASE_CONFIG = {
   appId: "1:773091705898:web:4ae08acc81d0067dd2ef53",
   measurementId: "G-L67YQQZ8VH"
 };
-// صاحب السيستم (المشرف). أول دخول بالإيميل ده بيعمل له حساب مشرف تلقائياً
+// صاحب السيستم (مدير التشغيل). أول دخول بالإيميل ده بيعمل له الحساب تلقائياً
 const OWNER_EMAIL = "khaledalhadedy001@gmail.com";
 /* ================================== */
 
@@ -325,11 +356,12 @@ const OWNER_EMAIL = "khaledalhadedy001@gmail.com";
 const DEMO = !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("PASTE") || /claude|anthropic|^file:/.test(location.protocol === "file:" ? "file:" : location.hostname);
 document.documentElement.dir = "rtl"; document.documentElement.lang = "ar";
 
-const PRI = { urgent:{l:"عاجل جداً",r:0}, high:{l:"أولوية عالية",r:1}, normal:{l:"عادية",r:2}, low:{l:"منخفضة",r:3} };
+const PRI = { immediate:{l:"فوري",r:0}, urgent:{l:"عاجل جداً",r:1}, high:{l:"أولوية عالية",r:2}, normal:{l:"عادية",r:3}, low:{l:"منخفضة",r:4} };
+const HOT = t => t.priority === "immediate" || t.priority === "urgent";
 const ST = { new:"بانتظار التوزيع", assigned:"تم التوزيع", in_progress:"جاري التنفيذ", pending_approval:"بانتظار الاعتماد", closed:"مغلقة" };
 const TYPES = [["حجز فندق","hotel"],["طيران","flight"],["تأشيرة","visa"],["نقل ومواصلات","transport"],["برنامج سياحي","program"],["عمرة / حج","umrah"],["متابعة عميل","follow"],["أخرى","other"]];
 const typeCls = t => (TYPES.find(x => x[0] === t) || [0,"other"])[1];
-const ROLE = { supervisor:"مشرف التشغيل", manager:"المدير", employee:"موظف" };
+const ROLE = { supervisor:"مدير التشغيل", manager:"المدير الأعلى", employee:"موظف" };
 const AVC = ["hotel","flight","visa","transport","program","umrah","follow"];
 const NOW = { __now:true };
 const MIN = 60e3, HOUR = 3600e3, DAY = 864e5;
@@ -414,12 +446,12 @@ async function makeFirebase(){
     const ref = F.doc(db, "users", u.uid);
     let s = await F.getDoc(ref);
     if (!s.exists() && (u.email||"").toLowerCase() === OWNER_EMAIL.toLowerCase()){
-      await F.setDoc(ref, { name:"المشرف", email:u.email, role:"supervisor", active:true, createdAt:F.serverTimestamp() });
+      await F.setDoc(ref, { name:"مدير التشغيل", email:u.email, role:"supervisor", active:true, createdAt:F.serverTimestamp() });
       s = await F.getDoc(ref);
     }
-    if (!s.exists()) return { blocked:"الحساب ده مش متسجل في السيستم. كلم المشرف." };
+    if (!s.exists()) return { blocked:"الحساب ده مش متسجل في السيستم. كلم مدير التشغيل." };
     const p = { uid:u.uid, ...s.data() };
-    if (p.active === false) return { blocked:"الحساب ده متوقف. كلم المشرف." };
+    if (p.active === false) return { blocked:"الحساب ده متوقف. كلم مدير التشغيل." };
     return p;
   }
   return {
@@ -429,8 +461,14 @@ async function makeFirebase(){
     logout:() => A.signOut(auth),
     watchTasks(me, cb){
       const col = F.collection(db, "tasks");
-      const q = me.role === "employee" ? F.query(col, F.where("assignedTo","==",me.uid)) : col;
-      return F.onSnapshot(q, s => cb(s.docs.map(withId)), e => { console.error(e); toast("مش قادر يقرا المهام"); });
+      const err = e => { console.error(e); toast("مش قادر يقرا المهام"); };
+      if (me.role !== "employee") return F.onSnapshot(col, s => cb(s.docs.map(withId)), err);
+      // الموظف: المهام اللي عليه + المهام اللي حوّل جزء منها لزميل
+      let a = [], b = [];
+      const emit = () => { const m = new Map(); [...a, ...b].forEach(t => m.set(t.id, t)); cb([...m.values()]); };
+      const u1 = F.onSnapshot(F.query(col, F.where("assignedTo","==",me.uid)), s => { a = s.docs.map(withId); emit(); }, err);
+      const u2 = F.onSnapshot(F.query(col, F.where("returnTo","==",me.uid)), s => { b = s.docs.map(withId); emit(); }, e => console.warn(e));
+      return () => { u1(); u2(); };
     },
     watchUsers(cb){ return F.onSnapshot(F.collection(db,"users"), s => cb(s.docs.map(d => ({ uid:d.id, ...d.data() }))), e => console.error(e)); },
     watchUpdates(id, cb){ return F.onSnapshot(F.query(F.collection(db,"tasks",id,"updates"), F.orderBy("createdAt")), s => cb(s.docs.map(withId)), e => console.error(e)); },
@@ -461,7 +499,8 @@ async function makeFirebase(){
       } finally { await AP.deleteApp(sec); }
     },
     updateUser:(uid, patch) => F.updateDoc(F.doc(db,"users",uid), patch),
-    resetPassword:email => A.sendPasswordResetEmail(auth, email)
+    resetPassword:email => A.sendPasswordResetEmail(auth, email),
+    async lookupArchive(ref){ const d = await F.getDoc(F.doc(db,"archive",ref)); return d.exists() ? d.data() : null; }
   };
 }
 
@@ -511,12 +550,18 @@ function makeDemo(){
     [["mgr","event","أنشأ المهمة",24],["sup","event","وزّع المهمة على منى",23],["e2","event","بدأ التنفيذ",20],["e2","note","التذاكر اتصدرت واتبعتت للعميل على الواتساب",2],["e2","event","أنهى المهمة وأرسلها للاعتماد",2]]);
   seed({ title:"متابعة تأشيرة عمرة لعملاء شركة النور", type:"عمرة / حج", priority:"urgent", status:"new", client:"شركة النور - ١٢ معتمر", dueH:26, details:"الجوازات وصلت المكتب امبارح. لازم نتابع مع الوكيل النهارده." },
     [["mgr","event","أنشأ المهمة",1]]);
+  seed({ title:"عميل في المطار ومحتاج تأكيد حجز الفندق حالاً", type:"حجز فندق", priority:"immediate", status:"in_progress", client:"أ. وليد منصور", phone:"01005556677", assignedTo:"e2", assignedToName:"منى", dueH:0.4 },
+    [["sup","event","أنشأ المهمة ووزّعها على منى",1],["e2","event","بدأ التنفيذ",0.8]]);
+  seed({ title:"تجهيز ملف تأشيرة شنجن لعائلة رأفت", type:"تأشيرة", priority:"high", status:"in_progress", client:"عائلة رأفت - ٤ أفراد", assignedTo:"e2", assignedToName:"منى", returnTo:"e1", returnToName:"سارة", handoffNote:"محتاجة منك تحجزي ميعاد السفارة بس، والباقي عندي", dueH:30, files:["A-0007"] },
+    [["sup","event","أنشأ المهمة ووزّعها على سارة",30],["e1","event","بدأ التنفيذ",26],["e1","note","الأوراق كلها جاهزة ماعدا ميعاد السفارة",5],["e1","event","حوّلت جزء من المهمة لـ منى:\nمحتاجة منك تحجزي ميعاد السفارة بس، والباقي عندي",4]]);
+  seed({ title:"تجميع جوازات وفد العمرة وتسليمها للوكيل", type:"عمرة / حج", priority:"normal", status:"in_progress", client:"وفد شركة النور", assignedTo:"e1", assignedToName:"سارة", dueH:2, extReq:{ at:now + 26*HOUR, reason:"باقي ٣ جوازات العملاء هيسلموها بكرة الصبح", by:"e1", byName:"سارة", reqAt:now - 0.5*HOUR } },
+    [["sup","event","وزّع المهمة على سارة",20],["e1","event","بدأ التنفيذ",18],["e1","event","طلبت مد الوقت: باقي ٣ جوازات العملاء هيسلموها بكرة الصبح",0.5]]);
   seed({ title:"حجز فندق الإسكندرية لرحلة الموظفين آخر الشهر", type:"حجز فندق", priority:"normal", status:"assigned", client:"رحلة الشركة", assignedTo:"e1", assignedToName:"سارة", dueH:24*9 },
     [["sup","event","أنشأ المهمة ووزّعها على سارة",5]]);
 
   let me = null, authCb = () => {};
   const tSubs = new Set(), uSubs = new Set(), upSubs = new Map();
-  const visible = m => m.role === "employee" ? tasks.filter(t => t.assignedTo === m.uid) : tasks;
+  const visible = m => m.role === "employee" ? tasks.filter(t => t.assignedTo === m.uid || t.returnTo === m.uid) : tasks;
   const emitT = () => tSubs.forEach(s => s.cb(visible(s.me).map(t => ({ ...t }))));
   const emitU = () => uSubs.forEach(cb => cb(users.map(u => ({ ...u }))));
   const emitUp = id => (upSubs.get(id) || new Set()).forEach(cb => cb([...(updates[id] || [])]));
@@ -540,7 +585,8 @@ function makeDemo(){
     deleteTask(id){ return later(() => { tasks.splice(tasks.findIndex(t => t.id === id), 1); emitT(); }); },
     createUser({ name, email, role }){ return later(() => { users.push({ uid:"u"+Date.now(), name, email, role, active:true }); emitU(); }); },
     updateUser(uid, patch){ return later(() => { Object.assign(U(uid), patch); emitU(); }); },
-    resetPassword(){ return later(() => {}); }
+    resetPassword(){ return later(() => {}); },
+    lookupArchive(ref){ return later(() => ({ ref, files:[{ name:"ملف تجريبي.pdf" }] })); }
   };
 }
 
@@ -559,7 +605,7 @@ api.onAuth(p => {
   S.view = "list"; S.tab = "open"; S.emp = ""; S.q = "";
   renderShell();
   S.unsub.push(api.watchTasks(S.me, ts => { S.tasks = ts; renderView(); if (S.openId) renderDetail(); checkAlerts(S.firstLoad); S.firstLoad = false; }));
-  if (S.me.role !== "employee") S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); }));
+  S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); }));
 });
 setInterval(() => { if (S.me){ checkAlerts(false); if (S.view !== "perf") renderView(true); } }, 30e3);
 
@@ -623,18 +669,26 @@ function renderView(soft){
 }
 
 /* ---------- القائمة ---------- */
+const mine = t => t.assignedTo === S.me.uid;
+const lent = t => t.returnTo === S.me.uid && !mine(t);
+const STALE = 4 * HOUR;
+const isStale = t => t.status === "in_progress" && Date.now() - ms(t.lastUpdateAt || t.updatedAt) > STALE;
+const isOpenFor = t => t.status !== "closed" && (S.me.role !== "employee" || (t.status !== "pending_approval" || lent(t)));
 function tabDefs(){
-  const r = S.me.role, T = S.tasks, open = T.filter(t => t.status !== "closed");
-  const c = { new:T.filter(t => t.status === "new").length, approval:T.filter(t => t.status === "pending_approval").length, late:T.filter(isLate).length, closed:T.filter(t => t.status === "closed").length };
+  const r = S.me.role, T = S.tasks, open = T.filter(isOpenFor);
+  const c = { hot:open.filter(HOT).length, new:T.filter(t => t.status === "new").length, approval:T.filter(t => t.status === "pending_approval" || t.extReq).length,
+    late:T.filter(t => isLate(t) && (r !== "employee" || mine(t))).length, closed:T.filter(t => t.status === "closed").length };
   if (r === "employee") return [
-    { k:"open", l:"مهامي المفتوحة", n:open.filter(t => t.status !== "pending_approval").length, s:"s-in_progress" },
+    { k:"open", l:"مهامي المفتوحة", n:open.length, s:"s-in_progress" },
+    { k:"hot", l:"عاجل وفوري", n:c.hot, s:"p-immediate" },
     { k:"late", l:"متأخرة", n:c.late, s:"s-new" },
-    { k:"approval", l:"مستنية الاعتماد", n:c.approval, s:"s-pending_approval" },
+    { k:"approval", l:"مستنية الاعتماد", n:T.filter(t => t.status === "pending_approval" || (t.extReq && mine(t))).length, s:"s-pending_approval" },
     { k:"closed", l:"اتقفلت", n:c.closed, s:"s-closed" } ];
   return [
     { k:"open", l:"كل المفتوحة", n:open.length, s:"s-in_progress" },
+    { k:"hot", l:"عاجل وفوري", n:c.hot, s:"p-immediate" },
     { k:"new", l:"غير موزعة", n:c.new, s:"s-assigned" },
-    { k:"approval", l: r === "supervisor" ? "بانتظار اعتمادك" : "بانتظار الاعتماد", n:c.approval, s:"s-pending_approval" },
+    { k:"approval", l: r === "supervisor" ? "مستني قرارك" : "بانتظار الاعتماد", n:c.approval, s:"s-pending_approval" },
     { k:"late", l:"متأخرة", n:c.late, s:"s-new" },
     { k:"closed", l:"المغلقة", n:c.closed, s:"s-closed" } ];
 }
@@ -648,31 +702,48 @@ function staff(){ return S.users.filter(u => u.active !== false && (u.role === "
 function renderToolbar(){
   const tb = $("#toolbar"); if (!tb) return;
   const empSel = S.me.role === "employee" ? "" : `<select id="empFilter" aria-label="فلترة بالموظف"><option value="">كل الموظفين</option>${staff().map(u => `<option value="${u.uid}" ${S.emp === u.uid ? "selected" : ""}>${esc(u.name)}</option>`).join("")}</select>`;
-  tb.innerHTML = `<input id="search" type="search" placeholder="بحث باسم العميل أو رقم المهمة أو التليفون" value="${esc(S.q)}">${empSel}`;
+  tb.innerHTML = `<input id="search" type="search" placeholder="بحث باسم العميل أو رقم المهمة أو التليفون أو رقم الأرشيف" value="${esc(S.q)}">${empSel}`;
   $("#search").oninput = e => { S.q = e.target.value; renderBoard(); };
   $("#empFilter") && ($("#empFilter").onchange = e => { S.emp = e.target.value; renderBoard(); });
 }
 function filtered(){
-  let t = S.tasks; const k = S.tab;
-  if (k === "open") t = t.filter(x => x.status !== "closed" && (S.me.role !== "employee" || x.status !== "pending_approval"));
+  let t = S.tasks; const k = S.tab, emp = S.me.role === "employee";
+  if (k === "open") t = t.filter(isOpenFor);
+  else if (k === "hot") t = t.filter(x => isOpenFor(x) && HOT(x));
   else if (k === "new") t = t.filter(x => x.status === "new");
-  else if (k === "approval") t = t.filter(x => x.status === "pending_approval");
-  else if (k === "late") t = t.filter(isLate);
+  else if (k === "approval") t = t.filter(x => x.status === "pending_approval" || (x.extReq && (!emp || mine(x))));
+  else if (k === "late") t = t.filter(x => isLate(x) && (!emp || mine(x)));
   else if (k === "closed") t = t.filter(x => x.status === "closed");
-  if (S.emp) t = t.filter(x => x.assignedTo === S.emp);
+  if (S.emp) t = t.filter(x => x.assignedTo === S.emp || x.returnTo === S.emp);
   if (S.q.trim()){ const q = S.q.trim().toLowerCase();
-    t = t.filter(x => [x.title, x.client, x.phone, x.details, x.type, x.assignedToName, "#"+x.no, String(x.no)].some(v => v && String(v).toLowerCase().includes(q))); }
+    t = t.filter(x => [x.title, x.client, x.phone, x.details, x.type, x.assignedToName, "#"+x.no, String(x.no), ...(x.files || [])].some(v => v && String(v).toLowerCase().includes(q))); }
   if (k === "closed") return t.sort((a,b) => ms(b.closedAt) - ms(a.closedAt));
   return t.sort(byPriority);
 }
-const byPriority = (a,b) => PRI[a.priority].r - PRI[b.priority].r || (dueMs(a) || 9e15) - (dueMs(b) || 9e15) || ms(a.createdAt) - ms(b.createdAt);
+const byPriority = (a,b) => (PRI[a.priority] || PRI.normal).r - (PRI[b.priority] || PRI.normal).r || (dueMs(a) || 9e15) - (dueMs(b) || 9e15) || ms(a.createdAt) - ms(b.createdAt);
 function quickBtn(t){
   const r = S.me.role;
-  if (r === "employee"){ if (t.status === "assigned") return `<button class="qbtn" data-quick="start" data-id="${t.id}">ابدأ</button>`;
+  if (r === "employee" && mine(t)){
+    if (t.returnTo) return `<button class="qbtn" data-quick="open" data-id="${t.id}">رجّعها لـ${esc(t.returnToName)}</button>`;
+    if (t.status === "assigned") return `<button class="qbtn" data-quick="start" data-id="${t.id}">ابدأ</button>`;
     if (t.status === "in_progress") return `<button class="qbtn ok" data-quick="done" data-id="${t.id}">خلصت</button>`; }
-  if (r === "supervisor"){ if (t.status === "pending_approval") return `<button class="qbtn ok" data-quick="open" data-id="${t.id}">اعتماد</button>`;
+  if (r === "supervisor"){
+    if (t.extReq) return `<button class="qbtn" data-quick="open" data-id="${t.id}">طلب مد</button>`;
+    if (t.status === "pending_approval") return `<button class="qbtn ok" data-quick="open" data-id="${t.id}">اعتماد</button>`;
     if (t.status === "new") return `<button class="qbtn" data-quick="open" data-id="${t.id}">توزيع</button>`; }
   return "";
+}
+function flags(t){
+  const out = [];
+  if (t.returnTo && t.status !== "closed"){
+    if (mine(t)) out.push(`<span class="flag f-hand">جزء محوّل ليك من ${esc(t.returnToName)}</span>`);
+    else if (t.returnTo === S.me.uid) out.push(`<span class="flag f-hand">عند ${esc(t.assignedToName)} — هترجعلك</span>`);
+    else out.push(`<span class="flag f-hand">جزء مع ${esc(t.assignedToName)}، هترجع لـ${esc(t.returnToName)}</span>`);
+  }
+  if (t.extReq) out.push(`<span class="flag f-ext">طلب مد وقت</span>`);
+  if (isStale(t)) out.push(`<span class="flag f-stale">مفيش تحديث من ${span(Date.now() - ms(t.lastUpdateAt || t.updatedAt))}</span>`);
+  if (t.files && t.files.length) out.push(`<span class="flag f-file">${fmtNum(t.files.length)} ${t.files.length === 1 ? "مرفق" : "مرفقات"}</span>`);
+  return out.join("");
 }
 function rowHtml(t){
   const d = dueInfo(t);
@@ -680,25 +751,49 @@ function rowHtml(t){
     ${t.assignedTo ? avatar(t.assignedToName, t.assignedTo) : `<span class="av c-other" aria-hidden="true">؟</span>`}
     <div class="row-main"><div class="row-top"><span class="ref">#${pad(t.no)}</span><span class="row-title">${esc(t.title)}</span></div>
       <div class="row-meta"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span>${t.client ? `<span>${esc(t.client)}</span>` : ""}<span>${t.assignedTo ? "مع " + esc(t.assignedToName) : "لسه ما اتوزعتش"}</span>${t.status === "closed" && t.rating ? starsSm(t.rating) : ""}</div>
+      ${flags(t) ? `<div class="row-meta">${flags(t)}</div>` : ""}
       ${t.lastUpdate ? `<div class="row-last">${esc(t.lastUpdateBy)}: ${esc(t.lastUpdate)} — ${ago(t.lastUpdateAt)}</div>` : ""}</div>
     <div class="row-side"><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}${quickBtn(t)}</div></div>`;
 }
+function todayHtml(){
+  const T = S.tasks, now = Date.now(), r = S.me.role;
+  if (r === "employee"){
+    const my = T.filter(t => mine(t) && t.status !== "closed" && t.status !== "pending_approval");
+    const cells = [["متأخرة", my.filter(isLate).length, "s-new"], ["قرّب ميعادها", my.filter(t => dueMs(t) >= now && dueMs(t) - now <= alertBefore()).length, "s-pending_approval"],
+      ["ميعادها النهارده", my.filter(t => dueMs(t) && dayKey(dueMs(t)) === dayKey(now)).length, "s-assigned"], ["محوّلة ليك من زميل", my.filter(t => t.returnTo).length, "f-hand"]];
+    return `<section class="today" aria-label="ملخص يومك"><h2>ملخص يومك يا ${esc(S.me.name)}</h2>${cells.map(([l,n,c]) => `<div class="${c}"><b>${fmtNum(n)}</b><span>${l}</span></div>`).join("")}</section>`;
+  }
+  if (r === "supervisor"){
+    const cells = [["مستنية اعتمادك", T.filter(t => t.status === "pending_approval").length, "s-pending_approval"], ["طلبات مد وقت", T.filter(t => t.extReq).length, "f-ext"],
+      ["متأخرة", T.filter(isLate).length, "s-new"], ["مفيش تحديث من ٤ ساعات", T.filter(isStale).length, "f-stale"]];
+    return `<section class="today" aria-label="محتاج انتباهك"><h2>محتاج انتباهك النهارده</h2>${cells.map(([l,n,c]) => `<div class="${c}"><b>${fmtNum(n)}</b><span>${l}</span></div>`).join("")}</section>`;
+  }
+  return "";
+}
+const groupsHtml = list => Object.keys(PRI).map(p => ({ p, items:list.filter(t => (PRI[t.priority] ? t.priority : "normal") === p) })).filter(g => g.items.length)
+  .map(g => `<section class="group"><h3 class="group-h p-${g.p}">${PRI[g.p].l} (${fmtNum(g.items.length)})</h3><div class="list">${g.items.map(rowHtml).join("")}</div></section>`).join("");
 function renderBoard(){
   if (!$("#board")) return;
   renderTabs();
-  const late = S.tasks.filter(isLate).filter(t => S.me.role !== "employee" || t.status !== "pending_approval");
+  const late = S.tasks.filter(t => isLate(t) && (S.me.role !== "employee" || (mine(t) && t.status !== "pending_approval")));
   $("#strip").innerHTML = late.length && S.tab !== "late" ? `<button class="alert-strip" data-tab="late">${ic("alert")}${S.me.role === "employee" ? "عندك" : "فيه"} ${fmtNum(late.length)} ${late.length === 1 ? "مهمة متأخرة" : "مهام متأخرة"} عن ميعادها<span>اعرضها</span></button>` : "";
-  const list = filtered();
+  const list = filtered(), plain = !S.q && !S.emp;
+  const summary = S.tab === "open" && plain ? todayHtml() : "";
   if (!list.length){
-    const msg = { open:["مفيش مهام مفتوحة", S.me.role === "employee" ? "أول ما المشرف يوزع عليك مهمة هتظهر هنا." : "اضغط «مهمة جديدة» عشان تضيف أول مهمة."],
-      new:["كل المهام اتوزعت","مفيش حاجة مستنية توزيع."], approval:["مفيش حاجة مستنية اعتماد","المهام اللي الموظفين يخلصوها هتظهر هنا."],
+    const msg = { open:["مفيش مهام مفتوحة", S.me.role === "employee" ? "أول ما مدير التشغيل يوزع عليك مهمة هتظهر هنا." : "اضغط «مهمة جديدة» عشان تضيف أول مهمة."],
+      hot:["مفيش مهام عاجلة دلوقتي","المهام اللي أولويتها «فوري» أو «عاجل جداً» بتظهر هنا."],
+      new:["كل المهام اتوزعت","مفيش حاجة مستنية توزيع."], approval:["مفيش حاجة مستنية قرار","المهام اللي اتخلصت وطلبات مد الوقت بتظهر هنا."],
       late:["مفيش مهام متأخرة","كل المواعيد ماشية تمام."], closed:["مفيش مهام مغلقة لسه",""] }[S.tab];
-    $("#board").innerHTML = `<div class="list" style="margin-top:16px"><div class="empty"><b>${S.q || S.emp ? "مفيش نتايج" : msg[0]}</b>${S.q || S.emp ? "جرّب كلمة بحث تانية أو شيل الفلتر." : msg[1]}</div></div>`;
+    $("#board").innerHTML = summary + `<div class="list" style="margin-top:16px"><div class="empty"><b>${plain ? msg[0] : "مفيش نتايج"}</b>${plain ? msg[1] : "جرّب كلمة بحث تانية أو شيل الفلتر."}</div></div>`;
     return;
   }
   if (S.tab === "closed"){ $("#board").innerHTML = `<div class="list" style="margin-top:16px">${list.map(rowHtml).join("")}</div>`; return; }
-  const groups = Object.keys(PRI).map(p => ({ p, items:list.filter(t => t.priority === p) })).filter(g => g.items.length);
-  $("#board").innerHTML = groups.map(g => `<section class="group"><h3 class="group-h p-${g.p}">${PRI[g.p].l} (${fmtNum(g.items.length)})</h3><div class="list">${g.items.map(rowHtml).join("")}</div></section>`).join("");
+  if (S.tab === "open"){
+    const hot = list.filter(HOT), rest = list.filter(t => !HOT(t));
+    $("#board").innerHTML = summary + (hot.length ? `<section class="hot" aria-label="العاجل والفوري"><h2 class="hot-h">${ic("alert")}العاجل والفوري (${fmtNum(hot.length)})</h2>${groupsHtml(hot)}</section>` : "") + groupsHtml(rest);
+    return;
+  }
+  $("#board").innerHTML = groupsHtml(list);
 }
 
 /* ---------- الكاليندر ---------- */
@@ -763,51 +858,90 @@ function renderPerf(){
       ${s.recent.length ? `<ul class="recent">${s.recent.map(t => `<li>${starsSm(t.rating)}<span>${esc(t.ratingNote || t.title)}</span></li>`).join("")}</ul>` : ""}</article>`; }).join("");
   main.innerHTML = `<div class="perf-head"><h2>${S.me.role === "employee" ? "أدائي" : "أداء الفريق"}</h2>
       <div class="chips-row">${[["this","الشهر ده"],["last","الشهر اللي فات"],["all","من الأول"]].map(([k,l]) => `<button class="chip ${S.perf === k ? "on" : ""}" data-perf="${k}">${l}</button>`).join("")}</div></div>
-    <p class="perf-note">التقييم من ٥ نجوم بيتحط لما المشرف يعتمد إغلاق المهمة. «في ميعادها» يعني اتقفلت قبل ميعاد التنفيذ.</p>
+    <p class="perf-note">التقييم من ٥ نجوم بيتحط لما مدير التشغيل يعتمد إغلاق المهمة. «في ميعادها» يعني اتقفلت قبل ميعاد التنفيذ.</p>
     <div class="perf-grid">${cards || `<div class="list"><div class="empty"><b>مفيش موظفين لسه</b>ضيف الموظفين من زرار «الفريق».</div></div>`}</div>`;
 }
 
 /* ---------- التنبيهات ---------- */
+const repeatEvery = () => store.get("repeat", 15) * MIN;
 function alertList(){
-  const now = Date.now(), lim = alertBefore();
-  const mine = S.tasks.filter(t => t.status !== "closed" && dueMs(t) && !(S.me.role === "employee" && t.status === "pending_approval"));
-  return { late: mine.filter(t => dueMs(t) < now).sort((a,b) => dueMs(a) - dueMs(b)),
-           soon: mine.filter(t => dueMs(t) >= now && dueMs(t) - now <= lim).sort((a,b) => dueMs(a) - dueMs(b)) };
+  const now = Date.now(), lim = alertBefore(), emp = S.me.role === "employee";
+  const pool = S.tasks.filter(t => t.status !== "closed" && t.status !== "pending_approval" && dueMs(t) && (!emp || mine(t)));
+  return { late: pool.filter(t => dueMs(t) < now).sort((a,b) => dueMs(a) - dueMs(b)),
+           soon: pool.filter(t => dueMs(t) >= now && dueMs(t) - now <= lim).sort((a,b) => dueMs(a) - dueMs(b)),
+           ext: emp ? [] : S.tasks.filter(t => t.extReq && t.status !== "closed") };
 }
+const escalating = new Set();
 function checkAlerts(silent){
   if (!S.me) return;
-  const { late, soon } = alertList();
-  const b = $("#bellBadge"); if (b){ const n = late.length + soon.length; b.hidden = !n; b.textContent = fmtNum(n); }
+  const { late, soon, ext } = alertList(), now = Date.now();
+  const b = $("#bellBadge"); if (b){ const n = late.length + soon.length + ext.length; b.hidden = !n; b.textContent = fmtNum(n); }
   if ($(".pop")) renderPop();
+  // 1) إشعار مرة واحدة لكل تغيير حالة
   const seen = store.get("seen:" + S.me.uid, {}), fresh = [];
   late.forEach(t => { const k = t.id + ":late"; if (seen[k] !== dueMs(t)){ seen[k] = dueMs(t); fresh.push([t,"late"]); } });
   soon.forEach(t => { const k = t.id + ":soon"; if (seen[k] !== dueMs(t)){ seen[k] = dueMs(t); fresh.push([t,"soon"]); } });
+  ext.forEach(t => { const k = t.id + ":ext"; if (seen[k] !== ms(t.extReq.reqAt)){ seen[k] = ms(t.extReq.reqAt); fresh.push([t,"ext"]); } });
   store.set("seen:" + S.me.uid, seen);
+  // 2) لو المهمة بتاعتي عدّى ميعادها: سجل في السجل وابعت للإدارة (مرة واحدة)
+  late.filter(t => mine(t) && !t.escalatedAt && !escalating.has(t.id)).forEach(t => { escalating.add(t.id);
+    runAct(t, "escalate", { silent:true }); });
+  // 3) الشاشة المنبثقة للمهام اللي عليّا، وبتتكرر كل فترة لحد ما تتحدث
+  const myHot = [...late, ...soon].filter(t => mine(t) && !t.extReq);
+  const freshMine = fresh.some(([t,k]) => k !== "ext" && mine(t));
+  const lastPop = store.get("lastPop:" + S.me.uid, 0);
+  if (myHot.length && !$(".dl-modal") && (freshMine || now - lastPop >= repeatEvery() || silent && now - lastPop >= 5*MIN)){
+    store.set("lastPop:" + S.me.uid, now); showDeadline(myHot);
+    beep(); notifyDevice(myHot[0], dueMs(myHot[0]) < now ? "مهمة عدّى ميعادها" : "مهمة قرّب ميعادها", myHot.length);
+    return;
+  }
   if (silent || !fresh.length) return;
-  const [t, k] = fresh.find(f => f[1] === "late") || fresh[0];
-  const title = k === "late" ? "مهمة عدّى ميعادها" : "مهمة قرّب ميعادها";
-  const body = `#${pad(t.no)} ${t.title}` + (fresh.length > 1 ? ` (و${fmtNum(fresh.length - 1)} غيرها)` : "");
-  toast(title + ": " + body); beep();
-  try { if ("Notification" in window && Notification.permission === "granted"){ const n = new Notification(title, { body, tag:"ops-" + t.id }); n.onclick = () => { window.focus(); openTask(t.id); }; } } catch {}
+  const [t, k] = fresh.find(f => f[1] === "late") || fresh.find(f => f[1] === "ext") || fresh[0];
+  const title = k === "late" ? "مهمة عدّى ميعادها" : k === "ext" ? "طلب مد وقت من " + t.extReq.byName : "مهمة قرّب ميعادها";
+  toast(title + ": #" + pad(t.no) + " " + t.title); beep(); notifyDevice(t, title, fresh.length);
+}
+function notifyDevice(t, title, n){
+  const body = `#${pad(t.no)} ${t.title}` + (n > 1 ? ` (و${fmtNum(n - 1)} غيرها)` : "");
+  try { if ("Notification" in window && Notification.permission === "granted"){ const x = new Notification(title, { body, tag:"ops-" + t.id, requireInteraction:true }); x.onclick = () => { window.focus(); openTask(t.id); }; } } catch {}
+}
+function showDeadline(list){
+  const now = Date.now(), anyLate = list.some(t => dueMs(t) < now);
+  const m = document.createElement("div"); m.className = "dl-modal"; m.setAttribute("role","alertdialog"); m.setAttribute("aria-modal","true");
+  m.innerHTML = `<div class="dl-card"><div class="dl-top">${ic("alert")}<div><h2>${anyLate ? "فيه مهمة عدّى ميعادها" : "ميعاد مهمة قرّب يخلص"}</h2>
+      <p>${anyLate ? "اتبعت إشعار للإدارة إن المهمة اتأخرت. حدّث الحالة دلوقتي أو اطلب مد الوقت." : "لو الميعاد عدّى من غير ما المهمة تخلص، هيتبعت إشعار للإدارة تلقائياً. حدّث الحالة أو اطلب مد الوقت."}</p></div></div>
+    ${list.slice(0,4).map(t => { const d = dueInfo(t); return `<div class="dl-item"><b>#${pad(t.no)} ${esc(t.title)}</b><span class="due ${d.cls}">${ic("clock")}${d.txt}</span>
+      <div class="act-row"><button class="btn primary sm" data-dl-open="${t.id}">فتح وتحديث الحالة</button><button class="btn sm" data-dl-ext="${t.id}">طلب مد الوقت</button>${t.status === "in_progress" && !t.returnTo ? `<button class="btn ok sm" data-dl-done="${t.id}">خلصت</button>` : ""}</div></div>`; }).join("")}
+    <div class="dl-foot"><button class="btn ghost" data-dl-close>هتابعها — فكّرني تاني بعد ${span(repeatEvery())}</button></div></div>`;
+  m.addEventListener("click", async e => {
+    const o = e.target.closest("[data-dl-open]"), x = e.target.closest("[data-dl-ext]"), d = e.target.closest("[data-dl-done]");
+    if (o){ m.remove(); openTask(o.dataset.dlOpen); }
+    else if (x){ m.remove(); openTask(x.dataset.dlExt); S.extOpen = true; renderDetail(); }
+    else if (d){ const t = S.tasks.find(z => z.id === d.dataset.dlDone); d.disabled = true; if (t && await runAct(t, "done", {})) { d.closest(".dl-item").remove(); if (!m.querySelector(".dl-item")) m.remove(); } }
+    else if (e.target.closest("[data-dl-close]")) m.remove();
+  });
+  document.body.appendChild(m);
 }
 function togglePop(){ if ($(".pop")) closePop(); else { const p = document.createElement("div"); p.className = "pop"; p.setAttribute("role","dialog"); p.setAttribute("aria-label","التنبيهات"); document.body.appendChild(p); renderPop(); } }
 function closePop(){ const p = $(".pop"); if (p) p.remove(); }
 function renderPop(){
   const p = $(".pop"); if (!p) return;
-  const { late, soon } = alertList();
+  const { late, soon, ext } = alertList();
   const item = t => `<button class="pop-item" data-open="${t.id}"><b>#${pad(t.no)} ${esc(t.title)}</b><span class="due ${dueInfo(t).cls}">${dueInfo(t).txt}${t.assignedToName ? " — مع " + esc(t.assignedToName) : ""}</span></button>`;
   const perm = !("Notification" in window) ? "unsupported" : Notification.permission;
   p.innerHTML = `${late.length ? `<h3 class="late">عدّى ميعادها (${fmtNum(late.length)})</h3>${late.map(item).join("")}` : ""}
     ${soon.length ? `<h3 class="soon">قرّب ميعادها (${fmtNum(soon.length)})</h3>${soon.map(item).join("")}` : ""}
-    ${!late.length && !soon.length ? `<div class="pop-empty">مفيش تنبيهات دلوقتي. كل المهام ماشية في ميعادها.</div>` : ""}
+    ${ext.length ? `<h3 class="soon">طلبات مد وقت (${fmtNum(ext.length)})</h3>${ext.map(t => `<button class="pop-item" data-open="${t.id}"><b>#${pad(t.no)} ${esc(t.title)}</b><span class="due">${esc(t.extReq.byName)}: ${esc(t.extReq.reason)}</span></button>`).join("")}` : ""}
+    ${!late.length && !soon.length && !ext.length ? `<div class="pop-empty">مفيش تنبيهات دلوقتي. كل المهام ماشية في ميعادها.</div>` : ""}
     <div class="pop-set">
       <label for="alertBefore">نبّهني قبل الميعاد بـ <select id="alertBefore">${[[15,"ربع ساعة"],[30,"نص ساعة"],[60,"ساعة"],[120,"ساعتين"],[240,"٤ ساعات"],[1440,"يوم"]].map(([v,l]) => `<option value="${v}" ${store.get("before",60) === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label for="alertRepeat">كرر التذكير كل <select id="alertRepeat">${[[5,"٥ دقايق"],[10,"١٠ دقايق"],[15,"ربع ساعة"],[30,"نص ساعة"],[60,"ساعة"]].map(([v,l]) => `<option value="${v}" ${store.get("repeat",15) === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
       <label><input type="checkbox" id="alertSound" ${store.get("sound", true) ? "checked" : ""}> صوت تنبيه</label>
       ${perm === "granted" ? `<span>إشعارات الجهاز شغالة.</span>` : perm === "denied" ? `<span>إشعارات الجهاز مقفولة من إعدادات المتصفح.</span>` : perm === "unsupported" ? `<span>المتصفح ده مش بيدعم إشعارات الجهاز، هتظهر التنبيهات جوه الصفحة بس.</span>` : `<button class="btn sm" id="enableNotif">${ic("bell")}تفعيل إشعارات الجهاز</button>`}
       <span class="hint">التنبيهات بتشتغل طول ما الصفحة مفتوحة.</span>
     </div>`;
   $("#alertBefore").onchange = e => { store.set("before", +e.target.value); store.set("seen:" + S.me.uid, {}); checkAlerts(false); renderView(true); };
   $("#alertSound").onchange = e => store.set("sound", e.target.checked);
+  $("#alertRepeat").onchange = e => store.set("repeat", +e.target.value);
   $("#enableNotif") && ($("#enableNotif").onclick = async () => { try { await Notification.requestPermission(); } catch {} renderPop(); });
 }
 
@@ -831,14 +965,14 @@ document.addEventListener("click", async e => {
   if ($(".pop") && !t.closest(".pop") && !t.closest("#btnBell")) closePop();
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape"){ if ($(".modal")) $(".modal").remove(); else if ($(".pop")) closePop(); else if (sheetEl) closeTask(); }
+  if (e.key === "Escape"){ if ($(".dl-modal")) $(".dl-modal").remove(); else if ($(".modal")) $(".modal").remove(); else if ($(".pop")) closePop(); else if (sheetEl) closeTask(); }
   if ((e.key === "Enter" || e.key === " ") && e.target.matches(".row[data-open]")){ e.preventDefault(); openTask(e.target.dataset.open); }
 });
 
 /* ---------- تفاصيل المهمة ---------- */
 function openTask(id){
   closeTask();
-  S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0;
+  S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0; S.handOpen = false;
   const qs = QUICK[S.me.role] || [];
   sheetEl = document.createElement("div");
   sheetEl.innerHTML = `<div class="backdrop" data-close></div>
@@ -860,86 +994,178 @@ function openTask(id){
 function closeTask(){
   if (S.unsubUpd) S.unsubUpd(); S.unsubUpd = null;
   if (sheetEl){ sheetEl.remove(); sheetEl = null; }
-  S.openId = null;
+  S.openId = null; S.extOpen = false;
 }
 const starsPick = () => `<div class="stars" role="radiogroup" aria-label="التقييم">${[1,2,3,4,5].map(i => `<button type="button" data-star="${i}" class="${i <= S.stars ? "on" : ""}" aria-label="${i} من ٥">${ic("star","fill")}</button>`).join("")}</div>`;
+const inputCss = 'style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface);min-width:0"';
+const EXT_QUICK = [["ساعة كمان", t => Math.max(dueMs(t) || 0, Date.now()) + HOUR], ["٣ ساعات كمان", t => Math.max(dueMs(t) || 0, Date.now()) + 3*HOUR], ["لبكرة", () => { const d = new Date(Date.now() + DAY); d.setHours(14,0,0,0); return d.getTime(); }]];
+function extHtml(t){
+  if (!mine(t) || !["assigned","in_progress"].includes(t.status)) return "";
+  if (t.extReq) return `<p class="hint">طلبت مد الوقت لحد ${fullDate(t.extReq.at)}، ومستني رد مدير التشغيل.</p>`;
+  if (!S.extOpen) return `<div class="act-row"><button class="btn sm" data-act="extToggle">${ic("clock")}طلب مد الوقت</button></div>`;
+  return `<div class="extbox" id="extBox"><b>طلب مد الوقت</b>
+    <div class="chips-row">${EXT_QUICK.map((q,i) => `<button type="button" class="chip" data-extq="${i}">${q[0]}</button>`).join("")}</div>
+    <input type="datetime-local" id="extAt" aria-label="الميعاد الجديد" value="${toInput(EXT_QUICK[0][1](t))}">
+    <textarea id="extReason" rows="2" placeholder="السبب (مطلوب) — مثلاً: مستني رد الفندق"></textarea>
+    <div class="act-row"><button class="btn primary" data-act="extreq">إرسال الطلب لمدير التشغيل</button><button class="btn ghost" data-act="extToggle">إلغاء</button></div></div>`;
+}
+function handHtml(t){
+  if (t.status === "closed") return "";
+  if (mine(t) && t.returnTo) return `<div class="handbox"><b>المهمة جاتلك من ${esc(t.returnToName)} عشان تخلص جزء منها</b>${t.handoffNote ? `<p class="tl-text" style="margin:0">${esc(t.handoffNote)}</p>` : ""}
+    <p class="hint">لما تخلص الجزء بتاعك اكتب اللي عملته في خانة التحديث تحت ودوس الزرار. السجل كله هيفضل معاها.</p>
+    <div class="act-row"><button class="btn primary" data-act="giveback">خلصت الجزء بتاعي — رجّعها لـ${esc(t.returnToName)}</button></div></div>`;
+  if (lent(t)) return `<div class="handbox"><b>المهمة دلوقتي عند ${esc(t.assignedToName)}</b>${t.handoffNote ? `<p class="tl-text" style="margin:0">${esc(t.handoffNote)}</p>` : ""}<p class="hint">هترجعلك أول ما يخلص الجزء بتاعه، وتقدر تتابع وتكتب ملاحظات هنا.</p></div>`;
+  if (S.me.role === "employee" && mine(t) && ["assigned","in_progress"].includes(t.status)){
+    if (!S.handOpen) return `<div class="act-row"><button class="btn sm" data-act="handToggle">${ic("users")}تحويل جزء لزميل</button></div>`;
+    const mates = S.users.filter(u => u.active !== false && u.role === "employee" && u.uid !== S.me.uid);
+    return `<div class="handbox"><b>تحويل جزء من المهمة لزميل</b><p class="hint">زميلك هيشوف المهمة بكل تحديثاتها، ولما يخلص الجزء بتاعه بيرجّعهالك.</p>
+      <select id="handSel" ${inputCss}><option value="">اختار الزميل…</option>${mates.map(u => `<option value="${u.uid}">${esc(u.name)}</option>`).join("")}</select>
+      <textarea id="handNote" rows="2" placeholder="المطلوب منه بالظبط (مطلوب)"></textarea>
+      <div class="act-row"><button class="btn primary" data-act="handoff">تحويل الجزء</button><button class="btn ghost" data-act="handToggle">إلغاء</button></div></div>`;
+  }
+  return "";
+}
+function filesHtml(t){
+  const can = S.me.role !== "employee" || mine(t) || lent(t);
+  const list = t.files || [];
+  if (!can && !list.length) return "";
+  return `<section class="files"><h3 class="timeline-h">المرفقات من الأرشيف</h3>
+    ${list.length ? `<div class="file-chips">${list.map(r => `<a href="archive.html#${encodeURIComponent(r)}" target="_blank" rel="noopener">${esc(r)}</a>${S.me.role === "supervisor" ? `<button class="btn ghost sm" data-unlink="${esc(r)}" aria-label="شيل ${esc(r)}">✕</button>` : ""}`).join("")}</div>` : `<p class="hint">مفيش ملفات مربوطة لسه.</p>`}
+    ${can && t.status !== "closed" ? `<div class="act-row"><input id="fileRef" dir="ltr" placeholder="الصق رقم الرفع، مثلاً A-0012" ${inputCss}><button class="btn" data-act="link">ربط</button><a class="btn sm" href="archive.html?task=${t.no}" target="_blank" rel="noopener">رفع ملف للأرشيف</a></div>` : ""}</section>`;
+}
 function actionsHtml(t){
   const r = S.me.role, st = t.status, out = [];
   if (r === "supervisor"){
-    if (st === "pending_approval") out.push(`<div class="approve-box"><b>${esc(t.assignedToName)} خلّص المهمة</b><p class="hint">قيّم الشغل واعتمد الإغلاق. ولو فيه حاجة ناقصة، اكتب السبب تحت ورجّعها.</p>${starsPick()}<input id="rateNote" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface)" placeholder="ملاحظة على التقييم (اختياري)"><div class="act-row"><button class="btn ok" data-act="approve">اعتماد وإغلاق</button><button class="btn" data-act="return">إرجاع للموظف</button></div></div>`);
+    if (t.extReq) out.push(`<div class="extbox"><b>${esc(t.extReq.byName)} طالب مد الوقت</b><span>من ${dueMs(t) ? fullDate(dueMs(t)) : "—"} لحد <b>${fullDate(t.extReq.at)}</b></span><p class="tl-text" style="margin:0">السبب: ${esc(t.extReq.reason)}</p>
+      <div class="act-row"><button class="btn ok" data-act="extok">موافقة على المد</button><button class="btn" data-act="extno">رفض</button></div></div>`);
+    if (st === "pending_approval") out.push(`<div class="approve-box"><b>${esc(t.assignedToName)} خلّص المهمة</b><p class="hint">قيّم الشغل واعتمد الإغلاق. ولو فيه حاجة ناقصة، اكتب السبب تحت ورجّعها.</p>${starsPick()}<input id="rateNote" ${inputCss} placeholder="ملاحظة على التقييم (اختياري)"><div class="act-row"><button class="btn ok" data-act="approve">اعتماد وإغلاق</button><button class="btn" data-act="return">إرجاع للموظف</button></div></div>`);
     if (st !== "closed"){
-      out.push(`<div class="act-row"><select id="assignSel" aria-label="توزيع على"><option value="">${t.assignedTo ? "تحويل لموظف تاني…" : "اختار الموظف…"}</option>${staff().filter(u => u.uid !== t.assignedTo).map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select><button class="btn primary" data-act="assign">${t.assignedTo ? "تحويل" : "توزيع"}</button></div>`);
+      if (t.returnTo) out.push(`<div class="handbox"><b>جزء من المهمة مع ${esc(t.assignedToName)}</b><span class="hint">هترجع لـ${esc(t.returnToName)} لما يخلص.${t.handoffNote ? " المطلوب: " + esc(t.handoffNote) : ""}</span><div class="act-row"><button class="btn sm" data-act="recall">رجّعها لـ${esc(t.returnToName)} دلوقتي</button></div></div>`);
+      out.push(`<div class="act-row"><select id="assignSel" aria-label="توزيع على"><option value="">${t.assignedTo ? "تحويل لموظف تاني…" : "اختار الموظف…"}</option>${staff().filter(u => u.uid !== t.assignedTo).map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select><button class="btn primary" data-act="assign">${t.assignedTo ? "تحويل" : "توزيع"}</button></div>
+        ${t.assignedTo && !t.returnTo ? `<label class="check"><input type="checkbox" id="partialChk"> تحويل جزء بس، وترجع لـ${esc(t.assignedToName)} بعد ما يخلص</label>` : ""}`);
       out.push(`<div class="act-row"><select id="priSel" aria-label="الأولوية">${Object.keys(PRI).map(p => `<option value="${p}" ${t.priority === p ? "selected" : ""}>الأولوية: ${PRI[p].l}</option>`).join("")}</select></div>`);
       out.push(`<div class="act-row"><input type="datetime-local" id="dueEdit" aria-label="ميعاد التنفيذ" value="${dueMs(t) ? toInput(dueMs(t)) : ""}"><button class="btn" data-act="due">${ic("clock")}${dueMs(t) ? "تغيير الميعاد" : "تحديد ميعاد"}</button></div>`);
+      if (mine(t)) out.push(extHtml(t));
       if (st === "in_progress" || st === "assigned") out.push(`<div class="act-row"><button class="btn" data-act="approve">إغلاق المهمة مباشرة</button></div>`);
     }
-    if (st === "closed" && !t.rating) out.push(`<p class="hint">المهمة اتقفلت من غير تقييم. تقدر تقيّمها دلوقتي:</p>${starsPick()}<input id="rateNote" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface)" placeholder="ملاحظة (اختياري)"><div class="act-row"><button class="btn primary" data-act="rate">حفظ التقييم</button></div>`);
+    if (st === "closed" && !t.rating) out.push(`<p class="hint">المهمة اتقفلت من غير تقييم. تقدر تقيّمها دلوقتي:</p>${starsPick()}<input id="rateNote" ${inputCss} placeholder="ملاحظة (اختياري)"><div class="act-row"><button class="btn primary" data-act="rate">حفظ التقييم</button></div>`);
     if (st === "closed") out.push(`<div class="act-row"><button class="btn" data-act="reopen">إعادة فتح</button></div>`);
     out.push(`<div class="act-row"><button class="btn danger sm ${S.armedDel ? "armed" : ""}" data-act="delete">${S.armedDel ? "اضغط تاني لتأكيد الحذف" : "حذف المهمة"}</button></div>`);
   } else if (r === "employee"){
-    if (st === "assigned") out.push(`<div class="act-row"><button class="btn primary" data-act="start">بدء التنفيذ</button></div>`);
-    if (st === "in_progress") out.push(`<p class="hint">لما تخلص اكتب ملخص اللي عملته تحت (اختياري) واضغط الزرار.</p><div class="act-row"><button class="btn ok" data-act="done">خلصت — إرسال للاعتماد</button></div>`);
-    if (st === "pending_approval") out.push(`<p class="hint">المهمة مستنية اعتماد المشرف. هتفضل ظاهرة لحد ما يقفلها.</p>`);
+    out.push(handHtml(t));
+    if (mine(t) && !t.returnTo){
+      if (st === "assigned") out.push(`<div class="act-row"><button class="btn primary" data-act="start">بدء التنفيذ</button></div>`);
+      if (st === "in_progress") out.push(`<p class="hint">لما تخلص اكتب ملخص اللي عملته تحت (اختياري) واضغط الزرار.</p><div class="act-row"><button class="btn ok" data-act="done">خلصت — إرسال للاعتماد</button></div>`);
+    }
+    out.push(extHtml(t));
+    if (st === "pending_approval") out.push(`<p class="hint">المهمة مستنية اعتماد مدير التشغيل. هتفضل ظاهرة لحد ما يقفلها.</p>`);
   } else {
-    if (st === "new") out.push(`<p class="hint">المهمة وصلت للمشرف ومستنية التوزيع.</p>`);
-    else if (st !== "closed") out.push(`<p class="hint">تقدر تكتب ملاحظة أو تستخدم الردود السريعة تحت، وهتوصل للمشرف والموظف.</p>`);
+    if (st === "new") out.push(`<p class="hint">المهمة وصلت لمدير التشغيل ومستنية التوزيع.</p>`);
+    else if (st !== "closed") out.push(`<p class="hint">تقدر تكتب ملاحظة أو تستخدم الردود السريعة تحت، وهتوصل لمدير التشغيل والموظف.</p>`);
+    if (t.extReq) out.push(`<p class="hint">${esc(t.extReq.byName)} طالب مد الوقت لحد ${fullDate(t.extReq.at)}: ${esc(t.extReq.reason)}</p>`);
   }
-  return out.length ? `<section class="actions"><h3>الإجراءات</h3>${out.join("")}</section>` : "";
+  const html = out.filter(Boolean).join("");
+  return html ? `<section class="actions"><h3>الإجراءات</h3>${html}</section>` : "";
 }
 function renderDetail(){
   if (!sheetEl) return;
   const t = S.tasks.find(x => x.id === S.openId);
   if (!t){ closeTask(); return; }
-  const keepNote = $("#rateNote") ? $("#rateNote").value : "";
+  const keep = {}; $("#sheetBody").querySelectorAll("input[id],textarea[id],select[id]").forEach(el => keep[el.id] = el.type === "checkbox" ? el.checked : el.value);
   const d = dueInfo(t);
   $("#sheetRef").textContent = "#" + pad(t.no);
   const facts = [["العميل", esc(t.client)], ["مع", t.assignedTo ? avatar(t.assignedToName, t.assignedTo) + esc(t.assignedToName) : "لسه ما اتوزعتش"],
     ["أرسلها", esc(t.createdByName)], ["اتعملت", fullDate(t.createdAt)], ["ميعاد التنفيذ", dueMs(t) ? fullDate(dueMs(t)) : ""],
     t.closedAt && t.status === "closed" ? ["اتقفلت", fullDate(t.closedAt)] : null].filter(f => f && f[1]);
   $("#sheetBody").innerHTML = `
-    <div class="d-head"><h2>${esc(t.title)}</h2><div class="chips"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span><span class="pri p-${t.priority}">${PRI[t.priority].l}</span><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}</div></div>
+    <div class="d-head"><h2>${esc(t.title)}</h2><div class="chips"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span><span class="pri p-${PRI[t.priority] ? t.priority : "normal"}">${(PRI[t.priority] || PRI.normal).l}</span><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}${flags(t)}</div></div>
     ${t.phone ? `<div class="contact"><a href="tel:${esc(t.phone)}">${ic("phone")}<span dir="ltr">${esc(t.phone)}</span></a><a class="wa" href="${waLink(t.phone)}" target="_blank" rel="noopener">${ic("chat")}واتساب العميل</a></div>` : ""}
     <dl class="facts">${facts.map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
     ${t.details ? `<p class="details">${esc(t.details)}</p>` : ""}
-    ${t.rating ? `<div class="rated"><span>${starsSm(t.rating)} تقييم المشرف</span>${t.ratingNote ? `<span>${esc(t.ratingNote)}</span>` : ""}</div>` : ""}
+    ${t.rating ? `<div class="rated"><span>${starsSm(t.rating)} تقييم مدير التشغيل</span>${t.ratingNote ? `<span>${esc(t.ratingNote)}</span>` : ""}</div>` : ""}
     ${actionsHtml(t)}
+    ${filesHtml(t)}
     <section><h3 class="timeline-h">سجل المتابعة</h3>
       <ol class="timeline">${S.updates.map(u => `<li class="${u.kind}"><div class="tl-meta"><b>${esc(u.byName)}</b> (${ROLE[u.role] || ""}) — ${ago(u.createdAt)}</div><div class="tl-text">${esc(u.text)}</div></li>`).join("") || `<li class="event"><div class="tl-text">لسه مفيش تحديثات.</div></li>`}</ol></section>`;
-  if ($("#rateNote")) $("#rateNote").value = keepNote;
-  $("#composer").hidden = t.status === "closed" && S.me.role === "employee";
+  for (const id in keep){ const el = document.getElementById(id); if (el && id !== "priSel" && id !== "dueEdit"){ if (el.type === "checkbox") el.checked = keep[id]; else el.value = keep[id]; } }
+  const ro = S.me.role === "employee" && !mine(t) && !lent(t);
+  $("#composer").hidden = (t.status === "closed" && S.me.role === "employee") || ro;
+  if (S.extOpen && $("#extBox")){ $("#extBox").scrollIntoView({ block:"center" }); }
 }
 function onSheetClick(e){
   if (e.target.closest("[data-close]")) return closeTask();
   const s = e.target.closest("[data-star]");
   if (s){ S.stars = +s.dataset.star; sheetEl.querySelectorAll("[data-star]").forEach(b => b.classList.toggle("on", +b.dataset.star <= S.stars)); return; }
+  const q = e.target.closest("[data-extq]");
+  if (q){ const t = S.tasks.find(x => x.id === S.openId); $("#extAt").value = toInput(EXT_QUICK[+q.dataset.extq][1](t)); sheetEl.querySelectorAll("[data-extq]").forEach(b => b.classList.toggle("on", b === q)); return; }
+  const un = e.target.closest("[data-unlink]"); if (un) return doAct("unlink", un, un.dataset.unlink);
   const rp = e.target.closest("[data-reply]"); if (rp) return doAct("note", rp, rp.dataset.reply);
-  const b = e.target.closest("[data-act]"); if (b) doAct(b.dataset.act, b);
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  if (b.dataset.act === "extToggle"){ S.extOpen = !S.extOpen; return renderDetail(); }
+  if (b.dataset.act === "handToggle"){ S.handOpen = !S.handOpen; return renderDetail(); }
+  doAct(b.dataset.act, b);
 }
 async function doAct(kind, btn, val){
   const t = S.tasks.find(x => x.id === S.openId); if (!t) return;
   const txtEl = $("#updText");
   const opts = { text: kind === "note" && val ? val : txtEl.value.trim(), val, btn };
   const ok = await runAct(t, kind, opts);
-  if (ok && ["note","done","approve","return","reopen","rate"].includes(kind) && !(kind === "note" && val)) txtEl.value = "";
+  if (ok && ["note","done","approve","return","reopen","rate","giveback","extno"].includes(kind) && !(kind === "note" && val)) txtEl.value = "";
+  if (ok && kind === "extreq") S.extOpen = false;
+  if (ok && kind === "handoff") S.handOpen = false;
 }
-async function runAct(t, kind, { text = "", val, btn } = {}){
+function normRef(v){ v = String(v || "").trim().toUpperCase().replace(/\s/g, ""); if (/^\d+$/.test(v)) v = "A-" + v.padStart(4, "0"); if (/^A\d+$/.test(v)) v = "A-" + v.slice(1).padStart(4, "0"); return v; }
+async function runAct(t, kind, { text = "", val, btn, silent } = {}){
   const me = S.me; let patch = {}, entry = null;
   switch (kind){
     case "note": if (!text){ toast("اكتب التحديث الأول"); return false; } entry = { kind:"note", text }; break;
     case "assign": {
       const uid = $("#assignSel").value; if (!uid){ toast("اختار الموظف الأول"); return false; }
+      const u = S.users.find(x => x.uid === uid), partial = $("#partialChk") && $("#partialChk").checked;
+      if (partial){
+        patch = { assignedTo:uid, assignedToName:u.name, returnTo:t.assignedTo, returnToName:t.assignedToName, handoffNote:text, status: t.status === "new" ? "assigned" : t.status };
+        entry = { kind:"event", text:"حوّل جزء من المهمة لـ" + u.name + "، وهترجع لـ" + t.assignedToName + (text ? ":\n" + text : "") };
+      } else {
+        patch = { assignedTo:uid, assignedToName:u.name, assignedAt:NOW, returnTo:"", returnToName:"", handoffNote:"", status: t.status === "new" ? "assigned" : t.status };
+        entry = { kind:"event", text:(t.assignedTo ? "حوّل المهمة من " + t.assignedToName + " إلى " : "وزّع المهمة على ") + u.name };
+      } break; }
+    case "handoff": {
+      const uid = $("#handSel").value, note = $("#handNote").value.trim();
+      if (!uid){ toast("اختار الزميل الأول"); return false; } if (!note){ toast("اكتب المطلوب من زميلك"); $("#handNote").focus(); return false; }
       const u = S.users.find(x => x.uid === uid);
-      patch = { assignedTo:uid, assignedToName:u.name, assignedAt:NOW, status: t.status === "new" ? "assigned" : t.status };
-      entry = { kind:"event", text:(t.assignedTo ? "حوّل المهمة من " + t.assignedToName + " إلى " : "وزّع المهمة على ") + u.name }; break; }
+      patch = { assignedTo:uid, assignedToName:u.name, returnTo:me.uid, returnToName:me.name, handoffNote:note };
+      entry = { kind:"event", text:"حوّل جزء من المهمة لـ" + u.name + ":\n" + note }; break; }
+    case "giveback": case "recall":
+      patch = { assignedTo:t.returnTo, assignedToName:t.returnToName, returnTo:"", returnToName:"", handoffNote:"" };
+      entry = { kind:"event", text:(kind === "giveback" ? "خلّص الجزء بتاعه ورجّع المهمة لـ" : "رجّع المهمة لـ") + t.returnToName + (text ? ":\n" + text : "") }; break;
     case "priority": patch = { priority:val }; entry = { kind:"event", text:"غيّر الأولوية إلى «" + PRI[val].l + "»" }; break;
     case "due": { const v = $("#dueEdit").value; if (!v){ toast("اختار الميعاد الأول"); return false; }
-      const at = new Date(v).getTime(); patch = { dueAt:at }; entry = { kind:"event", text:"حدد ميعاد التنفيذ: " + fullDate(at) }; break; }
+      const at = new Date(v).getTime(); patch = { dueAt:at, escalatedAt:null }; entry = { kind:"event", text:"حدد ميعاد التنفيذ: " + fullDate(at) }; break; }
+    case "extreq": {
+      const v = $("#extAt").value, reason = $("#extReason").value.trim();
+      if (!v){ toast("اختار الميعاد الجديد"); return false; } if (!reason){ toast("اكتب سبب طلب المد"); $("#extReason").focus(); return false; }
+      const at = new Date(v).getTime();
+      patch = { extReq:{ at, reason, by:me.uid, byName:me.name, reqAt:Date.now() } };
+      entry = { kind:"event", text:"طلب مد الوقت لحد " + fullDate(at) + "\nالسبب: " + reason }; break; }
+    case "extok": patch = { dueAt:t.extReq.at, extReq:null, escalatedAt:null }; entry = { kind:"event", text:"وافق على مد الوقت لحد " + fullDate(t.extReq.at) }; break;
+    case "extno": patch = { extReq:null }; entry = { kind:"event", text:"رفض طلب مد الوقت" + (text ? ":\n" + text : "") }; break;
+    case "escalate": patch = { escalatedAt:NOW }; entry = { kind:"event", text:"عدّى ميعاد التنفيذ والمهمة لسه ما خلصتش — اتبعت تنبيه للإدارة" }; break;
+    case "link": {
+      const ref = normRef($("#fileRef").value); if (!ref){ toast("الصق رقم الرفع الأول"); return false; }
+      if ((t.files || []).includes(ref)){ toast("الملف ده مربوط بالفعل"); return false; }
+      if (btn) btn.disabled = true;
+      let info = null; try { info = await api.lookupArchive(ref); } catch(x){ console.error(x); }
+      if (btn) btn.disabled = false;
+      if (!info){ toast("رقم الرفع " + ref + " مش موجود في الأرشيف"); return false; }
+      patch = { files:[...(t.files || []), ref] };
+      entry = { kind:"event", text:"ربط ملف من الأرشيف: " + ref + (info.files && info.files.length ? " (" + info.files.map(f => f.name).join("، ") + ")" : "") }; break; }
+    case "unlink": patch = { files:(t.files || []).filter(r => r !== val) }; entry = { kind:"event", text:"شال ربط الملف " + val }; break;
     case "start": patch = { status:"in_progress" }; entry = { kind:"event", text:"بدأ التنفيذ" }; break;
     case "done": patch = { status:"pending_approval" }; entry = { kind:"event", text:"أنهى المهمة وأرسلها للاعتماد" + (text ? ":\n" + text : "") }; break;
     case "approve": case "rate": {
       const note = $("#rateNote") ? $("#rateNote").value.trim() : "";
       if (kind === "rate" && !S.stars){ toast("اختار عدد النجوم الأول"); return false; }
-      patch = kind === "approve" ? { status:"closed", closedAt:NOW, closedBy:me.name } : {};
+      patch = kind === "approve" ? { status:"closed", closedAt:NOW, closedBy:me.name, extReq:null } : {};
       if (S.stars){ patch.rating = S.stars; patch.ratingNote = note; }
       entry = { kind:"event", text:(kind === "approve" ? "اعتمد الإغلاق" : "قيّم المهمة") + (S.stars ? " — التقييم " + fmtNum(S.stars) + " من ٥" : "") + (note ? ": " + note : "") + (text ? "\n" + text : "") }; break; }
     case "return": if (!text){ $("#updText").focus(); toast("اكتب سبب الإرجاع في خانة التحديث تحت"); return false; }
@@ -953,10 +1179,12 @@ async function runAct(t, kind, { text = "", val, btn } = {}){
   if (btn) btn.disabled = true;
   try {
     await api.act(t.id, me, patch, entry);
-    toast({ note:"التحديث اتبعت", assign:"المهمة اتوزعت", priority:"الأولوية اتغيرت", due:"الميعاد اتحدد", start:"بالتوفيق!", done:"اتبعتت للمشرف للاعتماد", approve:"المهمة اتقفلت", rate:"التقييم اتحفظ", return:"المهمة رجعت للموظف", reopen:"المهمة اتفتحت تاني" }[kind]);
+    if (!silent) toast({ note:"التحديث اتبعت", assign:"المهمة اتحولت", handoff:"الجزء اتحوّل لزميلك", giveback:"المهمة رجعت لـ" + t.returnToName, recall:"المهمة رجعت لـ" + t.returnToName,
+      priority:"الأولوية اتغيرت", due:"الميعاد اتحدد", extreq:"طلب المد اتبعت لمدير التشغيل", extok:"الميعاد اتمد", extno:"الطلب اترفض", link:"الملف اتربط بالمهمة", unlink:"الربط اتشال",
+      start:"بالتوفيق!", done:"اتبعتت لمدير التشغيل للاعتماد", approve:"المهمة اتقفلت", rate:"التقييم اتحفظ", return:"المهمة رجعت للموظف", reopen:"المهمة اتفتحت تاني" }[kind]);
     if (kind === "approve" || kind === "rate") S.stars = 0;
     return true;
-  } catch(x){ console.error(x); toast("العملية ما نجحتش، جرّب تاني"); return false; }
+  } catch(x){ console.error(x); if (!silent) toast("العملية ما نجحتش، جرّب تاني"); if (kind === "escalate") escalating.delete(t.id); return false; }
   finally { if (btn) btn.disabled = false; }
 }
 
@@ -987,7 +1215,7 @@ function openNewTask(){
     ${sup ? `<div class="field full"><label for="nt-assign">توزيع على</label><select id="nt-assign"><option value="">بعدين</option>${staff().map(u => `<option value="${u.uid}">${esc(u.uid === S.me.uid ? u.name + " (أنا)" : u.name)}</option>`).join("")}</select></div>` : ""}
     <div class="field full"><label for="nt-details">التفاصيل</label><textarea id="nt-details" rows="3"></textarea></div>
     <p class="err" id="nt-err" hidden></p>
-    </form><div class="form-foot"><button class="btn primary" id="ntSave">${sup ? "حفظ المهمة" : "إرسال للمشرف"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+    </form><div class="form-foot"><button class="btn primary" id="ntSave">${sup ? "حفظ المهمة" : "إرسال لمدير التشغيل"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
   let pri = "normal";
   m.addEventListener("click", e => {
     const ty = e.target.closest("[data-type]"); if (ty){ type = ty.dataset.type; m.querySelectorAll("[data-type]").forEach(b => b.classList.toggle("on", b === ty)); }
@@ -1007,7 +1235,7 @@ function openNewTask(){
     $("#ntSave").disabled = true;
     try {
       await api.createTask(data, S.me, au ? "أنشأ المهمة ووزّعها على " + au.name : "أنشأ المهمة");
-      m.remove(); toast(sup ? "المهمة اتحفظت" : "المهمة اتبعتت للمشرف"); S.tab = "open"; S.view = "list"; renderView();
+      m.remove(); toast(sup ? "المهمة اتحفظت" : "المهمة اتبعتت لمدير التشغيل"); S.tab = "open"; S.view = "list"; renderView();
     } catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت وجرّب تاني."; er.hidden = false; $("#ntSave").disabled = false; }
   };
   $("#ntSave").onclick = save;
@@ -1020,7 +1248,7 @@ function openTeam(){
     <h3 class="sub-h">إضافة حساب</h3>
     <form class="form" id="uForm" novalidate>
       <div class="field"><label for="u-name">الاسم</label><input id="u-name" required></div>
-      <div class="field"><label for="u-role">الدور</label><select id="u-role"><option value="employee">موظف</option><option value="manager">المدير</option><option value="supervisor">مشرف</option></select></div>
+      <div class="field"><label for="u-role">الدور</label><select id="u-role"><option value="employee">موظف</option><option value="manager">المدير الأعلى</option><option value="supervisor">مدير تشغيل</option></select></div>
       <div class="field"><label for="u-email">الإيميل</label><input id="u-email" type="email" dir="ltr" required></div>
       <div class="field"><label for="u-pass">كلمة السر (٦ حروف على الأقل)</label><input id="u-pass" type="text" dir="ltr" required></div>
       <p class="err" id="u-err" hidden></p>

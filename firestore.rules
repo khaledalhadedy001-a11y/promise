@@ -10,52 +10,89 @@ service cloud.firestore {
     function hasProfile() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
     function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function active() { return hasProfile() && me().active == true; }
-    function isSup() { return isOwner() || (active() && me().role == 'supervisor'); }
-    function isMgr() { return active() && me().role == 'manager'; }
+    function member() { return isOwner() || active(); }
+    function isSup() { return isOwner() || (active() && me().role == 'supervisor'); }   // مدير التشغيل
+    function isMgr() { return active() && me().role == 'manager'; }                     // المدير الأعلى
     function isEmp() { return active() && me().role == 'employee'; }
     function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
     function noteKeys() { return ['updatedAt', 'lastUpdate', 'lastUpdateBy', 'lastUpdateAt']; }
 
-    // حسابات المستخدمين: المشرف بس هو اللي بيضيف ويعدّل
+    // حسابات المستخدمين: الكل يشوف الأسماء، ومدير التشغيل بس يضيف ويعدّل
     match /users/{uid} {
-      allow read: if signedIn() && (request.auth.uid == uid || isSup() || isMgr());
+      allow read: if signedIn() && (request.auth.uid == uid || member());
       allow create, update: if isSup();
       allow delete: if false;
     }
 
-    // عداد أرقام المهام
+    // عدادات الأرقام
     match /meta/counter {
       allow read, write: if isSup() || isMgr();
     }
+    match /meta/archiveCounter {
+      allow read, write: if member();
+    }
 
     match /tasks/{taskId} {
-      allow read: if isSup() || isMgr() || (isEmp() && resource.data.assignedTo == request.auth.uid);
+      function assignee() { return resource.data.assignedTo == request.auth.uid; }
+      function lender() { return resource.data.get('returnTo', '') == request.auth.uid; }
 
-      // المدير بيبعت المهمة للمشرف من غير توزيع، والمشرف يقدر يوزع على طول
+      // تحويل جزء لزميل، أو إرجاعه للي حوّله
+      function validHandoff() {
+        return (resource.data.get('returnTo', '') == ''
+                  && request.resource.data.returnTo == request.auth.uid
+                  && request.resource.data.assignedTo != request.auth.uid
+                  && get(/databases/$(database)/documents/users/$(request.resource.data.assignedTo)).data.role == 'employee')
+            || (resource.data.get('returnTo', '') != ''
+                  && request.resource.data.assignedTo == resource.data.returnTo
+                  && request.resource.data.returnTo == '');
+      }
+      function validStatus() {
+        return !changed().hasAny(['status'])
+          || request.resource.data.status == 'in_progress'
+          || (request.resource.data.status == 'pending_approval' && resource.data.get('returnTo', '') == '');
+      }
+
+      allow read: if isSup() || isMgr() || (isEmp() && (assignee() || lender()));
+
+      // المدير الأعلى بيبعت المهمة من غير توزيع، ومدير التشغيل يقدر يوزع على طول
       allow create: if (isSup() || isMgr())
         && request.resource.data.createdBy == request.auth.uid
         && (isSup() || (request.resource.data.status == 'new' && request.resource.data.assignedTo == ''));
 
       allow update: if isSup()
-        // المدير: يكتب ملاحظات بس
-        || (isMgr() && changed().hasOnly(noteKeys()))
-        // الموظف: مهامه بس، يبدأ التنفيذ أو يبعت للاعتماد، ومايقدرش يقفل
-        || (isEmp()
-            && resource.data.assignedTo == request.auth.uid
-            && resource.data.status != 'closed'
-            && changed().hasOnly(noteKeys().concat(['status']))
-            && (!changed().hasAny(['status']) || request.resource.data.status in ['in_progress', 'pending_approval']));
+        // المدير الأعلى: ملاحظات وربط ملفات
+        || (isMgr() && changed().hasOnly(noteKeys().concat(['files'])))
+        // الموظف المسؤول: يبدأ، يبعت للاعتماد، يطلب مد، يربط ملفات، يحوّل جزء أو يرجّعه
+        || (isEmp() && assignee() && resource.data.status != 'closed'
+            && changed().hasOnly(noteKeys().concat(['status', 'files', 'extReq', 'escalatedAt', 'assignedTo', 'assignedToName', 'returnTo', 'returnToName', 'handoffNote']))
+            && validStatus()
+            && (!changed().hasAny(['assignedTo']) || validHandoff()))
+        // الموظف اللي حوّل جزء: ملاحظات وربط ملفات بس
+        || (isEmp() && lender() && resource.data.status != 'closed'
+            && changed().hasOnly(noteKeys().concat(['files'])));
 
       allow delete: if isSup();
 
       match /updates/{updateId} {
         function canSeeTask() {
+          let t = get(/databases/$(database)/documents/tasks/$(taskId)).data;
           return isSup() || isMgr()
-            || (isEmp() && get(/databases/$(database)/documents/tasks/$(taskId)).data.assignedTo == request.auth.uid);
+            || (isEmp() && (t.assignedTo == request.auth.uid || t.get('returnTo', '') == request.auth.uid));
         }
         allow read: if canSeeTask();
         allow create: if canSeeTask() && request.resource.data.by == request.auth.uid;
         allow update, delete: if false;
+      }
+    }
+
+    // أرشيف الملفات
+    match /archive/{ref} {
+      allow read: if member();
+      allow create: if member() && request.resource.data.by == request.auth.uid;
+      allow update, delete: if isSup();
+      match /chunks/{chunkId} {
+        allow read, create: if member();
+        allow update, delete: if isSup();
       }
     }
   }
