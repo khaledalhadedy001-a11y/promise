@@ -361,6 +361,9 @@ main{padding-bottom:56px}
 .pm.ok{--h:var(--ok)}.pm.err{--h:var(--p-urgent)}.pm.busy{--h:var(--accent)}
 .pm p{margin:0;font-size:16px}
 @media (max-width:620px){ .set-grid{grid-template-columns:1fr} }
+.scan-box{position:relative;margin:16px 18px 10px;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:1;max-width:100%}
+.scan-box video{width:100%;height:100%;object-fit:cover;display:block}
+.scan-frame{position:absolute;inset:16%;border:3px solid var(--gold);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
 /* collection sheet */
 .colsec{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px}
 .col-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -480,6 +483,7 @@ const ICONS = {
   star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
   pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
   qr:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"/>',
+  cam:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
   out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
   next:'<path d="m15 18-6-6 6-6"/>', prev:'<path d="m9 18 6-6-6-6"/>'
 };
@@ -609,6 +613,9 @@ async function makeFirebase(){
     addAtt:r => F.addDoc(F.collection(db,"attendance"), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : {}) }),
     editAtt:(id, r) => F.updateDoc(F.doc(db,"attendance",id), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : { outAt:F.deleteField() }) }),
     delAtt:id => F.deleteDoc(F.doc(db,"attendance",id)),
+    async clearAtt(){ const all = await F.getDocs(F.collection(db,"attendance")); let n = 0;
+      for (let i = 0; i < all.docs.length; i += 400){ const b = F.writeBatch(db); all.docs.slice(i, i + 400).forEach(d => b.delete(d.ref)); await b.commit(); n += Math.min(400, all.docs.length - i); }
+      return n; },
     resetPassword:email => A.sendPasswordResetEmail(auth, email),
     async lookupArchive(ref){ const d = await F.getDoc(F.doc(db,"archive",ref)); return d.exists() ? d.data() : null; },
     watchSheet(id, cb){ return F.onSnapshot(F.query(F.collection(db,"tasks",id,"sheet"), F.orderBy("n")), s => cb(s.docs.map(withId)), e => console.warn(e)); },
@@ -728,6 +735,7 @@ function makeDemo(){
     addAtt(r){ return later(() => { att.push({ ...r, id:"a" + Date.now() }); emitA(); }); },
     editAtt(id, r){ return later(() => { const x = att.find(a => a.id === id); Object.assign(x, r); if (!r.outAt) delete x.outAt; emitA(); }); },
     delAtt(id){ return later(() => { att.splice(att.findIndex(a => a.id === id), 1); emitA(); }); },
+    clearAtt(){ return later(() => { const n = att.length; att.length = 0; emitA(); return n; }); },
     resetPassword(){ return later(() => {}); },
     lookupArchive(ref){ return later(() => ({ ref, files:[{ name:"ملف تجريبي.pdf" }] })); },
     watchSheet(id, cb){ if (!shSubs.has(id)) shSubs.set(id, new Set()); shSubs.get(id).add(cb); cb([...(sheets[id] || [])]); return () => shSubs.get(id).delete(cb); },
@@ -1074,8 +1082,9 @@ function renderAtt(){
     const mine = (S.att || []).filter(x => x.uid === S.me.uid && x.day === today), todayDur = mine.reduce((a,x) => a + recDur(x), 0);
     html += `<section class="att-me" aria-label="حضوري">
       <div class="att-status ${open ? "in" : "out"}"><span class="dotbig"></span><div><b>${open ? "إنت مسجّل حضور من الساعة " + tOf(open.inAt) : "إنت مش مسجّل حضور دلوقتي"}</b><br><span>${todayDur ? "اشتغلت النهارده " + hm(todayDur) : "لسه ما سجّلتش حضور النهارده"}</span></div></div>
-      <p class="hint">عشان تسجّل ${open ? "انصراف" : "حضور"}: صوّر الكود اللي على شاشة الشركة بكاميرا الموبايل، أو اكتب الحروف اللي تحت الكود هنا. لازم تكون في الشركة والموقع مفتوح.</p>
-      <div class="act-row"><input id="attCode" dir="ltr" maxlength="8" autocomplete="off" placeholder="ABC123" aria-label="كود الحضور"><button class="btn primary" data-att="punch">${ic(open ? "out" : "pin")}${open ? "تسجيل انصراف" : "تسجيل حضور"}</button></div>
+      <p class="hint">عشان تسجّل ${open ? "انصراف" : "حضور"}: دوس «امسح الكود بالكاميرا» ووجّه الموبايل على شاشة الشركة، أو اكتب الحروف اللي تحت الكود. لازم تكون في الشركة والموقع مفتوح.</p>
+      <div class="act-row"><button class="btn primary" data-att="scan" style="padding:12px 18px;font-size:16px">${ic("cam")}امسح الكود بالكاميرا</button></div>
+      <div class="act-row"><input id="attCode" dir="ltr" maxlength="8" autocomplete="off" placeholder="ABC123" aria-label="كود الحضور"><button class="btn" data-att="punch">${ic(open ? "out" : "pin")}${open ? "تسجيل انصراف" : "تسجيل حضور"} بالكود المكتوب</button></div>
       ${DEMO ? `<p class="hint">في النسخة التجريبية الكود هو DEMO42.</p>` : ""}</section>`;
   }
   if (boss){
@@ -1120,6 +1129,8 @@ function renderAtt(){
         <p class="hint">اعمل الخطوة دي وإنت جوه الشركة.</p></div>
       <div><h3>شاشة الكود</h3><p class="hint">افتح الصفحة دي على جهاز ثابت في الشركة وسيبها شغالة. الأحسن تدخل عليها بحساب «جهاز الحضور» من صفحة الفريق.</p>
         <div class="act-row"><a class="btn sm" href="kiosk.html" target="_blank" rel="noopener">${ic("qr")}فتح شاشة الكود</a></div></div>
+      <div style="grid-column:1/-1"><h3>مسح كل سجلات الحضور</h3><p class="hint">بيمسح كل الحضور والانصراف المتسجل لحد دلوقتي (مثلاً بعد فترة التجربة). مينفعش يترجع.</p>
+        <div class="act-row"><button class="btn danger sm" data-att="clear">${S.attClearArm ? "متأكد؟ اضغط تاني للمسح النهائي" : "مسح كل السجلات"}</button></div></div>
       <div style="grid-column:1/-1"><h3>إضافة سجل يدوي</h3><p class="hint">لو حد نسي يسجّل حضور أو انصراف.</p>
         <div class="act-row"><select id="am-uid">${attPeople().map(p => `<option value="${p.uid}">${esc(p.name)}</option>`).join("")}</select>
           <label class="check">حضور <input type="datetime-local" id="am-in"></label><label class="check">انصراف <input type="datetime-local" id="am-out"></label>
@@ -1135,9 +1146,50 @@ function renderAtt(){
     t.textContent = o ? `متحدد: ${o.lat.toFixed(5)}, ${o.lng.toFixed(5)} — المسافة المسموحة ${fmtNum(o.radius)} متر` : "لسه ما اتحددش. لازم تحدده عشان الحضور يشتغل.";
     if (o && $("#officeR")) $("#officeR").value = String(o.radius); }).catch(() => {});
 }
+/* ماسح الكود بالكاميرا */
+let jsqrLoading = null;
+const loadJsQR = () => window.jsQR ? Promise.resolve() : (jsqrLoading ||= new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "jsQR.js"; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); }));
+function codeFromText(txt){ const m = String(txt || "").match(/#att-([A-Za-z0-9]{4,10})/) || String(txt || "").trim().match(/^([A-Za-z0-9]{4,10})$/); return m ? m[1] : ""; }
+async function openScanner(){
+  const m = document.createElement("div"); m.className = "modal scan-modal";
+  m.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true" aria-label="مسح الكود"><header><h2>وجّه الكاميرا على الكود</h2><button class="btn ghost sm" data-x aria-label="إغلاق">✕</button></header>
+    <div class="scan-box"><video id="scanVid" playsinline muted></video><div class="scan-frame" aria-hidden="true"></div></div><p class="hint" id="scanMsg" style="padding:0 18px 16px">بيفتح الكاميرا…</p></div>`;
+  document.body.appendChild(m);
+  let stream = null, stop = false, raf = 0;
+  const close = () => { stop = true; cancelAnimationFrame(raf); if (stream) stream.getTracks().forEach(t => t.stop()); m.remove(); };
+  m.addEventListener("click", e => { if (e.target === m || e.target.closest("[data-x]")) close(); });
+  const msg = t => { const el = $("#scanMsg"); if (el) el.textContent = t; };
+  try { stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:"environment" } }, audio:false }); }
+  catch(e){ console.error(e); msg(e && e.name === "NotAllowedError" ? "لازم تسمح للسيستم يستخدم الكاميرا. فعّلها من إعدادات المتصفح، أو اكتب الحروف اللي تحت الكود." : "مش قادر يفتح الكاميرا. اكتب الحروف اللي تحت الكود بدالها."); return; }
+  if (stop){ stream.getTracks().forEach(t => t.stop()); return; }
+  const v = $("#scanVid"); v.srcObject = stream; try { await v.play(); } catch {}
+  msg("قرّب الموبايل من الكود لحد ما يتقري لوحده.");
+  let detector = null; try { if ("BarcodeDetector" in window) detector = new BarcodeDetector({ formats:["qr_code"] }); } catch {}
+  if (!detector) try { await loadJsQR(); } catch { msg("مش قادر يشغّل قارئ الكود. اكتب الحروف اللي تحت الكود."); return; }
+  const cv = document.createElement("canvas"), cx = cv.getContext("2d", { willReadFrequently:true });
+  const done = code => { close(); doPunch(code); };
+  const loop = async () => {
+    if (stop) return;
+    if (v.readyState >= 2 && v.videoWidth){
+      try {
+        if (detector){ const r = await detector.detect(v); const c = r.length && codeFromText(r[0].rawValue); if (c) return done(c); }
+        else { const w = 480, h = Math.round(v.videoHeight * w / v.videoWidth); cv.width = w; cv.height = h; cx.drawImage(v, 0, 0, w, h);
+          const r = jsQR(cx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts:"dontInvert" }); const c = r && codeFromText(r.data); if (c) return done(c); }
+      } catch(e){ console.warn(e); }
+    }
+    raf = requestAnimationFrame(loop);
+  };
+  loop();
+}
 async function attClick(b){
   const k = b.dataset.att, id = b.dataset.id;
   if (k === "punch") return doPunch($("#attCode").value);
+  if (k === "scan") return openScanner();
+  if (k === "clear"){
+    if (!S.attClearArm){ S.attClearArm = true; renderAtt(); setTimeout(() => { if (S.attClearArm){ S.attClearArm = false; renderAtt(); } }, 5000); return; }
+    S.attClearArm = false; b.disabled = true;
+    try { const n = await api.clearAtt(); toast("اتمسح " + fmtNum(n) + " سجل"); } catch(e){ console.error(e); toast("المسح ما نجحش، جرّب تاني"); }
+    return renderAtt(); }
   if (k === "edit"){ S.attEdit = id; return renderAtt(); }
   if (k === "cancel"){ S.attEdit = null; return renderAtt(); }
   if (k === "save"){ const x = S.att.find(a => a.id === id), vi = $("#ae-in").value, vo = $("#ae-out").value;
