@@ -323,6 +323,44 @@ main{padding-bottom:56px}
   .kcol:not(.on){display:none}
   .kswitch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:14px}
 }
+/* attendance */
+.att-wrap{display:flex;flex-direction:column;gap:16px;padding-top:18px}
+.att-me{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.att-status{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px;border-radius:12px;background:color-mix(in srgb,var(--h) 12%,var(--surface))}
+.att-status.in{--h:var(--ok)}.att-status.out{--h:var(--p-low)}
+.att-status .dotbig{width:14px;height:14px;border-radius:50%;background:var(--h);flex:none}
+.att-status b{font:600 18px/1.3 var(--f-display);color:var(--ink)}
+.att-status span{color:var(--muted);font-size:14px}
+.att-me input{border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:var(--surface-2);font:600 18px/1 var(--f-display);letter-spacing:.15em;width:180px;max-width:100%;text-transform:uppercase}
+.att-sec{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.att-sec > header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.att-sec > header h2{font-size:18px;margin-inline-end:auto}
+.att-today{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.pcell{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;border-top:4px solid var(--h)}
+.pcell.in{--h:var(--ok)}.pcell.left{--h:var(--p-normal)}.pcell.absent{--h:var(--line)}
+.pcell-h{display:flex;align-items:center;gap:8px}
+.pcell-h b{flex:1;min-width:0}
+.pcell dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0}
+.pcell dt{font-size:11px;color:var(--muted)}
+.pcell dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums;font-size:14px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+.tbl th{background:var(--surface-2);color:var(--muted);font-weight:600;font-size:12px;text-align:right;padding:8px 10px;white-space:nowrap}
+.tbl td{padding:8px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl tr.sum td{font-weight:600}
+.tbl td.warn{color:var(--warn);font-weight:600}
+.tbl input,.tbl select{border:1px solid var(--line);border-radius:7px;padding:4px 6px;background:var(--surface);font-size:13px}
+.tbl button{margin-inline-start:4px}
+.set-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.set-grid > div{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:var(--surface-2);min-width:0}
+.set-grid h3{font-size:15px}
+.set-grid select,.set-grid input{border:1px solid var(--line);border-radius:8px;padding:6px 9px;background:var(--surface);min-width:0}
+.pm-ico{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto;background:color-mix(in srgb,var(--h) 15%,transparent);color:var(--h)}
+.pm-ico .ic{width:30px;height:30px}
+.pm{padding:22px;display:flex;flex-direction:column;gap:12px;text-align:center}
+.pm.ok{--h:var(--ok)}.pm.err{--h:var(--p-urgent)}.pm.busy{--h:var(--accent)}
+.pm p{margin:0;font-size:16px}
+@media (max-width:620px){ .set-grid{grid-template-columns:1fr} }
 /* collection sheet */
 .colsec{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px}
 .col-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -368,7 +406,7 @@ main{padding-bottom:56px}
   .tabs{display:flex;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
   .tab{flex:0 0 auto}
   .views{order:3;width:100%;margin-inline-start:0}
-  .views button{flex:1;justify-content:center}
+  .views button{flex:1;justify-content:center;padding:6px 4px;font-size:14px}
   .head-actions{margin-inline-start:auto}
   .hbtn .txt{display:none}
   .cal-cell{min-height:58px;padding:4px}
@@ -417,7 +455,7 @@ const HOT = t => t.priority === "immediate" || t.priority === "urgent";
 const ST = { new:"بانتظار التوزيع", assigned:"تم التوزيع", in_progress:"جاري التنفيذ", pending_approval:"بانتظار الاعتماد", closed:"مغلقة" };
 const TYPES = [["حجز فندق","hotel"],["طيران","flight"],["تأشيرة","visa"],["نقل ومواصلات","transport"],["برنامج سياحي","program"],["عمرة / حج","umrah"],["تحصيل فلوس","money"],["متابعة عميل","follow"],["أخرى","other"]];
 const typeCls = t => (TYPES.find(x => x[0] === t) || [0,"other"])[1];
-const ROLE = { supervisor:"مدير التشغيل", manager:"المدير العام", employee:"موظف" };
+const ROLE = { supervisor:"مدير التشغيل", manager:"المدير العام", employee:"موظف", kiosk:"جهاز الحضور" };
 const AVC = ["hotel","flight","visa","transport","program","umrah","follow"];
 const NOW = { __now:true };
 const MIN = 60e3, HOUR = 3600e3, DAY = 864e5;
@@ -440,6 +478,8 @@ const ICONS = {
   phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
   chat:'<path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.6A8.4 8.4 0 1 1 21 11.5z"/>',
   star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+  pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  qr:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"/>',
   out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
   next:'<path d="m15 18-6-6 6-6"/>', prev:'<path d="m9 18 6-6-6-6"/>'
 };
@@ -555,6 +595,20 @@ async function makeFirebase(){
       } finally { await AP.deleteApp(sec); }
     },
     updateUser:(uid, patch) => F.updateDoc(F.doc(db,"users",uid), patch),
+    watchAtt(me, cb){ const col = F.collection(db,"attendance");
+      const from = dayKey(new Date(new Date().getFullYear(), new Date().getMonth() - 5, 1));
+      const q = me.role === "employee" ? F.query(col, F.where("uid","==",me.uid)) : F.query(col, F.where("day",">=",from));
+      return F.onSnapshot(q, s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    async punch(me, open, code, pos){
+      const loc = { Lat:pos.lat, Lng:pos.lng, Acc:Math.round(pos.acc) };
+      if (open) await F.updateDoc(F.doc(db,"attendance",open.id), { outAt:F.serverTimestamp(), outLat:loc.Lat, outLng:loc.Lng, outAcc:loc.Acc, outCode:code });
+      else await F.addDoc(F.collection(db,"attendance"), { uid:me.uid, name:me.name, day:dayKey(Date.now()), inAt:F.serverTimestamp(), inLat:loc.Lat, inLng:loc.Lng, inAcc:loc.Acc, inCode:code });
+    },
+    async getOffice(){ const d = await F.getDoc(F.doc(db,"settings","office")); return d.exists() ? d.data() : null; },
+    setOffice:o => F.setDoc(F.doc(db,"settings","office"), o),
+    addAtt:r => F.addDoc(F.collection(db,"attendance"), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : {}) }),
+    editAtt:(id, r) => F.updateDoc(F.doc(db,"attendance",id), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : { outAt:F.deleteField() }) }),
+    delAtt:id => F.deleteDoc(F.doc(db,"attendance",id)),
     resetPassword:email => A.sendPasswordResetEmail(auth, email),
     async lookupArchive(ref){ const d = await F.getDoc(F.doc(db,"archive",ref)); return d.exists() ? d.data() : null; },
     watchSheet(id, cb){ return F.onSnapshot(F.query(F.collection(db,"tasks",id,"sheet"), F.orderBy("n")), s => cb(s.docs.map(withId)), e => console.warn(e)); },
@@ -620,6 +674,19 @@ function makeDemo(){
     [["sup","event","أنشأ المهمة ووزّعها على سارة",5]]);
 
   const sheets = {}, shSubs = new Map();
+  // حضور تجريبي: آخر ٢٠ يوم
+  let office = { lat:30.0444, lng:31.2357, radius:150 };
+  const att = [], attSubs = new Set(); const emitA = () => attSubs.forEach(cb => cb());
+  for (let d = 20; d >= 0; d--){ const base = new Date(); base.setDate(base.getDate() - d); if (base.getDay() === 5) continue;
+    [["e1","سارة",9,0,17,10],["e2","منى",9,25,16,40],["sup","خالد",8,50,18,0]].forEach(([uid,name,h,m,oh,om], i) => {
+      if (uid === "e2" && d % 6 === 3) return;
+      const jit = ((d * 7 + i * 13) % 25) - 8;
+      const inAt = new Date(base); inAt.setHours(h, m + jit, 0, 0);
+      const outAt = new Date(base); outAt.setHours(oh, om + ((d * 5 + i) % 30), 0, 0);
+      const r = { id:"a" + d + uid, uid, name, day:dayKey(inAt), inAt:inAt.getTime() };
+      if (d > 0 && !(uid === "e1" && d === 4)) r.outAt = outAt.getTime();
+      if (d === 0 && uid === "e2") return;
+      if (inAt.getTime() < Date.now()) att.push(r); }); }
   const emitSh = id => (shSubs.get(id) || new Set()).forEach(cb => cb([...(sheets[id] || [])]));
   { seed({ title:"تحصيل باقي مبالغ معتمري رحلة نوفمبر", type:"تحصيل فلوس", priority:"high", status:"in_progress", client:"رحلة عمرة نوفمبر", assignedTo:"e1", assignedToName:"سارة", dueH:20, details:"كلمي كل معتمر وسجّلي نتيجة المكالمة واللي دفعه." },
       [["sup","event","أنشأ المهمة ووزّعها على سارة",22],["e1","event","بدأ التنفيذ",20],["e1","event","سجّل إن الحاج محمود عبد الله دفع ١٥٬٠٠٠ ج.م",3]]);
@@ -653,6 +720,14 @@ function makeDemo(){
     deleteTask(id){ return later(() => { tasks.splice(tasks.findIndex(t => t.id === id), 1); emitT(); }); },
     createUser({ name, email, role }){ return later(() => { users.push({ uid:"u"+Date.now(), name, email, role, active:true }); emitU(); }); },
     updateUser(uid, patch){ return later(() => { Object.assign(U(uid), patch); emitU(); }); },
+    watchAtt(m, cb){ const f = () => cb(att.filter(r => m.role !== "employee" || r.uid === m.uid).map(r => ({ ...r }))); attSubs.add(f); f(); return () => attSubs.delete(f); },
+    punch(m, open, code, pos){ return later(() => { if (code !== "DEMO42") throw new Error("code"); const n = Date.now();
+      if (open) Object.assign(att.find(r => r.id === open.id), { outAt:n, outLat:pos.lat, outLng:pos.lng });
+      else att.push({ id:"a" + n, uid:m.uid, name:m.name, day:dayKey(n), inAt:n, inLat:pos.lat, inLng:pos.lng }); emitA(); }); },
+    getOffice(){ return later(() => office); }, setOffice(o){ return later(() => { office = o; }); },
+    addAtt(r){ return later(() => { att.push({ ...r, id:"a" + Date.now() }); emitA(); }); },
+    editAtt(id, r){ return later(() => { const x = att.find(a => a.id === id); Object.assign(x, r); if (!r.outAt) delete x.outAt; emitA(); }); },
+    delAtt(id){ return later(() => { att.splice(att.findIndex(a => a.id === id), 1); emitA(); }); },
     resetPassword(){ return later(() => {}); },
     lookupArchive(ref){ return later(() => ({ ref, files:[{ name:"ملف تجريبي.pdf" }] })); },
     watchSheet(id, cb){ if (!shSubs.has(id)) shSubs.set(id, new Set()); shSubs.get(id).add(cb); cb([...(sheets[id] || [])]); return () => shSubs.get(id).delete(cb); },
@@ -666,6 +741,9 @@ function makeDemo(){
 const S = { me:null, tasks:[], users:[], view:"list", tab:"open", emp:"", q:"", openId:null, updates:[], unsub:[], unsubUpd:null, armedDel:false, stars:0,
   layout:store.get("layout","board"), kcol:"", calMonth:new Date(new Date().getFullYear(), new Date().getMonth(), 1), calDay:dayKey(Date.now()), perf:"this", firstLoad:true };
 let sheetEl = null;
+let pendingCode = (location.hash.match(/^#att-([A-Za-z0-9]{4,10})$/) || [])[1] || "";
+if (pendingCode) try { history.replaceState(null, "", location.pathname + location.search); } catch {}
+window.addEventListener("hashchange", () => { const m = location.hash.match(/^#att-([A-Za-z0-9]{4,10})$/); if (!m) return; try { history.replaceState(null, "", location.pathname + location.search); } catch {} if (S.me) doPunch(m[1]); else pendingCode = m[1]; });
 const api = DEMO ? makeDemo() : await makeFirebase();
 const app = $("#app");
 
@@ -674,12 +752,15 @@ function cleanup(){ S.unsub.forEach(f => f && f()); S.unsub = []; closeTask(); c
 api.onAuth(p => {
   cleanup(); S.me = p && !p.blocked ? p : null;
   if (!S.me) return renderLogin(p && p.blocked);
+  if (S.me.role === "kiosk"){ location.href = "kiosk.html"; return; }
   S.view = "list"; S.tab = "open"; S.emp = ""; S.q = "";
   renderShell();
   S.unsub.push(api.watchTasks(S.me, ts => { S.tasks = ts; renderView(); if (S.openId) renderDetail(); checkAlerts(S.firstLoad); S.firstLoad = false; }));
+  S.att = []; S.unsub.push(api.watchAtt(S.me, rows => { S.att = rows; if (S.view === "att") renderAtt(); }));
+  if (pendingCode){ const c = pendingCode; pendingCode = ""; setTimeout(() => doPunch(c), 300); }
   S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); }));
 });
-setInterval(() => { if (S.me){ checkAlerts(false); if (S.view !== "perf") renderView(true); } }, 30e3);
+setInterval(() => { if (S.me){ checkAlerts(false); if (S.view !== "perf" && !(S.view === "att" && (S.attEdit || document.activeElement && document.activeElement.closest && document.activeElement.closest(".att-wrap")))) renderView(true); } }, 30e3);
 
 function demoStrip(){
   if (!DEMO) return "";
@@ -715,6 +796,7 @@ function renderShell(){
       <button data-view="list">${ic("list")}المهام</button>
       <button data-view="cal">${ic("cal")}الكاليندر</button>
       <button data-view="perf">${ic("chart")}${m.role === "employee" ? "أدائي" : "الأداء"}</button>
+      <button data-view="att">${ic("clock")}الحضور</button>
     </nav>
     <div class="head-actions">
       <button class="hbtn" id="btnBell" aria-label="التنبيهات">${ic("bell")}<span class="badge" id="bellBadge" hidden></span></button>
@@ -738,6 +820,7 @@ function renderView(soft){
     if (!$("#board") || !soft){ main.innerHTML = `<nav class="tabs" id="tabs" aria-label="تصنيف المهام"></nav><div class="toolbar" id="toolbar"></div><div id="strip"></div><div id="board"></div>`; renderToolbar(); }
     renderBoard();
   } else if (S.view === "cal") renderCalendar();
+  else if (S.view === "att") renderAtt();
   else renderPerf();
 }
 
@@ -946,6 +1029,139 @@ function renderPerf(){
     <div class="perf-grid">${cards || `<div class="list"><div class="empty"><b>مفيش موظفين لسه</b>ضيف الموظفين من زرار «الفريق».</div></div>`}</div>`;
 }
 
+/* ---------- الحضور والانصراف ---------- */
+const hm = d => { const m = Math.max(0, Math.round(d / MIN)), h = Math.floor(m / 60), r = m % 60; return h && r ? fmtNum(h) + " س و" + fmtNum(r) + " د" : h ? fmtNum(h) + " س" : fmtNum(r) + " د"; };
+const tOf = t => new Date(ms(t)).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" });
+const OPEN_MAX = 16 * HOUR;
+const isOpenRec = r => !r.outAt && Date.now() - ms(r.inAt) < OPEN_MAX;
+const recDur = r => r.outAt ? ms(r.outAt) - ms(r.inAt) : isOpenRec(r) ? Date.now() - ms(r.inAt) : 0;
+function myOpen(){ return (S.att || []).filter(r => r.uid === S.me.uid && isOpenRec(r)).sort((a,b) => ms(b.inAt) - ms(a.inAt))[0]; }
+function getPos(){ return new Promise((res, rej) => { if (!navigator.geolocation) return rej({ code:0 });
+  navigator.geolocation.getCurrentPosition(p => res({ lat:p.coords.latitude, lng:p.coords.longitude, acc:p.coords.accuracy }), rej, { enableHighAccuracy:true, timeout:20000, maximumAge:0 }); }); }
+function distM(a, b){ const R = 6371000, r = x => x * Math.PI / 180, dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+  const h = Math.sin(dLat/2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng/2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
+function punchModal(state, text){
+  let m = $(".pm-modal"); if (!m){ m = document.createElement("div"); m.className = "modal pm-modal"; document.body.appendChild(m); m.addEventListener("click", e => { if (e.target.closest("[data-pmx]")) m.remove(); }); }
+  m.innerHTML = `<div class="modal-card" role="alertdialog" aria-modal="true"><div class="pm ${state}"><div class="pm-ico">${ic(state === "ok" ? "clock" : state === "err" ? "alert" : "pin")}</div><p>${text}</p>${state === "busy" ? "" : `<button class="btn ${state === "ok" ? "primary" : ""}" data-pmx>تمام</button>`}</div></div>`;
+}
+async function doPunch(code){
+  code = String(code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!code){ toast("اكتب الكود اللي على شاشة الشركة"); return; }
+  const open = myOpen(), kind = open ? "الانصراف" : "الحضور";
+  punchModal("busy", `بيحدد موقعك عشان يسجّل ${kind}…`);
+  let pos; try { pos = await getPos(); } catch(e){ return punchModal("err", e.code === 1 ? "لازم تسمح للسيستم يعرف موقعك عشان يسجّل. فعّل الموقع للمتصفح من الإعدادات وجرّب تاني." : "مش قادر يحدد موقعك. اتأكد إن الموقع (GPS) شغال وجرّب تاني."); }
+  let office = null; try { office = await api.getOffice(); } catch(x){ console.error(x); }
+  if (!office) return punchModal("err", "مدير التشغيل لسه ما حددش موقع الشركة في السيستم.");
+  const d = distM(pos, office);
+  if (d > office.radius + Math.min(pos.acc || 0, 100)) return punchModal("err", `إنت بعيد عن الشركة بحوالي ${fmtNum(Math.round(d))} متر. لازم تكون في الشركة عشان تسجّل ${kind}.`);
+  try { await api.punch(S.me, open, code, pos); }
+  catch(x){ console.error(x); return punchModal("err", "الكود غلط أو انتهى. صوّر الكود الجديد اللي على الشاشة وجرّب تاني."); }
+  punchModal("ok", open ? `اتسجّل انصرافك الساعة ${tOf(Date.now())}.<br>اشتغلت ${hm(Date.now() - ms(open.inAt))}.` : `اتسجّل حضورك الساعة ${tOf(Date.now())}.<br>يوم موفق!`);
+  const ci = $("#attCode"); if (ci) ci.value = "";
+}
+function attPeople(){
+  const known = new Map(S.users.filter(u => ["employee","supervisor"].includes(u.role)).map(u => [u.uid, u.name]));
+  (S.att || []).forEach(r => { if (!known.has(r.uid)) known.set(r.uid, r.name); });
+  return [...known].map(([uid, name]) => ({ uid, name }));
+}
+function attMonth(){ const n = new Date(); const d = new Date(n.getFullYear(), n.getMonth() - (S.attMonth || 0), 1);
+  return { key:d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"), label:d.toLocaleDateString("ar-EG", { month:"long", year:"numeric" }) }; }
+function renderAtt(){
+  const main = $("#main"), r = S.me.role, boss = r === "supervisor" || r === "manager", today = dayKey(Date.now());
+  let html = "";
+  if (r !== "manager"){
+    const open = myOpen();
+    const mine = (S.att || []).filter(x => x.uid === S.me.uid && x.day === today), todayDur = mine.reduce((a,x) => a + recDur(x), 0);
+    html += `<section class="att-me" aria-label="حضوري">
+      <div class="att-status ${open ? "in" : "out"}"><span class="dotbig"></span><div><b>${open ? "إنت مسجّل حضور من الساعة " + tOf(open.inAt) : "إنت مش مسجّل حضور دلوقتي"}</b><br><span>${todayDur ? "اشتغلت النهارده " + hm(todayDur) : "لسه ما سجّلتش حضور النهارده"}</span></div></div>
+      <p class="hint">عشان تسجّل ${open ? "انصراف" : "حضور"}: صوّر الكود اللي على شاشة الشركة بكاميرا الموبايل، أو اكتب الحروف اللي تحت الكود هنا. لازم تكون في الشركة والموقع مفتوح.</p>
+      <div class="act-row"><input id="attCode" dir="ltr" maxlength="8" autocomplete="off" placeholder="ABC123" aria-label="كود الحضور"><button class="btn primary" data-att="punch">${ic(open ? "out" : "pin")}${open ? "تسجيل انصراف" : "تسجيل حضور"}</button></div>
+      ${DEMO ? `<p class="hint">في النسخة التجريبية الكود هو DEMO42.</p>` : ""}</section>`;
+  }
+  if (boss){
+    const cells = attPeople().map(p => { const recs = (S.att || []).filter(x => x.uid === p.uid && x.day === today).sort((a,b) => ms(a.inAt) - ms(b.inAt));
+      const open = recs.find(isOpenRec), last = recs[recs.length - 1], dur = recs.reduce((a,x) => a + recDur(x), 0);
+      const st = !recs.length ? ["absent","لسه ما سجّلش"] : open ? ["in","موجود"] : ["left","انصرف"];
+      return `<div class="pcell ${st[0]}"><div class="pcell-h">${avatar(p.name, p.uid)}<b>${esc(p.name)}</b><span class="pill ${st[0] === "in" ? "s-closed" : st[0] === "left" ? "s-assigned" : ""}">${st[1]}</span></div>
+        <dl><div><dt>حضور</dt><dd>${recs.length ? tOf(recs[0].inAt) : "—"}</dd></div><div><dt>انصراف</dt><dd>${last && last.outAt ? tOf(last.outAt) : "—"}</dd></div><div><dt>الساعات</dt><dd>${dur ? hm(dur) : "—"}</dd></div></dl></div>`; }).join("");
+    html += `<section class="att-sec"><header><h2>حضور النهارده</h2><span class="hint">${new Date().toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long" })}</span></header><div class="att-today">${cells || `<p class="hint">مفيش موظفين لسه.</p>`}</div></section>`;
+  }
+  // التقرير الشهري
+  const M = attMonth(), people = boss ? attPeople() : [{ uid:S.me.uid, name:S.me.name }];
+  const recs = (S.att || []).filter(x => x.day && x.day.startsWith(M.key) && (!S.attEmp || x.uid === S.attEmp) && people.some(p => p.uid === x.uid)).sort((a,b) => ms(a.inAt) - ms(b.inAt));
+  const sums = people.filter(p => !S.attEmp || p.uid === S.attEmp).map(p => { const mine = recs.filter(x => x.uid === p.uid);
+    const days = new Set(mine.map(x => x.day)), total = mine.reduce((a,x) => a + recDur(x), 0), miss = mine.filter(x => !x.outAt && !isOpenRec(x)).length;
+    const ins = [...days].map(d => Math.min(...mine.filter(x => x.day === d).map(x => { const t = new Date(ms(x.inAt)); return t.getHours() * 60 + t.getMinutes(); })));
+    const avgIn = ins.length ? Math.round(ins.reduce((a,b) => a + b, 0) / ins.length) : null;
+    return { p, days:days.size, total, avg: days.size ? total / days.size : 0, miss, avgIn }; });
+  const avgInTxt = m => m == null ? "—" : new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" });
+  const sup = r === "supervisor";
+  const rowsHtml = recs.slice().reverse().map(x => { const dur = recDur(x), editing = S.attEdit === x.id;
+    if (editing) return `<tr><td>${esc(new Date(x.day + "T00:00").toLocaleDateString("ar-EG", { weekday:"short", day:"numeric", month:"short" }))}</td><td>${esc(x.name)}</td>
+      <td><input type="datetime-local" id="ae-in" value="${toInput(ms(x.inAt))}"></td><td><input type="datetime-local" id="ae-out" value="${x.outAt ? toInput(ms(x.outAt)) : ""}"></td><td></td>
+      <td><button class="btn primary sm" data-att="save" data-id="${x.id}">حفظ</button><button class="btn sm" data-att="cancel">إلغاء</button></td></tr>`;
+    return `<tr><td>${esc(new Date(x.day + "T00:00").toLocaleDateString("ar-EG", { weekday:"short", day:"numeric", month:"short" }))}</td><td>${esc(x.name)}</td><td>${tOf(x.inAt)}</td>
+      <td class="${!x.outAt && !isOpenRec(x) ? "warn" : ""}">${x.outAt ? tOf(x.outAt) : isOpenRec(x) ? "لسه موجود" : "ما سجّلش انصراف"}</td><td>${dur ? hm(dur) : "—"}</td>
+      ${sup ? `<td><button class="btn sm" data-att="edit" data-id="${x.id}">تعديل</button><button class="btn danger sm" data-att="del" data-id="${x.id}">${S.attArm === x.id ? "تأكيد" : "حذف"}</button></td>` : ""}</tr>`; }).join("");
+  html += `<section class="att-sec"><header><h2>التقرير الشهري — ${M.label}</h2>
+      <div class="chips-row">${[0,1,2].map(i => `<button class="chip ${(S.attMonth || 0) === i ? "on" : ""}" data-attm="${i}">${i === 0 ? "الشهر ده" : i === 1 ? "الشهر اللي فات" : "من شهرين"}</button>`).join("")}</div>
+      ${boss ? `<select id="attEmp" class="btn sm" aria-label="الموظف"><option value="">الكل</option>${attPeople().map(p => `<option value="${p.uid}" ${S.attEmp === p.uid ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select>` : ""}
+      ${recs.length ? `<button class="btn sm" data-att="copy">نسخ التقرير لإكسل</button>` : ""}</header>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>الاسم</th><th>أيام الحضور</th><th>إجمالي الساعات</th><th>متوسط اليوم</th><th>متوسط وقت الحضور</th><th>أيام من غير انصراف</th></tr></thead>
+      <tbody>${sums.map(x => `<tr class="sum"><td>${esc(x.p.name)}</td><td>${fmtNum(x.days)}</td><td>${hm(x.total)}</td><td>${x.days ? hm(x.avg) : "—"}</td><td>${avgInTxt(x.avgIn)}</td><td class="${x.miss ? "warn" : ""}">${fmtNum(x.miss)}</td></tr>`).join("")}</tbody></table></div>
+    <h3 class="timeline-h">التفاصيل يوم بيوم</h3>
+    ${recs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>اليوم</th><th>الاسم</th><th>حضور</th><th>انصراف</th><th>الساعات</th>${sup ? "<th></th>" : ""}</tr></thead><tbody>${rowsHtml}</tbody></table></div>` : `<p class="hint">مفيش تسجيلات في الشهر ده.</p>`}
+  </section>`;
+  if (sup){
+    html += `<section class="att-sec"><header><h2>إعدادات الحضور</h2></header><div class="set-grid">
+      <div><h3>موقع الشركة</h3><p class="hint" id="officeTxt">بيحمّل…</p>
+        <label class="check">المسافة المسموحة <select id="officeR">${[100,150,250,400].map(v => `<option value="${v}">${fmtNum(v)} متر</option>`).join("")}</select></label>
+        <div class="act-row"><button class="btn primary sm" data-att="office">${ic("pin")}حدد موقع الشركة من مكاني دلوقتي</button></div>
+        <p class="hint">اعمل الخطوة دي وإنت جوه الشركة.</p></div>
+      <div><h3>شاشة الكود</h3><p class="hint">افتح الصفحة دي على جهاز ثابت في الشركة وسيبها شغالة. الأحسن تدخل عليها بحساب «جهاز الحضور» من صفحة الفريق.</p>
+        <div class="act-row"><a class="btn sm" href="kiosk.html" target="_blank" rel="noopener">${ic("qr")}فتح شاشة الكود</a></div></div>
+      <div style="grid-column:1/-1"><h3>إضافة سجل يدوي</h3><p class="hint">لو حد نسي يسجّل حضور أو انصراف.</p>
+        <div class="act-row"><select id="am-uid">${attPeople().map(p => `<option value="${p.uid}">${esc(p.name)}</option>`).join("")}</select>
+          <label class="check">حضور <input type="datetime-local" id="am-in"></label><label class="check">انصراف <input type="datetime-local" id="am-out"></label>
+          <button class="btn sm" data-att="add">إضافة</button></div></div>
+    </div></section>`;
+  }
+  const keepCode = $("#attCode") ? $("#attCode").value : "";
+  main.innerHTML = `<div class="att-wrap">${html}</div>`;
+  if ($("#attCode")) $("#attCode").value = keepCode;
+  $("#attEmp") && ($("#attEmp").onchange = e => { S.attEmp = e.target.value; renderAtt(); });
+  $("#attCode") && ($("#attCode").onkeydown = e => { if (e.key === "Enter") doPunch(e.target.value); });
+  if (sup) api.getOffice().then(o => { const t = $("#officeTxt"); if (!t) return;
+    t.textContent = o ? `متحدد: ${o.lat.toFixed(5)}, ${o.lng.toFixed(5)} — المسافة المسموحة ${fmtNum(o.radius)} متر` : "لسه ما اتحددش. لازم تحدده عشان الحضور يشتغل.";
+    if (o && $("#officeR")) $("#officeR").value = String(o.radius); }).catch(() => {});
+}
+async function attClick(b){
+  const k = b.dataset.att, id = b.dataset.id;
+  if (k === "punch") return doPunch($("#attCode").value);
+  if (k === "edit"){ S.attEdit = id; return renderAtt(); }
+  if (k === "cancel"){ S.attEdit = null; return renderAtt(); }
+  if (k === "save"){ const x = S.att.find(a => a.id === id), vi = $("#ae-in").value, vo = $("#ae-out").value;
+    if (!vi) return toast("لازم وقت الحضور"); const inAt = new Date(vi).getTime(), outAt = vo ? new Date(vo).getTime() : null;
+    if (outAt && outAt <= inAt) return toast("وقت الانصراف لازم يكون بعد الحضور");
+    try { await api.editAtt(id, { inAt, outAt, day:dayKey(inAt), editedBy:S.me.name }); S.attEdit = null; toast("السجل اتعدّل"); } catch(e){ console.error(e); toast("التعديل ما نجحش"); } return; }
+  if (k === "del"){ if (S.attArm !== id){ S.attArm = id; renderAtt(); setTimeout(() => { if (S.attArm === id){ S.attArm = null; renderAtt(); } }, 4000); return; }
+    S.attArm = null; try { await api.delAtt(id); toast("السجل اتحذف"); } catch(e){ console.error(e); toast("الحذف ما نجحش"); } return; }
+  if (k === "add"){ const uid = $("#am-uid").value, vi = $("#am-in").value, vo = $("#am-out").value, p = attPeople().find(x => x.uid === uid);
+    if (!uid || !vi) return toast("اختار الموظف ووقت الحضور"); const inAt = new Date(vi).getTime(), outAt = vo ? new Date(vo).getTime() : null;
+    if (outAt && outAt <= inAt) return toast("وقت الانصراف لازم يكون بعد الحضور");
+    try { await api.addAtt({ uid, name:p.name, day:dayKey(inAt), inAt, ...(outAt ? { outAt } : {}), manual:true, editedBy:S.me.name }); toast("السجل اتضاف"); } catch(e){ console.error(e); toast("الإضافة ما نجحتش"); } return; }
+  if (k === "office"){ b.disabled = true; toast("بيحدد موقعك…");
+    try { const pos = await getPos(), radius = +$("#officeR").value, tol = radius + 100;
+      await api.setOffice({ lat:pos.lat, lng:pos.lng, radius, dLat: tol / 111320, dLng: tol / (111320 * Math.cos(pos.lat * Math.PI / 180)), setBy:S.me.name, setAt:Date.now() });
+      toast("موقع الشركة اتحفظ"); renderAtt(); }
+    catch(e){ console.error(e); toast(e && e.code === 1 ? "لازم تسمح للمتصفح يعرف موقعك" : "ما قدرتش أحدد الموقع، جرّب تاني"); }
+    b.disabled = false; return; }
+  if (k === "copy"){ const M = attMonth();
+    const rows = (S.att || []).filter(x => x.day && x.day.startsWith(M.key) && (!S.attEmp || x.uid === S.attEmp)).sort((a,b) => ms(a.inAt) - ms(b.inAt));
+    const tsv = ["اليوم\tالاسم\tحضور\tانصراف\tالساعات", ...rows.map(x => [x.day, x.name, tOf(x.inAt), x.outAt ? tOf(x.outAt) : "", (recDur(x) / HOUR).toFixed(2)].join("\t"))].join("\n");
+    try { await navigator.clipboard.writeText(tsv); toast("التقرير اتنسخ. الزقه في إكسل"); } catch { toast("المتصفح منع النسخ"); } }
+}
+
 /* ---------- التنبيهات ---------- */
 const repeatEvery = () => store.get("repeat", 15) * MIN;
 function alertList(){
@@ -1047,6 +1263,8 @@ document.addEventListener("click", async e => {
     return renderCalendar(); }
   const ly = t.closest("[data-layout]"); if (ly){ S.layout = ly.dataset.layout; store.set("layout", S.layout); renderToolbar(); return renderBoard(); }
   const kc = t.closest("[data-kcol]"); if (kc){ S.kcol = kc.dataset.kcol; return renderBoard(); }
+  const at = t.closest("[data-att]"); if (at) return attClick(at);
+  const am = t.closest("[data-attm]"); if (am){ S.attMonth = +am.dataset.attm; return renderAtt(); }
   const pf = t.closest("[data-perf]"); if (pf){ S.perf = pf.dataset.perf; return renderPerf(); }
   if ($(".pop") && !t.closest(".pop") && !t.closest("#btnBell")) closePop();
 });
@@ -1432,7 +1650,7 @@ function openTeam(){
     <h3 class="sub-h">إضافة حساب</h3>
     <form class="form" id="uForm" novalidate>
       <div class="field"><label for="u-name">الاسم</label><input id="u-name" required></div>
-      <div class="field"><label for="u-role">الدور</label><select id="u-role"><option value="employee">موظف</option><option value="manager">المدير العام</option><option value="supervisor">مدير تشغيل</option></select></div>
+      <div class="field"><label for="u-role">الدور</label><select id="u-role"><option value="employee">موظف</option><option value="manager">المدير العام</option><option value="supervisor">مدير تشغيل</option><option value="kiosk">جهاز الحضور (شاشة الكود في الشركة)</option></select></div>
       <div class="field"><label for="u-email">الإيميل</label><input id="u-email" type="email" dir="ltr" required></div>
       <div class="field"><label for="u-pass">كلمة السر (٦ حروف على الأقل)</label><input id="u-pass" type="text" dir="ltr" required></div>
       <p class="err" id="u-err" hidden></p>

@@ -14,6 +14,7 @@ service cloud.firestore {
     function isSup() { return isOwner() || (active() && me().role == 'supervisor'); }   // مدير التشغيل
     function isMgr() { return active() && me().role == 'manager'; }                     // المدير العام
     function isEmp() { return active() && me().role == 'employee'; }
+    function isKiosk() { return active() && me().role == 'kiosk'; }               // جهاز الحضور
     function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
     function noteKeys() { return ['updatedAt', 'lastUpdate', 'lastUpdateBy', 'lastUpdateAt']; }
 
@@ -94,6 +95,40 @@ service cloud.firestore {
         allow read: if canSeeTask();
         allow create, update, delete: if canWorkTask();
       }
+    }
+
+    // ===== الحضور والانصراف =====
+    // الكود الحالي اللي على شاشة الشركة: الموظفين مايقدروش يقروه
+    match /attKiosk/{doc} {
+      allow read, write: if isSup() || isKiosk();
+    }
+    // موقع الشركة
+    match /settings/{doc} {
+      allow read: if member();
+      allow write: if isSup();
+    }
+    match /attendance/{recId} {
+      // الكود لازم يطابق اللي على الشاشة (صالح ٧٠ ثانية)، والموقع لازم يكون جوه نطاق الشركة
+      function validScan(code, lat, lng) {
+        let k = get(/databases/$(database)/documents/attKiosk/current).data;
+        let o = get(/databases/$(database)/documents/settings/office).data;
+        return ((code == k.code && request.time < k.at + duration.value(70, 's'))
+                || (code == k.prev && request.time < k.at + duration.value(30, 's')))
+          && math.abs(lat - o.lat) <= o.dLat && math.abs(lng - o.lng) <= o.dLng;
+      }
+      allow read: if isSup() || isMgr() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isSup()
+        || (member() && !isKiosk()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.inAt == request.time
+            && !('outAt' in request.resource.data)
+            && validScan(request.resource.data.inCode, request.resource.data.inLat, request.resource.data.inLng));
+      allow update: if isSup()
+        || (signedIn() && resource.data.uid == request.auth.uid && !('outAt' in resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outAt', 'outLat', 'outLng', 'outAcc', 'outCode'])
+            && request.resource.data.outAt == request.time
+            && validScan(request.resource.data.outCode, request.resource.data.outLat, request.resource.data.outLng));
+      allow delete: if isSup();
     }
 
     // أرشيف الملفات
