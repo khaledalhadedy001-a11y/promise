@@ -44,7 +44,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.3}
-.wrap{max-width:1040px;margin:0 auto;padding-inline:16px}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px}
 .ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .ic.fill{fill:currentColor;stroke:none}
 
@@ -295,6 +295,34 @@ main{padding-bottom:56px}
 .file-chips{display:flex;gap:6px;flex-wrap:wrap}
 .file-chips a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;color:var(--t-follow);background:color-mix(in srgb,var(--t-follow) 12%,transparent);direction:ltr}
 .check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+/* priority board + date view */
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px;align-items:start}
+.kcol{background:color-mix(in srgb,var(--h) 7%,var(--bg));border:1px solid color-mix(in srgb,var(--h) 28%,var(--line));border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.kcol-h{display:flex;align-items:center;gap:8px;font-size:16px;color:var(--h);padding:4px 6px 2px}
+.kcol-h::before{content:"";width:11px;height:11px;border-radius:3px;background:var(--h)}
+.kcol-h span{margin-inline-start:auto;background:var(--h);color:var(--on-hue);border-radius:99px;padding:0 10px;font-size:13px;font-variant-numeric:tabular-nums}
+.kcol-b{display:flex;flex-direction:column;gap:8px}
+.kcol .row{background:var(--surface);border:1px solid var(--line);border-radius:12px;grid-template-columns:auto 1fr;padding:10px 12px}
+.kcol .row:hover{border-color:var(--h)}
+.kcol .row-side{grid-column:2;flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start}
+.kempty{color:var(--muted);font-size:13px;text-align:center;padding:18px 0;margin:0}
+.kswitch{display:none}
+.kbtn{border:1px solid color-mix(in srgb,var(--h) 35%,var(--line));background:var(--surface);color:var(--h);border-radius:11px;padding:6px 4px;font-weight:600;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.kbtn b{font:600 19px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.kbtn.on{background:var(--h);border-color:var(--h);color:var(--on-hue)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface);flex:none}
+.seg button{border:0;background:none;padding:8px 14px;font-size:14px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.dgroup-h{display:flex;align-items:baseline;gap:8px;font-size:15px;padding:0 4px 6px;margin-top:18px}
+.dgroup-h span{font-size:13px;color:var(--muted);font-weight:500}
+.dlist .row{grid-template-columns:auto 1fr}
+.dlist .row-side{grid-column:2;flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start}
+.created{font-size:12px;color:var(--muted);white-space:nowrap}
+@media (max-width:900px){
+  .board{grid-template-columns:1fr;margin-top:10px}
+  .kcol:not(.on){display:none}
+  .kswitch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:14px}
+}
 /* collection sheet */
 .colsec{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px}
 .col-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -636,7 +664,7 @@ function makeDemo(){
 
 /* ====================== الحالة ====================== */
 const S = { me:null, tasks:[], users:[], view:"list", tab:"open", emp:"", q:"", openId:null, updates:[], unsub:[], unsubUpd:null, armedDel:false, stars:0,
-  calMonth:new Date(new Date().getFullYear(), new Date().getMonth(), 1), calDay:dayKey(Date.now()), perf:"this", firstLoad:true };
+  layout:store.get("layout","board"), kcol:"", calMonth:new Date(new Date().getFullYear(), new Date().getMonth(), 1), calDay:dayKey(Date.now()), perf:"this", firstLoad:true };
 let sheetEl = null;
 const api = DEMO ? makeDemo() : await makeFirebase();
 const app = $("#app");
@@ -747,7 +775,8 @@ function staff(){ return S.users.filter(u => u.active !== false && (u.role === "
 function renderToolbar(){
   const tb = $("#toolbar"); if (!tb) return;
   const empSel = S.me.role === "employee" ? "" : `<select id="empFilter" aria-label="فلترة بالموظف"><option value="">كل الموظفين</option>${staff().map(u => `<option value="${u.uid}" ${S.emp === u.uid ? "selected" : ""}>${esc(u.name)}</option>`).join("")}</select>`;
-  tb.innerHTML = `<input id="search" type="search" placeholder="بحث باسم العميل أو رقم المهمة أو التليفون أو رقم الأرشيف" value="${esc(S.q)}">${empSel}`;
+  tb.innerHTML = `<input id="search" type="search" placeholder="بحث باسم العميل أو رقم المهمة أو التليفون أو رقم الأرشيف" value="${esc(S.q)}">${empSel}
+    <div class="seg" role="group" aria-label="طريقة الترتيب"><button data-layout="board" class="${S.layout === "board" ? "on" : ""}">${ic("list")}حسب الأولوية</button><button data-layout="date" class="${S.layout === "date" ? "on" : ""}">${ic("cal")}حسب تاريخ الدخول</button></div>`;
   $("#search").oninput = e => { S.q = e.target.value; renderBoard(); };
   $("#empFilter") && ($("#empFilter").onchange = e => { S.emp = e.target.value; renderBoard(); });
 }
@@ -790,7 +819,7 @@ function flags(t){
   if (t.files && t.files.length) out.push(`<span class="flag f-file">${fmtNum(t.files.length)} ${t.files.length === 1 ? "مرفق" : "مرفقات"}</span>`);
   return out.join("");
 }
-function rowHtml(t){
+function rowHtml(t, o = {}){
   const d = dueInfo(t);
   return `<div class="row" data-open="${t.id}" role="button" tabindex="0">
     ${t.assignedTo ? avatar(t.assignedToName, t.assignedTo) : `<span class="av c-other" aria-hidden="true">؟</span>`}
@@ -798,7 +827,7 @@ function rowHtml(t){
       <div class="row-meta"><span class="tag c-${typeCls(t.type)}">${esc(t.type)}</span>${t.client ? `<span>${esc(t.client)}</span>` : ""}<span>${t.assignedTo ? "مع " + esc(t.assignedToName) : "لسه ما اتوزعتش"}</span>${t.status === "closed" && t.rating ? starsSm(t.rating) : ""}</div>
       ${flags(t) ? `<div class="row-meta">${flags(t)}</div>` : ""}
       ${t.lastUpdate ? `<div class="row-last">${esc(t.lastUpdateBy)}: ${esc(t.lastUpdate)} — ${ago(t.lastUpdateAt)}</div>` : ""}</div>
-    <div class="row-side"><span class="pill s-${t.status}">${ST[t.status]}</span>${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}${quickBtn(t)}</div></div>`;
+    <div class="row-side">${o.pri ? `<span class="pri p-${PRI[t.priority] ? t.priority : "normal"}">${(PRI[t.priority] || PRI.normal).l}</span>` : ""}<span class="pill s-${t.status}">${ST[t.status]}</span>${o.created ? `<span class="created">دخلت ${new Date(ms(t.createdAt)).toLocaleTimeString("ar-EG",{hour:"numeric",minute:"2-digit"})}</span>` : ""}${d ? `<span class="due ${d.cls}">${d.cls ? ic("clock") : ""}${d.txt}</span>` : ""}${quickBtn(t)}</div></div>`;
 }
 function todayHtml(){
   const T = S.tasks, now = Date.now(), r = S.me.role;
@@ -833,12 +862,22 @@ function renderBoard(){
     return;
   }
   if (S.tab === "closed"){ $("#board").innerHTML = `<div class="list" style="margin-top:16px">${list.map(rowHtml).join("")}</div>`; return; }
-  if (S.tab === "open"){
-    const hot = list.filter(HOT), rest = list.filter(t => !HOT(t));
-    $("#board").innerHTML = summary + (hot.length ? `<section class="hot" aria-label="العاجل والفوري"><h2 class="hot-h">${ic("alert")}العاجل والفوري (${fmtNum(hot.length)})</h2>${groupsHtml(hot)}</section>` : "") + groupsHtml(rest);
-    return;
-  }
-  $("#board").innerHTML = groupsHtml(list);
+  $("#board").innerHTML = summary + (S.layout === "date" ? dateHtml(list) : boardHtml(list));
+}
+const KCOLS = [["hot","عاجل وفوري","p-urgent",HOT],["high","أولوية عالية","p-high",t => t.priority === "high"],["rest","عادية ومنخفضة","p-normal",t => !HOT(t) && t.priority !== "high"]];
+function boardHtml(list){
+  const cols = KCOLS.map(([k,l,c,f]) => ({ k, l, c, items:list.filter(f) }));
+  if (!S.kcol || !cols.some(c => c.k === S.kcol)) S.kcol = (cols.find(c => c.items.length) || cols[0]).k;
+  return `<div class="kswitch" role="tablist">${cols.map(c => `<button class="kbtn ${c.c} ${S.kcol === c.k ? "on" : ""}" data-kcol="${c.k}" role="tab" aria-selected="${S.kcol === c.k}">${c.l}<b>${fmtNum(c.items.length)}</b></button>`).join("")}</div>
+    <div class="board">${cols.map(c => `<section class="kcol ${c.c} ${S.kcol === c.k ? "on" : ""}" aria-label="${c.l}"><h2 class="kcol-h">${c.l}<span>${fmtNum(c.items.length)}</span></h2>
+      <div class="kcol-b">${c.items.map(t => rowHtml(t, { pri:c.k !== "high" })).join("") || `<p class="kempty">مفيش مهام هنا</p>`}</div></section>`).join("")}</div>`;
+}
+function dateHtml(list){
+  const n = new Date(), d0 = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+  const B = [["النهارده", d0], ["امبارح", d0 - DAY], ["آخر أسبوع", d0 - 7*DAY], ["أقدم", -Infinity]];
+  const groups = B.map(([l, from]) => ({ l, items:[] }));
+  [...list].sort((a,b) => ms(b.createdAt) - ms(a.createdAt)).forEach(t => { const c = ms(t.createdAt); groups[B.findIndex(([,from]) => c >= from)].items.push(t); });
+  return groups.filter(g => g.items.length).map(g => `<section><h2 class="dgroup-h">${g.l}<span>${fmtNum(g.items.length)} ${g.items.length === 1 ? "مهمة" : "مهام"}</span></h2><div class="list dlist">${g.items.map(t => rowHtml(t, { pri:true, created:g.l === "النهارده" || g.l === "امبارح" })).join("")}</div></section>`).join("");
 }
 
 /* ---------- الكاليندر ---------- */
@@ -1006,6 +1045,8 @@ document.addEventListener("click", async e => {
     if (k === "today"){ const n = new Date(); S.calMonth = new Date(n.getFullYear(), n.getMonth(), 1); S.calDay = dayKey(n); }
     else S.calMonth = new Date(S.calMonth.getFullYear(), S.calMonth.getMonth() + (k === "next" ? 1 : -1), 1);
     return renderCalendar(); }
+  const ly = t.closest("[data-layout]"); if (ly){ S.layout = ly.dataset.layout; store.set("layout", S.layout); renderToolbar(); return renderBoard(); }
+  const kc = t.closest("[data-kcol]"); if (kc){ S.kcol = kc.dataset.kcol; return renderBoard(); }
   const pf = t.closest("[data-perf]"); if (pf){ S.perf = pf.dataset.perf; return renderPerf(); }
   if ($(".pop") && !t.closest(".pop") && !t.closest("#btnBell")) closePop();
 });
