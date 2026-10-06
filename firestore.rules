@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ← نفس الإيميل اللي في OWNER_EMAIL جوه index.html
+    function ownerEmail() { return 'khaledalhadedy001@gmail.com'; }
+
+    function signedIn() { return request.auth != null; }
+    function isOwner() { return signedIn() && request.auth.token.email == ownerEmail(); }
+    function hasProfile() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function active() { return hasProfile() && me().active == true; }
+    function isSup() { return isOwner() || (active() && me().role == 'supervisor'); }
+    function isMgr() { return active() && me().role == 'manager'; }
+    function isEmp() { return active() && me().role == 'employee'; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function noteKeys() { return ['updatedAt', 'lastUpdate', 'lastUpdateBy', 'lastUpdateAt']; }
+
+    // حسابات المستخدمين: المشرف بس هو اللي بيضيف ويعدّل
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isSup() || isMgr());
+      allow create, update: if isSup();
+      allow delete: if false;
+    }
+
+    // عداد أرقام المهام
+    match /meta/counter {
+      allow read, write: if isSup() || isMgr();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isSup() || isMgr() || (isEmp() && resource.data.assignedTo == request.auth.uid);
+
+      // المدير بيبعت المهمة للمشرف من غير توزيع، والمشرف يقدر يوزع على طول
+      allow create: if (isSup() || isMgr())
+        && request.resource.data.createdBy == request.auth.uid
+        && (isSup() || (request.resource.data.status == 'new' && request.resource.data.assignedTo == ''));
+
+      allow update: if isSup()
+        // المدير: يكتب ملاحظات بس
+        || (isMgr() && changed().hasOnly(noteKeys()))
+        // الموظف: مهامه بس، يبدأ التنفيذ أو يبعت للاعتماد، ومايقدرش يقفل
+        || (isEmp()
+            && resource.data.assignedTo == request.auth.uid
+            && resource.data.status != 'closed'
+            && changed().hasOnly(noteKeys().concat(['status']))
+            && (!changed().hasAny(['status']) || request.resource.data.status in ['in_progress', 'pending_approval']));
+
+      allow delete: if isSup();
+
+      match /updates/{updateId} {
+        function canSeeTask() {
+          return isSup() || isMgr()
+            || (isEmp() && get(/databases/$(database)/documents/tasks/$(taskId)).data.assignedTo == request.auth.uid);
+        }
+        allow read: if canSeeTask();
+        allow create: if canSeeTask() && request.resource.data.by == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+  }
+}
