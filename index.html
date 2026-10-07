@@ -424,6 +424,25 @@ main{padding-bottom:56px}
 .dl-item b{overflow-wrap:anywhere}
 .dl-foot{padding:10px 18px 18px;display:flex;justify-content:flex-start}
 @media (prefers-reduced-motion:no-preference){ .dl-card{animation:pop .25s ease-out} @keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}} }
+/* التأشيرات */
+.vs-review{--h:var(--gold)}.vs-register{--h:var(--t-flight)}.vs-execute{--h:var(--t-visa)}.vs-back{--h:var(--warn)}.vs-done{--h:var(--ok)}.vs-mine{--h:var(--p-urgent)}.vs-rej{--h:var(--p-urgent)}
+.vhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-block:18px 2px}
+.vhead h2{font-size:20px;margin-inline-end:auto}
+.vpath{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.8}
+.vpath b{color:var(--ink)}.vpath small{font-size:12px;color:var(--accent);font-weight:600}
+.vtabs{grid-template-columns:repeat(6,minmax(0,1fr));padding-top:12px}
+.vsteps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.vsteps li{display:flex;flex-direction:column;gap:2px;padding:8px 9px;border-radius:10px;background:var(--surface-2);border-top:3px solid var(--line);font-size:11px;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.vsteps li b{font-size:12.5px;color:var(--ink);font-weight:600;line-height:1.35}
+.vsteps li.done{border-top-color:var(--ok)}.vsteps li.done > span:last-child{color:var(--ok)}
+.vsteps li.cur{border-top-color:var(--h);background:color-mix(in srgb,var(--h) 11%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--h) 40%,transparent)}
+.vsteps li.cur > span:last-child{color:var(--h);font-weight:600}
+.vresult{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:10px;background:color-mix(in srgb,var(--h) 12%,var(--surface))}
+.vresult b{color:var(--h);font:600 17px/1.3 var(--f-display)}
+.vtravel{white-space:pre-wrap;margin:4px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-size:14px;overflow-wrap:anywhere}
+.vbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--p-urgent);color:#fff;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-inline-start:2px}
+@media (max-width:900px){ .vtabs{display:flex;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px} .vtabs .tab{flex:0 0 auto} }
+@media (max-width:460px){ .views button .ic{display:none} .views button{font-size:13px} .vsteps{grid-template-columns:repeat(2,minmax(0,1fr))} }
 #toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:10px;z-index:40;font-size:14px;max-width:calc(100% - 32px)}
 
 @media (max-width:760px){
@@ -506,6 +525,7 @@ const ICONS = {
   qr:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"/>',
   cam:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
   out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  passport:'<rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17h8"/>',
   next:'<path d="m15 18-6-6 6-6"/>', prev:'<path d="m9 18 6-6-6-6"/>'
 };
 const ic = (n, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
@@ -654,7 +674,31 @@ async function makeFirebase(){
     watchSheet(id, cb){ return F.onSnapshot(F.query(F.collection(db,"tasks",id,"sheet"), F.orderBy("n")), s => cb(s.docs.map(withId)), e => console.warn(e)); },
     async addSheetRows(id, rows){ const b = F.writeBatch(db); rows.forEach(r => b.set(F.doc(F.collection(db,"tasks",id,"sheet")), r)); await b.commit(); },
     updateSheetRow:(id, rid, patch) => F.updateDoc(F.doc(db,"tasks",id,"sheet",rid), patch),
-    deleteSheetRow:(id, rid) => F.deleteDoc(F.doc(db,"tasks",id,"sheet",rid))
+    deleteSheetRow:(id, rid) => F.deleteDoc(F.doc(db,"tasks",id,"sheet",rid)),
+    // التأشيرات: الموظف بيشوف الملفات اللي هو فيها بس
+    watchVisas(me, cb, onErr){ const col = F.collection(db,"visas");
+      const q = me.role === "employee" ? F.query(col, F.where("people","array-contains",me.uid)) : col;
+      return F.onSnapshot(q, s => cb(s.docs.map(withId)), e => { console.warn(e); onErr && onErr(e); }); },
+    watchVisaLog(id, cb){ return F.onSnapshot(F.query(F.collection(db,"visas",id,"log"), F.orderBy("createdAt")), s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    async createVisa(data, me, text){
+      const counter = F.doc(db, "meta", "visaCounter"), ref = F.doc(F.collection(db, "visas"));
+      await F.runTransaction(db, async tx => {
+        const c = await tx.get(counter); const n = (c.exists() ? c.data().n : 0) + 1;
+        tx.set(counter, { n });
+        tx.set(ref, fix({ ...data, no:n, createdAt:NOW, updatedAt:NOW, lastUpdate:text, lastUpdateBy:me.name, lastUpdateAt:NOW }));
+      });
+      await F.addDoc(F.collection(db,"visas",ref.id,"log"), { kind:"event", text, by:me.uid, byName:me.name, role:me.role, createdAt:F.serverTimestamp() });
+      return ref.id;
+    },
+    async visaAct(id, me, patch, entry){
+      const b = F.writeBatch(db);
+      b.update(F.doc(db,"visas",id), fix({ ...patch, updatedAt:NOW, lastUpdate:entry.text.slice(0,160), lastUpdateBy:me.name, lastUpdateAt:NOW }));
+      b.set(F.doc(F.collection(db,"visas",id,"log")), { kind:entry.kind, text:entry.text, by:me.uid, byName:me.name, role:me.role, createdAt:F.serverTimestamp() });
+      await b.commit();
+    },
+    deleteVisa:id => F.deleteDoc(F.doc(db,"visas",id)),
+    async getVisaFlow(){ const d = await F.getDoc(F.doc(db,"settings","visaFlow")); return d.exists() ? d.data() : null; },
+    setVisaFlow:o => F.setDoc(F.doc(db,"settings","visaFlow"), o, { merge:true })
   };
 }
 
@@ -748,6 +792,29 @@ function makeDemo(){
   const emitUp = id => (upSubs.get(id) || new Set()).forEach(cb => cb([...(updates[id] || [])]));
   const fix = o => { const r = {}; for (const k in o) r[k] = o[k] === NOW ? Date.now() : o[k]; return r; };
   const later = f => new Promise(r => setTimeout(() => r(f()), 120));
+  // ملفات تأشيرات تجريبية: المراجعة عند خالد ← التسجيل (سارة) ← التنفيذ (منى)
+  const visas = [], vlogs = {}, vSubs = new Set(), vlSubs = new Map(); let vcount = 0, vflow = null;
+  const emitV = () => vSubs.forEach(s => s.cb(visas.filter(v => s.me.role !== "employee" || (v.people || []).includes(s.me.uid)).map(v => JSON.parse(JSON.stringify(v)))));
+  const emitVL = id => (vlSubs.get(id) || new Set()).forEach(cb => cb([...(vlogs[id] || [])]));
+  const vseed = (v, log) => { const id = "v" + (++vcount), sH = v.stageH; delete v.stageH;
+    const L = log.map(([who, kind, text, h], i) => ({ id:id + "l" + i, by:who, byName:U(who).name, role:U(who).role, kind, text, createdAt:now - h * HOUR })), last = L[L.length - 1];
+    visas.push({ id, no:vcount, phone:"", country:"السعودية", count:1, travel:"", travelers:"", notes:"", files:[], status:"", result:"", backReason:"",
+      regUid:"e1", regName:"سارة", exeUid:"e2", exeName:"منى", people:["e1","e2"], createdBy:"sup", createdByName:"خالد",
+      createdAt:L[0].createdAt, updatedAt:last.createdAt, lastUpdate:last.text, lastUpdateBy:last.byName, lastUpdateAt:last.createdAt, stageAt:now - sH * HOUR, ...v });
+    vlogs[id] = L; };
+  const inD = n => dayKey(now + n * DAY);
+  vseed({ client:"عائلة أ. محمد سعيد", phone:"01001239876", vtype:"عمرة", count:4, travel:inD(12), travelers:"محمد سعيد\nهالة فتحي\nيوسف محمد\nملك محمد", stage:"review", stageH:2 },
+    [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",2]]);
+  vseed({ client:"م. سامح عادل", vtype:"زيارة عمل", count:1, travel:inD(-9), stage:"done", stageH:30, reviewedAt:now - 140*HOUR, registeredAt:now - 120*HOUR, issuedAt:now - 50*HOUR, closedAt:now - 30*HOUR, status:"issued", result:"issued", platform:"منصة التأشيرات", appRef:"VB-104477" },
+    [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",150],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",140],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",120],["e2","event","صدرت التأشيرة ✓ — الملف رجع لمدير التشغيل",50],["sup","event","سلّم التأشيرة للعميل وقفل الملف ✓",30]]);
+  vseed({ client:"مجموعة الرحمة", phone:"01112223344", vtype:"عمرة", count:8, travel:inD(20), stage:"register", stageH:5, reviewedAt:now - 5*HOUR, notes:"الدفع على دفعتين، أول دفعة اتسددت." },
+    [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",7],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",5]]);
+  vseed({ client:"أ. هاني فكري", phone:"01223344556", vtype:"زيارة عائلية", count:1, travel:inD(6), stage:"execute", stageH:26, status:"uploaded", platform:"منصة التأشيرات", appRef:"VR-558213", reviewedAt:now - 40*HOUR, registeredAt:now - 26*HOUR },
+    [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",44],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",40],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",26],["e2","event","حدّث حالة الطلب: اترفعت على المنصة",8]]);
+  vseed({ client:"شركة النور — معتمرين", vtype:"عمرة", count:12, travel:inD(2), stage:"execute", stageH:50, status:"needs", platform:"منصة العمرة", appRef:"UM-22019", reviewedAt:now - 70*HOUR, registeredAt:now - 50*HOUR },
+    [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",72],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",70],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",50],["e2","event","حدّث حالة الطلب: محتاجة استيفاء\nصورة جواز واحد من المعتمرين مش واضحة، كلمت العميل يبعت غيرها",3]]);
+  vseed({ client:"عائلة رأفت", vtype:"سياحة", country:"الإمارات", count:3, travel:inD(9), stage:"back", stageH:1, status:"issued", result:"issued", issuedAt:now - HOUR, platform:"منصة التأشيرات", appRef:"AE-77120", reviewedAt:now - 90*HOUR, registeredAt:now - 80*HOUR },
+    [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",92],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",90],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",80],["e2","event","صدرت التأشيرة ✓ — الملف رجع لمدير التشغيل",1]]);
   return {
     demo:true, users,
     onAuth(cb){ authCb = cb; cb(null); },
@@ -782,21 +849,31 @@ function makeDemo(){
     watchSheet(id, cb){ if (!shSubs.has(id)) shSubs.set(id, new Set()); shSubs.get(id).add(cb); cb([...(sheets[id] || [])]); return () => shSubs.get(id).delete(cb); },
     addSheetRows(id, rows){ return later(() => { (sheets[id] ||= []).push(...rows.map(r => ({ ...r, id:"r" + Math.random().toString(36).slice(2) }))); emitSh(id); }); },
     updateSheetRow(id, rid, patch){ return later(() => { Object.assign(sheets[id].find(r => r.id === rid), patch); emitSh(id); }); },
-    deleteSheetRow(id, rid){ return later(() => { sheets[id] = sheets[id].filter(r => r.id !== rid); emitSh(id); }); }
+    deleteSheetRow(id, rid){ return later(() => { sheets[id] = sheets[id].filter(r => r.id !== rid); emitSh(id); }); },
+    watchVisas(m, cb){ const s = { me:m, cb }; vSubs.add(s); emitV(); return () => vSubs.delete(s); },
+    watchVisaLog(id, cb){ if (!vlSubs.has(id)) vlSubs.set(id, new Set()); vlSubs.get(id).add(cb); cb([...(vlogs[id] || [])]); return () => vlSubs.get(id).delete(cb); },
+    createVisa(data, m, text){ return later(() => { const id = "v" + (++vcount), n = Date.now();
+      visas.push({ ...fix(data), id, no:vcount, createdAt:n, updatedAt:n, lastUpdate:text, lastUpdateBy:m.name, lastUpdateAt:n });
+      vlogs[id] = [{ id:"vl" + n, kind:"event", text, by:m.uid, byName:m.name, role:m.role, createdAt:n }]; emitV(); return id; }); },
+    visaAct(id, m, patch, entry){ return later(() => { const v = visas.find(x => x.id === id), n = Date.now();
+      Object.assign(v, fix(patch), { updatedAt:n, lastUpdate:entry.text.slice(0,160), lastUpdateBy:m.name, lastUpdateAt:n });
+      (vlogs[id] ||= []).push({ id:"vl" + n, kind:entry.kind, text:entry.text, by:m.uid, byName:m.name, role:m.role, createdAt:n }); emitV(); emitVL(id); }); },
+    deleteVisa(id){ return later(() => { visas.splice(visas.findIndex(v => v.id === id), 1); emitV(); }); },
+    getVisaFlow(){ return later(() => vflow); }, setVisaFlow(o){ return later(() => { vflow = { ...vflow, ...o }; }); }
   };
 }
 
 /* ====================== الحالة ====================== */
 const S = { me:null, tasks:[], users:[], view:"list", tab:"open", emp:"", q:"", openId:null, updates:[], unsub:[], unsubUpd:null, armedDel:false, stars:0,
   layout:store.get("layout","board"), kcol:"", calMonth:new Date(new Date().getFullYear(), new Date().getMonth(), 1), calDay:dayKey(Date.now()), perf:"this", firstLoad:true };
-let sheetEl = null;
+let sheetEl = null, visaEl = null;
 let pendingCode = (location.hash.match(/^#att-([A-Za-z0-9]{4,10})$/) || [])[1] || "";
 if (pendingCode) try { history.replaceState(null, "", location.pathname + location.search); } catch {}
 window.addEventListener("hashchange", () => { const m = location.hash.match(/^#att-([A-Za-z0-9]{4,10})$/); if (!m) return; try { history.replaceState(null, "", location.pathname + location.search); } catch {} if (S.me) doPunch(m[1]); else pendingCode = m[1]; });
 const api = DEMO ? makeDemo() : await makeFirebase();
 const app = $("#app");
 
-function cleanup(){ S.unsub.forEach(f => f && f()); S.unsub = []; closeTask(); closePop(); S.tasks = []; S.users = []; S.firstLoad = true; }
+function cleanup(){ S.unsub.forEach(f => f && f()); S.unsub = []; closeTask(); closeVisa(); closePop(); S.tasks = []; S.users = []; S.visas = []; S.firstLoad = true; }
 
 api.onAuth(p => {
   cleanup(); S.me = p && !p.blocked ? p : null;
@@ -807,8 +884,12 @@ api.onAuth(p => {
   S.unsub.push(api.watchTasks(S.me, ts => { S.tasks = ts; renderView(); if (S.openId) renderDetail(); checkAlerts(S.firstLoad); S.firstLoad = false; }));
   S.attCfg = null; api.getOffice().then(o => { S.attCfg = o; if (S.view === "att") renderAtt(); }).catch(() => {});
   S.att = []; S.unsub.push(api.watchAtt(S.me, rows => { S.att = rows; if (S.view === "att") renderAtt(); }));
+  S.vTab = null; S.vq = ""; S.visaErr = false; S.vflow = null; let vFirst = true;
+  api.getVisaFlow().then(o => { S.vflow = o; if (S.view === "visa") vDraw(); }).catch(() => {});
+  S.unsub.push(api.watchVisas(S.me, vs => { S.visas = vs; S.visaErr = false; if (S.view === "visa") vDraw(); if (S.vOpen) renderVisa(); vCheck(vFirst); vFirst = false; },
+    () => { S.visaErr = true; if (S.view === "visa") vDraw(); }));
   if (pendingCode){ const c = pendingCode; pendingCode = ""; setTimeout(() => doPunch(c), 300); }
-  S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); }));
+  S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); if (S.view === "visa") vDraw(); }));
 });
 setInterval(() => { if (S.me){ checkAlerts(false); if (S.view !== "perf" && !(S.view === "att" && (S.attEdit || document.activeElement && document.activeElement.closest && document.activeElement.closest(".att-wrap")))) renderView(true); } }, 30e3);
 
@@ -816,7 +897,7 @@ function demoStrip(){
   if (!DEMO) return "";
   const cur = S.me ? S.me.uid : "";
   return `<div class="demo"><div class="wrap"><b>نسخة تجريبية</b><span>البيانات أمثلة ومش بتتحفظ. جرّب بعين كل واحد:</span>
-    ${api.users.filter(u => ["sup","mgr","e1"].includes(u.uid)).map(u => `<button class="btn ${cur === u.uid ? "on" : ""}" data-demo="${u.uid}">${esc(u.name)} — ${ROLE[u.role]}</button>`).join("")}</div></div>`;
+    ${api.users.filter(u => ["sup","mgr","e1","e2"].includes(u.uid)).map(u => `<button class="btn ${cur === u.uid ? "on" : ""}" data-demo="${u.uid}">${esc(u.name)} — ${ROLE[u.role]}</button>`).join("")}</div></div>`;
 }
 
 function renderLogin(blocked){
@@ -847,6 +928,7 @@ function renderShell(){
       <button data-view="cal">${ic("cal")}الكاليندر</button>
       <button data-view="perf">${ic("chart")}${m.role === "employee" ? "أدائي" : "الأداء"}</button>
       <button data-view="att">${ic("clock")}الحضور</button>
+      <button data-view="visa">${ic("passport")}التأشيرات<span class="vbadge" id="vBadge" hidden></span></button>
     </nav>
     <div class="head-actions">
       <button class="hbtn" id="btnBell" aria-label="التنبيهات">${ic("bell")}<span class="badge" id="bellBadge" hidden></span></button>
@@ -861,6 +943,7 @@ function renderShell(){
   $("#btnOut") && ($("#btnOut").onclick = () => api.logout());
   $("#btnBell").onclick = togglePop;
   renderView();
+  if (S.visas && S.visas.length) vCheck(true);
 }
 
 function renderView(soft){
@@ -871,6 +954,7 @@ function renderView(soft){
     renderBoard();
   } else if (S.view === "cal") renderCalendar();
   else if (S.view === "att") renderAtt();
+  else if (S.view === "visa") renderVisas(soft);
   else renderPerf();
 }
 
@@ -1411,6 +1495,10 @@ document.addEventListener("click", async e => {
     q.disabled = true; await runAct(task, q.dataset.quick, {}); return; }
   const op = t.closest("[data-open]"); if (op){ closePop(); return openTask(op.dataset.open); }
   const tab = t.closest("[data-tab]"); if (tab){ S.tab = tab.dataset.tab; S.view = "list"; return renderView(); }
+  const vo = t.closest("[data-vopen]"); if (vo) return openVisa(vo.dataset.vopen);
+  const vt = t.closest("[data-vtab]"); if (vt){ S.vTab = vt.dataset.vtab; S.vq = ""; const q = $("#vq"); if (q) q.value = ""; return vDraw(); }
+  if (t.closest("[data-vnew]")) return openNewVisa();
+  if (t.closest("[data-vflow]")) return openVisaFlow();
   const v = t.closest("[data-view]"); if (v){ S.view = v.dataset.view; return renderView(); }
   const d = t.closest("[data-day]"); if (d){ S.calDay = d.dataset.day; return renderCalendar(); }
   const c = t.closest("[data-cal]"); if (c){ const k = c.dataset.cal;
@@ -1425,13 +1513,14 @@ document.addEventListener("click", async e => {
   if ($(".pop") && !t.closest(".pop") && !t.closest("#btnBell")) closePop();
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape"){ if ($(".dl-modal")) $(".dl-modal").remove(); else if ($(".modal")) $(".modal").remove(); else if ($(".pop")) closePop(); else if (sheetEl) closeTask(); }
+  if (e.key === "Escape"){ if ($(".dl-modal")) $(".dl-modal").remove(); else if ($(".modal")) $(".modal").remove(); else if ($(".pop")) closePop(); else if (sheetEl) closeTask(); else if (visaEl) closeVisa(); }
   if ((e.key === "Enter" || e.key === " ") && e.target.matches(".row[data-open]")){ e.preventDefault(); openTask(e.target.dataset.open); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches(".row[data-vopen]")){ e.preventDefault(); openVisa(e.target.dataset.vopen); }
 });
 
 /* ---------- تفاصيل المهمة ---------- */
 function openTask(id){
-  closeTask();
+  closeTask(); if (visaEl) closeVisa();
   S.openId = id; S.updates = []; S.armedDel = false; S.stars = 0; S.handOpen = false; S.splitOpen = false; S.trkArm = null; S.colFilter = "all"; S.colArm = null;
   const qs = QUICK[S.me.role] || [];
   sheetEl = document.createElement("div");
@@ -1945,6 +2034,345 @@ function openTeam(){
     try { await api.createUser({ name, email, password, role }); ["u-name","u-email","u-pass"].forEach(i => $("#"+i).value = ""); toast("الحساب اتعمل. ابعت الإيميل وكلمة السر للشخص."); }
     catch(x){ console.error(x); er.textContent = x.code === "auth/email-already-in-use" ? "الإيميل ده مستخدم قبل كده." : x.code === "auth/invalid-email" ? "الإيميل مكتوب غلط." : "ما قدرتش أعمل الحساب."; er.hidden = false; }
     finally { $("#uSave").disabled = false; }
+  };
+}
+
+/* ====================== التأشيرات ====================== */
+// المسار: مراجعة الجوازات والصور (مدير التشغيل) ← التسجيل على الشيت والحسابات ← التنفيذ والرفع على المنصات ومتابعتها ← صدرت ورجعت لمدير التشغيل ← اتسلمت
+const VST = { prep:"جاري تجهيز الطلب", uploaded:"اترفعت على المنصة", processing:"تحت المراجعة", needs:"محتاجة استيفاء", issued:"صدرت التأشيرة", rejected:"اترفضت" };
+const VWORK = ["prep","uploaded","processing","needs"];
+const VTYPES = ["عمرة","سياحة","زيارة عائلية","زيارة عمل","حج","أخرى"];
+const VQUICK = {
+  supervisor:["تمام، كمّل","العميل مستعجل","تابع معايا أول بأول"],
+  employee:["الجوازات ناقصة","الصورة مش مطابقة","كلمت العميل","اترفعت على المنصة","مستني رد المنصة"],
+  manager:["إيه الأخبار؟","عاجلة لو سمحت"]
+};
+const vno = v => "V-" + pad(v.no || 0);
+const vSup = () => S.me.role === "supervisor";
+const vCount = n => { n = +n || 1; return n === 1 ? "فرد واحد" : n === 2 ? "فردين" : fmtNum(n) + (n <= 10 ? " أفراد" : " فرد"); };
+const vHolder = v => v.stage === "register" ? { uid:v.regUid, name:v.regName } : v.stage === "execute" ? { uid:v.exeUid, name:v.exeName } : v.stage === "done" ? null : { uid:"sup", name:"مدير التشغيل" };
+// الملف ده محتاج مني أنا حاجة دلوقتي
+const vMine = v => vSup() ? (v.stage === "review" || v.stage === "back") : (v.stage === "register" && v.regUid === S.me.uid) || (v.stage === "execute" && v.exeUid === S.me.uid);
+const vBackTo = () => vSup() ? "لك" : "لمدير التشغيل";
+const vStageLbl = v => ({ review:"عند المراجعة", register:"عند " + v.regName + " — تسجيل", execute:"عند " + v.exeName + " — تنفيذ",
+  back:(v.result === "rejected" ? "اترفضت — رجعت " : "صدرت — رجعت ") + vBackTo(), done:"اتسلمت للعميل" })[v.stage] || "";
+const vCls = v => v.stage === "back" && v.result === "rejected" ? "vs-rej" : "vs-" + v.stage;
+const vSince = v => span(Math.max(MIN, Date.now() - ms(v.stageAt || v.createdAt)));
+function vFlow(){ // مين بيسجّل ومين بينفّذ: من الإعدادات، وإلا بالاسم (فاطمة / رقية)
+  const f = S.vflow || {}, emps = S.users.filter(u => u.active !== false && u.role === "employee");
+  const pick = (uid, nm, i) => S.users.find(u => u.uid === uid && u.active !== false) || emps.find(u => (u.name || "").includes(nm)) || emps[i] || emps[0] || null;
+  return { reg:pick(f.reg, "فاطمة", 0), exe:pick(f.exe, "رقية", 1) };
+}
+function vTravel(v){
+  if (!v.travel) return null;
+  const d = new Date(v.travel + "T12:00").getTime(), days = Math.round((d - Date.now()) / DAY), open = v.stage !== "done" && v.stage !== "back";
+  const rel = days === 0 ? "النهارده" : days === 1 ? "بكرة" : days > 1 && days <= 10 ? "بعد " + span(days * DAY) : "";
+  return { cls: open && days < 0 ? "late" : open && days <= 3 ? "soon" : "", txt:"السفر " + new Date(d).toLocaleDateString("ar-EG", { day:"numeric", month:"short" }) + (open && rel ? " (" + rel + ")" : "") };
+}
+
+/* ---------- القائمة ---------- */
+function vTabDefs(){
+  const V = S.visas || [], n = f => V.filter(f).length, f = vFlow();
+  return [
+    S.me.role === "manager" ? { k:"open", l:"كل الملفات المفتوحة", s:"vs-review", n:n(v => v.stage !== "done") } : { k:"mine", l:"مطلوب مني", s:"vs-mine", n:n(vMine) },
+    { k:"review", l:"مراجعة الجوازات والصور", s:"vs-review", n:n(v => v.stage === "review") },
+    { k:"register", l:"التسجيل" + (f.reg ? " — " + f.reg.name : ""), s:"vs-register", n:n(v => v.stage === "register") },
+    { k:"execute", l:"التنفيذ والمتابعة" + (f.exe ? " — " + f.exe.name : ""), s:"vs-execute", n:n(v => v.stage === "execute") },
+    { k:"back", l:"صدرت ورجعت " + vBackTo(), s:"vs-back", n:n(v => v.stage === "back") },
+    { k:"done", l:"اتسلمت", s:"vs-done", n:n(v => v.stage === "done") }
+  ];
+}
+function vList(){
+  const k = S.vTab, q = (S.vq || "").trim().toLowerCase();
+  let L = S.visas || [];
+  if (q) L = L.filter(v => [vno(v), v.client, v.phone, v.travelers, v.appRef, v.country, v.vtype, v.platform].join(" ").toLowerCase().includes(q));
+  else L = L.filter(v => k === "mine" ? vMine(v) : k === "open" ? v.stage !== "done" : v.stage === k);
+  const tr = v => v.travel && v.stage !== "done" ? new Date(v.travel).getTime() : Infinity;
+  return L.slice().sort(k === "done" && !q ? (a,b) => ms(b.closedAt || b.updatedAt) - ms(a.closedAt || a.updatedAt)
+    : (a,b) => (a.stage === "done") - (b.stage === "done") || tr(a) - tr(b) || ms(a.stageAt || a.createdAt) - ms(b.stageAt || b.createdAt));
+}
+function vRowHtml(v){
+  const h = vHolder(v), t = vTravel(v), mine = vMine(v);
+  const go = { review:"راجِع", register:"سجّل", execute:"تابِع", back:"سلّم" }[v.stage];
+  return `<div class="row" role="button" tabindex="0" data-vopen="${v.id}">
+    ${h ? avatar(h.name, h.uid) : `<span class="av c-program" aria-hidden="true">✓</span>`}
+    <div class="row-main"><div class="row-top"><span class="ref">${vno(v)}</span><span class="row-title">${esc(v.client)} — ${vCount(v.count)}</span></div>
+      <div class="row-meta"><span class="tag c-visa">${esc(v.vtype || "تأشيرة")}${v.country ? " · " + esc(v.country) : ""}</span><span class="pill ${vCls(v)}">${esc(vStageLbl(v))}</span>${v.stage === "execute" ? `<span class="flag f-file">${v.status ? VST[v.status] : "لسه ما بدأش"}</span>` : ""}${t ? `<span class="due ${t.cls}">${t.txt}</span>` : ""}</div>
+      ${v.lastUpdate ? `<div class="row-last">${esc(v.lastUpdateBy || "")}: ${esc(v.lastUpdate)}</div>` : ""}</div>
+    <div class="row-side">${v.stage !== "done" ? `<span class="due">${ic("clock")}من ${vSince(v)}</span>` : v.closedAt ? `<span class="created">${ago(v.closedAt)}</span>` : ""}${mine && go ? `<span class="qbtn">${go}</span>` : ""}</div></div>`;
+}
+function renderVisas(soft){
+  const main = $("#main"); if (!main) return;
+  if (!S.vTab) S.vTab = S.me.role === "manager" ? "open" : "mine";
+  if (!$("#vList") || !soft){
+    main.innerHTML = `<div class="vhead"><h2>التأشيرات</h2>${vSup() ? `<button class="btn" data-vflow>${ic("users")}مين بيعمل إيه</button><button class="btn primary" data-vnew>${ic("plus")}ملف تأشيرة جديد</button>` : ""}</div>
+      <p class="vpath" id="vPath"></p>
+      <nav class="tabs vtabs" id="vTabs" aria-label="مراحل ملفات التأشيرات"></nav>
+      <div class="toolbar"><input id="vq" type="search" placeholder="دوّر باسم العميل أو المسافر أو رقم الملف أو رقم الطلب…" value="${esc(S.vq || "")}" aria-label="بحث في ملفات التأشيرات"></div>
+      <div id="vList"></div>`;
+    $("#vq").addEventListener("input", e => { S.vq = e.target.value; vDraw(); });
+  }
+  vDraw();
+}
+function vDraw(){
+  if (!$("#vList")) return;
+  const f = vFlow(), nm = u => u ? esc(u.name) : "…";
+  $("#vPath").innerHTML = `<b>المسار:</b> مراجعة الجوازات والصور <small>(مدير التشغيل)</small> ← التسجيل على الشيت والحسابات <small>(${nm(f.reg)})</small> ← التنفيذ والرفع على المنصات ومتابعته <small>(${nm(f.exe)})</small> ← صدرت ورجعت لمدير التشغيل`;
+  $("#vTabs").innerHTML = vTabDefs().map(d => `<button class="tab ${d.s} ${S.vTab === d.k && !S.vq ? "on" : ""} ${d.n ? "" : "zero"}" data-vtab="${d.k}" aria-pressed="${S.vTab === d.k}"><span class="dot">${fmtNum(d.n)}</span><span class="l">${esc(d.l)}</span></button>`).join("");
+  if (S.visaErr){ $("#vList").innerHTML = `<div class="list"><div class="empty"><b>مش قادر يقرا ملفات التأشيرات</b>اتأكد إن ملف firestore.rules الجديد اتنشر من Firestore ← Rules ← Publish.</div></div>`; return; }
+  const L = vList();
+  const empty = S.vq ? "مفيش ملف بالبحث ده." : S.vTab === "mine" ? (vSup() ? "مفيش ملفات مستنياك. أول ما تفتح ملف جديد أو تأشيرة تصدر هتلاقيها هنا." : "مفيش ملفات مستنياك دلوقتي. أول ما ملف يوصل لك هيظهر هنا وهيوصلك تنبيه.") : "مفيش ملفات في المرحلة دي.";
+  $("#vList").innerHTML = (S.vq ? `<p class="hint" style="margin:6px 4px">نتايج البحث في كل الملفات (${fmtNum(L.length)})</p>` : "")
+    + `<div class="list">${L.map(vRowHtml).join("") || `<div class="empty"><b>مفيش حاجة هنا</b>${empty}</div>`}</div>`;
+}
+
+/* ---------- تنبيه لما ملف يوصل لي ---------- */
+function vCheck(first){
+  const mine = (S.visas || []).filter(vMine);
+  const b = $("#vBadge"); if (b){ b.hidden = !mine.length; b.textContent = fmtNum(mine.length); }
+  const key = "vseen:" + S.me.uid, seen = store.get(key, {}), now = {};
+  const fresh = mine.filter(v => seen[v.id] !== v.stage);
+  mine.forEach(v => now[v.id] = v.stage); store.set(key, now);
+  if (first || !fresh.length) return;
+  const v = fresh[0], title = v.stage === "back" ? (v.result === "rejected" ? "تأشيرة اترفضت ورجعت لك" : "تأشيرة صدرت ورجعت لك") : "ملف تأشيرة وصلك";
+  toast(title + ": " + vno(v) + " " + v.client + (fresh.length > 1 ? " (و" + fmtNum(fresh.length - 1) + " غيره)" : "")); beep();
+  try { if ("Notification" in window && Notification.permission === "granted"){ const x = new Notification(title, { body:vno(v) + " " + v.client, tag:"visa-" + v.id }); x.onclick = () => { window.focus(); S.view = "visa"; renderView(); openVisa(v.id); }; } } catch {}
+}
+
+/* ---------- تفاصيل الملف ---------- */
+function openVisa(id){
+  closeTask(); closeVisa();
+  S.vOpen = id; S.vLog = []; S.vArm = false; S.vDet = false;
+  const qs = VQUICK[S.me.role] || [];
+  visaEl = document.createElement("div");
+  visaEl.innerHTML = `<div class="backdrop" data-close></div>
+    <aside class="sheet" role="dialog" aria-modal="true" aria-label="ملف التأشيرة">
+      <div class="sheet-bar"><button class="btn ghost sm" data-close aria-label="إغلاق">✕ رجوع</button><span class="ref" id="vSheetRef"></span></div>
+      <div class="sheet-body" id="vBody"></div>
+      <form class="composer" id="vComposer">
+        <div class="quick" aria-label="ردود سريعة">${qs.map(x => `<button type="button" class="chip" data-vreply="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+        <div class="comp-row"><textarea id="vText" rows="1" placeholder="اكتب ملاحظة، أو سبب الإرجاع أو الرفض…"></textarea><button class="btn primary" type="submit">إرسال</button></div>
+      </form>
+    </aside>`;
+  document.body.appendChild(visaEl);
+  visaEl.addEventListener("click", vSheetClick);
+  visaEl.addEventListener("toggle", e => { if (e.target.id === "vDet") S.vDet = e.target.open; }, true);
+  $("#vComposer").addEventListener("submit", e => { e.preventDefault(); vAct("note"); });
+  S.vUnsubLog = api.watchVisaLog(id, L => { S.vLog = L; renderVisa(); });
+  renderVisa();
+}
+function closeVisa(){
+  if (S.vUnsubLog) S.vUnsubLog(); S.vUnsubLog = null;
+  if (visaEl){ visaEl.remove(); visaEl = null; }
+  S.vOpen = null;
+}
+function vStepsHtml(v){
+  const idx = { review:0, register:1, execute:2, back:3, done:4 }[v.stage] ?? 0, rej = v.result === "rejected";
+  const steps = [["مراجعة الجوازات والصور", "مدير التشغيل", v.reviewedAt], ["التسجيل على الشيت والحسابات", v.regName, v.registeredAt],
+    ["التنفيذ والرفع على المنصات", v.exeName, v.issuedAt || (v.stage === "back" || v.stage === "done" ? v.stageAt : null)], [rej ? "اترفضت ورجعت" : "صدرت ورجعت للتسليم", "مدير التشغيل", v.closedAt]];
+  return `<ol class="vsteps" aria-label="مراحل الملف">${steps.map(([l, who, at], i) => {
+    const st = i < idx ? "done" : i === idx ? "cur " + vCls(v) : "";
+    const sub = i < idx ? (at ? "✓ " + ago(at) : "✓") : i === idx ? "دلوقتي — من " + vSince(v) : "";
+    return `<li class="${st}"${i === idx ? ' aria-current="step"' : ""}><span>${fmtNum(i + 1)}. ${esc(who || "")}</span><b>${l}</b>${sub ? `<span>${sub}</span>` : ""}</li>`; }).join("")}</ol>`;
+}
+function vActionsHtml(v){
+  const sup = vSup(), me = S.me.uid, out = [];
+  if (v.backReason && ["review","register","execute"].includes(v.stage)) out.push(`<div class="extbox"><b>سبب الإرجاع</b><span>${esc(v.backReason)}</span></div>`);
+  if (v.stage === "review" && sup) out.push(`<div class="approve-box"><b>مراجعة الجوازات والصور</b>
+    <label class="check"><input type="checkbox" id="vcPass"> الجوازات اتراجعت وسليمة (الصلاحية والبيانات)</label>
+    <label class="check"><input type="checkbox" id="vcPhoto"> الصور اتراجعت ومطابقة للمواصفات</label>
+    <div class="act-row"><button class="btn ok" data-va="approveReview">اعتماد المراجعة — تحويل لـ${esc(v.regName)}</button></div>
+    <p class="hint">أول ما تعتمد، الملف بيروح لـ${esc(v.regName)} تلقائياً للتسجيل على الشيت والحسابات.</p></div>`);
+  if (v.stage === "register" && (v.regUid === me || sup)) out.push(`<div class="approve-box"><b>التسجيل</b>
+    <label class="check"><input type="checkbox" id="vcSheet" ${v.reg && v.reg.sheet ? "checked" : ""}> اتسجل على الشيت</label>
+    <label class="check"><input type="checkbox" id="vcAcc" ${v.reg && v.reg.accounts ? "checked" : ""}> اتسجل في الحسابات</label>
+    <div class="act-row"><button class="btn ok" data-va="regDone">خلصت التسجيل — تحويل لـ${esc(v.exeName)}</button>${v.regUid === me && !sup ? `<button class="btn ghost" data-va="toReview">فيه نقص — رجّعه لمدير التشغيل</button>` : ""}</div>
+    <p class="hint">أول ما تعتمد التسجيل، الملف بيروح لـ${esc(v.exeName)} تلقائياً للتنفيذ.${v.regUid === me && !sup ? " لو فيه نقص اكتب السبب في خانة التحديث تحت ودوس «رجّعه»." : ""}</p></div>`);
+  if (v.stage === "execute" && (v.exeUid === me || sup)){
+    const plats = [...new Set((S.visas || []).map(x => x.platform).filter(Boolean))];
+    out.push(`<div class="approve-box"><b>التنفيذ والمتابعة</b>
+    <div class="act-row"><input id="vPlat" placeholder="اسم المنصة" list="vPlats" value="${esc(v.platform || "")}" aria-label="اسم المنصة"><input id="vRef" dir="ltr" placeholder="رقم الطلب على المنصة" value="${esc(v.appRef || "")}" aria-label="رقم الطلب"><button class="btn" data-va="saveExe">حفظ</button></div>
+    <datalist id="vPlats">${plats.map(p => `<option value="${esc(p)}">`).join("")}</datalist>
+    <span class="hint">حالة الطلب دلوقتي:</span>
+    <div class="chips-row">${VWORK.map(k => `<button type="button" class="chip ${v.status === k ? "on" : ""}" data-va="status" data-val="${k}" aria-pressed="${v.status === k}">${VST[k]}</button>`).join("")}</div>
+    <div class="act-row"><button class="btn ok" data-va="issued">صدرت التأشيرة ✓</button><button class="btn danger" data-va="rejected">اترفضت</button>${v.exeUid === me && !sup ? `<button class="btn ghost" data-va="toReview">رجّعه لمدير التشغيل</button>` : ""}</div>
+    <p class="hint">أول ما الحالة تبقى «صدرت التأشيرة» الملف بيرجع لمدير التشغيل تلقائياً. للرفض أو الإرجاع اكتب السبب في خانة التحديث تحت الأول.</p></div>`);
+  }
+  if (v.stage === "back"){
+    const rej = v.result === "rejected";
+    out.push(`<div class="vresult ${rej ? "vs-rej" : "vs-done"}"><b>${rej ? "التأشيرة اترفضت" : "صدرت التأشيرة ✓"}</b>${rej && v.backReason ? `<span>${esc(v.backReason)}</span>` : ""}${!rej && v.issuedAt ? `<span>صدرت ${ago(v.issuedAt)}${v.appRef ? " — رقم الطلب " + `<span dir="ltr">${esc(v.appRef)}</span>` : ""}</span>` : ""}</div>`);
+    if (sup) out.push(`<div class="act-row"><button class="btn ok" data-va="deliver">${rej ? "قفل الملف" : "اتسلمت للعميل — قفل الملف"}</button><button class="btn" data-va="toExe">رجّعه لـ${esc(v.exeName)}</button></div>
+      <p class="hint">لو محتاج ${esc(v.exeName)} تكمّل حاجة، اكتب المطلوب في خانة التحديث تحت ودوس «رجّعه».</p>`);
+  }
+  if (sup && (v.stage === "register" || v.stage === "execute")) out.push(`<div class="act-row"><button class="btn ghost sm" data-va="stepBack">رجّعه خطوة لورا (اكتب السبب تحت الأول)</button></div>`);
+  if (sup && v.stage === "done") out.push(`<div class="act-row"><button class="btn" data-va="reopen">إعادة فتح الملف</button></div>`);
+  if (!out.length && v.stage !== "done"){ const h = vHolder(v);
+    out.push(`<p class="hint">الملف دلوقتي عند ${esc(h ? h.name : "")}${S.me.role === "employee" ? "، وأول ما يوصل لك هيظهر في «مطلوب مني»" : ""}. تقدر تكتب ملاحظة تحت.</p>`); }
+  if (sup){ const st = staff(), opt = sel => st.map(u => `<option value="${u.uid}" ${u.uid === sel ? "selected" : ""}>${esc(u.name)}</option>`).join("");
+    out.push(`<details class="col-bulk" id="vDet" ${S.vDet ? "open" : ""}><summary>تغيير المسؤولين عن الملف، أو مسحه</summary>
+      <div class="act-row"><label class="hint" for="vRegSel">التسجيل</label><select id="vRegSel">${opt(v.regUid)}</select><label class="hint" for="vExeSel">التنفيذ</label><select id="vExeSel">${opt(v.exeUid)}</select><button class="btn sm" data-va="people">حفظ</button></div>
+      <div class="act-row"><button class="btn danger sm ${S.vArm ? "armed" : ""}" data-va="del">${S.vArm ? "متأكد؟ دوس تاني للمسح" : "مسح الملف"}</button></div></details>`); }
+  return `<section class="actions"><h3>الإجراءات</h3>${out.join("")}</section>`;
+}
+function vFilesHtml(v){
+  const can = S.me.role !== "manager" && v.stage !== "done", L = v.files || [];
+  if (!can && !L.length) return "";
+  return `<section class="files"><h3 class="timeline-h">صور الجوازات والمرفقات (من الأرشيف)</h3>
+    ${L.length ? `<div class="file-chips">${L.map(r => `<a href="archive.html#${encodeURIComponent(r)}" target="_blank" rel="noopener">${esc(r)}</a>${vSup() ? `<button class="btn ghost sm" data-va="unlink" data-val="${esc(r)}" aria-label="شيل ${esc(r)}">✕</button>` : ""}`).join("")}</div>` : `<p class="hint">مفيش ملفات مربوطة لسه.</p>`}
+    ${can ? `<div class="act-row"><input id="vFileRef" dir="ltr" placeholder="الصق رقم الرفع، مثلاً A-0012" ${inputCss}><button class="btn" data-va="link">ربط</button><a class="btn sm" href="archive.html?task=${vno(v)}" target="_blank" rel="noopener">رفع ملف للأرشيف</a></div>` : ""}</section>`;
+}
+function renderVisa(){
+  if (!visaEl) return;
+  const v = (S.visas || []).find(x => x.id === S.vOpen);
+  if (!v){ closeVisa(); return; }
+  const body = $("#vBody"), focusId = document.activeElement && visaEl.contains(document.activeElement) ? document.activeElement.id : "";
+  const scrollY = body.scrollTop, keep = {};
+  body.querySelectorAll("input[id],textarea[id],select[id]").forEach(el => keep[el.id] = el.type === "checkbox" ? el.checked : el.value);
+  $("#vSheetRef").textContent = vno(v);
+  const t = vTravel(v);
+  const facts = [["العميل", esc(v.client)], ["عدد الأفراد", vCount(v.count)], ["نوع التأشيرة", esc(v.vtype || "") + (v.country ? " — " + esc(v.country) : "")],
+    ["ميعاد السفر", t ? `<span class="due ${t.cls}">${t.txt}</span>` : ""], ["المنصة", esc(v.platform || "")], ["رقم الطلب", v.appRef ? `<span dir="ltr">${esc(v.appRef)}</span>` : ""],
+    ["حالة الطلب", v.status ? VST[v.status] : ""], ["فتح الملف", esc(v.createdByName || "") + " — " + fullDate(v.createdAt)]].filter(f => f[1]);
+  body.innerHTML = `
+    <div class="d-head"><h2>${esc(v.client)}</h2><div class="chips"><span class="tag c-visa">تأشيرة ${esc(v.vtype || "")}</span><span class="pill ${vCls(v)}">${esc(vStageLbl(v))}</span></div></div>
+    ${vStepsHtml(v)}
+    ${v.phone ? `<div class="contact"><a href="tel:${esc(v.phone)}">${ic("phone")}<span dir="ltr">${esc(v.phone)}</span></a><a class="wa" href="${waLink(v.phone)}" target="_blank" rel="noopener">${ic("chat")}واتساب العميل</a></div>` : ""}
+    <dl class="facts">${facts.map(([k,x]) => `<div><dt>${k}</dt><dd>${x}</dd></div>`).join("")}</dl>
+    ${v.travelers ? `<section><h3 class="timeline-h">أسماء المسافرين</h3><p class="vtravel">${esc(v.travelers)}</p></section>` : ""}
+    ${v.notes ? `<p class="details">${esc(v.notes)}</p>` : ""}
+    ${vActionsHtml(v)}
+    ${vFilesHtml(v)}
+    <section><h3 class="timeline-h">سجل المتابعة</h3>
+      <ol class="timeline">${(S.vLog || []).map(u => `<li class="${u.kind}"><div class="tl-meta"><b>${esc(u.byName)}</b> (${ROLE[u.role] || ""}) — ${ago(u.createdAt)}</div><div class="tl-text">${esc(u.text)}</div></li>`).join("") || `<li class="event"><div class="tl-text">لسه مفيش تحديثات.</div></li>`}</ol></section>`;
+  for (const id in keep){ const el = document.getElementById(id); if (el && !["vRegSel","vExeSel"].includes(id)){ if (el.type === "checkbox") el.checked = keep[id]; else el.value = keep[id]; } }
+  if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
+  const inFile = S.me.role !== "employee" || (v.people || []).includes(S.me.uid);
+  $("#vComposer").hidden = !inFile || (v.stage === "done" && S.me.role === "employee");
+  body.scrollTop = scrollY;
+}
+function vSheetClick(e){
+  if (e.target.closest("[data-close]")) return closeVisa();
+  const rp = e.target.closest("[data-vreply]"); if (rp) return vAct("note", rp, rp.dataset.vreply);
+  const b = e.target.closest("[data-va]"); if (!b) return;
+  if (b.dataset.va === "del" && !S.vArm){ S.vArm = true; renderVisa(); setTimeout(() => { if (S.vArm){ S.vArm = false; renderVisa(); } }, 4000); return; }
+  vAct(b.dataset.va, b, b.dataset.val);
+}
+async function vAct(kind, btn, val){
+  const v = (S.visas || []).find(x => x.id === S.vOpen); if (!v) return;
+  const box = $("#vText"), typed = box ? box.value.trim() : "", nm = S.me.name;
+  const need = what => { if (typed) return true; toast("اكتب " + what + " في خانة التحديث تحت الأول"); if (box) box.focus(); return false; };
+  const chk = id => !!($("#" + id) && $("#" + id).checked);
+  const plus = typed ? "\n" + typed : "";
+  let patch = {}, text = "", ev = "event", msg = "", clear = true;
+  switch (kind){
+    case "note": text = val || typed; ev = "note"; clear = !val; if (!text) return; break;
+    case "approveReview":
+      if (!chk("vcPass") || !chk("vcPhoto")) return toast("علّم إن الجوازات والصور اتراجعت الأول");
+      patch = { stage:"register", stageAt:NOW, reviewedAt:NOW, reviewedBy:nm, backReason:"" };
+      text = "راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـ" + v.regName + " للتسجيل على الشيت والحسابات" + plus; msg = "الملف اتحول لـ" + v.regName; break;
+    case "regDone":
+      if (!chk("vcSheet") || !chk("vcAcc")) return toast("علّم إن الملف اتسجل على الشيت والحسابات الأول");
+      patch = { stage:"execute", stageAt:NOW, registeredAt:NOW, reg:{ sheet:true, accounts:true, by:nm }, backReason:"" };
+      text = "سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـ" + v.exeName + " للتنفيذ" + plus; msg = "الملف اتحول لـ" + v.exeName; break;
+    case "toReview": if (!need("سبب الإرجاع")) return;
+      patch = { stage:"review", stageAt:NOW, backReason:typed }; text = "رجّع الملف لمدير التشغيل: " + typed; msg = "الملف رجع لمدير التشغيل"; break;
+    case "status": if (v.status === val) return;
+      patch = { status:val }; text = "حدّث حالة الطلب: " + VST[val] + plus; msg = "الحالة اتحدثت"; break;
+    case "saveExe": { const pl = $("#vPlat").value.trim(), rf = $("#vRef").value.trim();
+      if (pl === (v.platform || "") && rf === (v.appRef || "")) return toast("مفيش تغيير");
+      patch = { platform:pl, appRef:rf }; text = "سجّل بيانات الطلب" + (pl ? " — المنصة: " + pl : "") + (rf ? " — رقم الطلب: " + rf : ""); msg = "اتحفظ"; clear = false; break; }
+    case "issued":
+      patch = { stage:"back", stageAt:NOW, status:"issued", result:"issued", issuedAt:NOW, backReason:"" };
+      text = "صدرت التأشيرة ✓ — الملف رجع لمدير التشغيل" + plus; msg = "مبروك! الملف رجع لمدير التشغيل"; break;
+    case "rejected": if (!need("سبب الرفض")) return;
+      patch = { stage:"back", stageAt:NOW, status:"rejected", result:"rejected", backReason:typed }; text = "التأشيرة اترفضت: " + typed; msg = "الملف رجع لمدير التشغيل"; break;
+    case "deliver":
+      patch = { stage:"done", stageAt:NOW, closedAt:NOW, closedBy:nm }; text = (v.result === "rejected" ? "قفل الملف بعد الرفض" : "سلّم التأشيرة للعميل وقفل الملف ✓") + plus; msg = "الملف اتقفل"; break;
+    case "toExe": if (!need("المطلوب")) return;
+      patch = { stage:"execute", stageAt:NOW, status:"processing", result:"", backReason:typed }; text = "رجّع الملف لـ" + v.exeName + ": " + typed; msg = "الملف رجع لـ" + v.exeName; break;
+    case "stepBack": { if (!need("سبب الإرجاع")) return; const to = v.stage === "execute" ? "register" : "review";
+      patch = { stage:to, stageAt:NOW, backReason:typed }; text = "رجّع الملف خطوة لـ" + (to === "register" ? v.regName + " (التسجيل)" : "المراجعة") + ": " + typed; msg = "الملف رجع خطوة"; break; }
+    case "reopen": patch = { stage:"back", stageAt:NOW, closedAt:null }; text = "أعاد فتح الملف" + plus; msg = "الملف اتفتح تاني"; break;
+    case "people": { const r = S.users.find(u => u.uid === $("#vRegSel").value), x = S.users.find(u => u.uid === $("#vExeSel").value);
+      if (!r || !x) return; if (r.uid === v.regUid && x.uid === v.exeUid) return toast("مفيش تغيير");
+      patch = { regUid:r.uid, regName:r.name, exeUid:x.uid, exeName:x.name, people:[...new Set([...(v.people || []), r.uid, x.uid])] };
+      text = "غيّر المسؤولين عن الملف: التسجيل مع " + r.name + "، والتنفيذ مع " + x.name; msg = "اتغيّر"; clear = false; break; }
+    case "link": { const ref = normRef($("#vFileRef").value); if (!ref) return toast("الصق رقم الرفع الأول");
+      if ((v.files || []).includes(ref)) return toast("الملف ده مربوط بالفعل");
+      if (btn) btn.disabled = true; let info = null; try { info = await api.lookupArchive(ref); } catch(x){ console.error(x); } if (btn) btn.disabled = false;
+      if (!info) return toast("رقم الرفع " + ref + " مش موجود في الأرشيف");
+      patch = { files:[...(v.files || []), ref] }; text = "ربط ملف من الأرشيف: " + ref; msg = "الملف اتربط"; clear = false; break; }
+    case "unlink": patch = { files:(v.files || []).filter(f => f !== val) }; text = "شال ملف الأرشيف " + val; clear = false; break;
+    case "del": if (btn) btn.disabled = true;
+      try { await api.deleteVisa(v.id); closeVisa(); toast("الملف اتمسح"); } catch(x){ console.error(x); toast("المسح ما نجحش"); if (btn) btn.disabled = false; }
+      return;
+    default: return;
+  }
+  if (btn) btn.disabled = true;
+  try {
+    await api.visaAct(v.id, S.me, patch, { kind:ev, text });
+    if (clear && box) box.value = "";
+    if (kind === "link" && $("#vFileRef")) $("#vFileRef").value = "";
+    if (msg) toast(msg);
+  } catch(x){ console.error(x); toast("العملية ما نجحتش، جرّب تاني"); }
+  finally { if (btn) btn.disabled = false; }
+}
+
+/* ---------- ملف جديد + الإعدادات ---------- */
+function openNewVisa(){
+  const f = vFlow();
+  if (!f.reg || !f.exe) return toast("ضيف حسابات الموظفين من «الفريق» الأول");
+  let vtype = VTYPES[0];
+  const m = modal("ملف تأشيرة جديد", `<form class="form" id="nvForm" novalidate>
+    <div class="field"><label for="nv-client">العميل / المجموعة *</label><input id="nv-client" required placeholder="مثلاً: عائلة أ. محمد سعيد"></div>
+    <div class="field"><label for="nv-phone">تليفون العميل</label><input id="nv-phone" type="tel" dir="ltr" placeholder="01xxxxxxxxx"></div>
+    <div class="field full"><span class="lbl">نوع التأشيرة</span><div class="type-pick" id="nv-type">${VTYPES.map((k, i) => `<button type="button" class="c-visa ${i ? "" : "on"}" data-vt="${esc(k)}">${esc(k)}</button>`).join("")}</div></div>
+    <div class="field"><label for="nv-country">الدولة</label><input id="nv-country" value="السعودية"></div>
+    <div class="field"><label for="nv-count">عدد الأفراد</label><input id="nv-count" type="number" min="1" value="1" inputmode="numeric"></div>
+    <div class="field"><label for="nv-travel">ميعاد السفر</label><input id="nv-travel" type="date"></div>
+    <div class="field full"><label for="nv-trav">أسماء المسافرين <small class="hint">— كل اسم في سطر</small></label><textarea id="nv-trav" rows="3"></textarea></div>
+    <div class="field full"><label for="nv-notes">ملاحظات</label><textarea id="nv-notes" rows="2"></textarea></div>
+    <label class="check field full"><input type="checkbox" id="nv-done"> راجعت الجوازات والصور خلاص — حوّله لـ${esc(f.reg.name)} على طول</label>
+    <p class="hint field full">الملف بيبدأ عندك للمراجعة، وبعد ما تعتمد بيروح لـ${esc(f.reg.name)} للتسجيل، وبعدها لـ${esc(f.exe.name)} للتنفيذ. تقدر تغيّر الأسماء من «مين بيعمل إيه».</p>
+    <p class="err" id="nv-err" hidden></p></form>
+    <div class="form-foot"><button class="btn primary" id="nvSave">فتح الملف</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  m.addEventListener("click", e => { const b = e.target.closest("[data-vt]"); if (b){ vtype = b.dataset.vt; m.querySelectorAll("[data-vt]").forEach(x => x.classList.toggle("on", x === b)); } });
+  $("#nv-client").focus();
+  const save = async () => {
+    const client = $("#nv-client").value.trim(), er = $("#nv-err");
+    if (!client){ er.textContent = "اكتب اسم العميل."; er.hidden = false; return; }
+    const travelers = $("#nv-trav").value.split("\n").map(s => s.trim()).filter(Boolean);
+    const count = Math.max(+$("#nv-count").value || 1, travelers.length || 1), direct = $("#nv-done").checked;
+    const data = { client, phone:$("#nv-phone").value.trim(), vtype, country:$("#nv-country").value.trim(), count, travel:$("#nv-travel").value || "",
+      travelers:travelers.join("\n"), notes:$("#nv-notes").value.trim(), files:[], status:"", result:"", backReason:"",
+      stage: direct ? "register" : "review", stageAt:NOW, regUid:f.reg.uid, regName:f.reg.name, exeUid:f.exe.uid, exeName:f.exe.name,
+      people:[...new Set([f.reg.uid, f.exe.uid])], createdBy:S.me.uid, createdByName:S.me.name };
+    if (direct) Object.assign(data, { reviewedAt:NOW, reviewedBy:S.me.name });
+    const first = direct ? "فتح ملف التأشيرة وراجع الجوازات والصور ✓ — الملف اتحول لـ" + f.reg.name + " للتسجيل" : "فتح ملف التأشيرة — مستني مراجعة الجوازات والصور";
+    $("#nvSave").disabled = true;
+    try {
+      const id = await api.createVisa(data, S.me, first);
+      m.remove(); toast(direct ? "الملف اتحول لـ" + f.reg.name : "الملف اتفتح ومستني مراجعتك");
+      S.view = "visa"; S.vTab = direct ? "register" : "mine"; S.vq = ""; renderView();
+      if (!direct && id) openVisa(id);
+    } catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت وإن قواعد Firestore الجديدة اتنشرت."; er.hidden = false; $("#nvSave").disabled = false; }
+  };
+  $("#nvSave").onclick = save;
+  $("#nvForm").addEventListener("submit", e => { e.preventDefault(); save(); });
+}
+function openVisaFlow(){
+  const f = vFlow(), st = staff(), opt = sel => st.map(u => `<option value="${u.uid}" ${sel && u.uid === sel.uid ? "selected" : ""}>${esc(u.name)}</option>`).join("");
+  const m = modal("مين بيعمل إيه في التأشيرات", `<div class="form">
+    <div class="field full"><label for="vf-reg">التسجيل على الشيت والحسابات</label><select id="vf-reg">${opt(f.reg)}</select></div>
+    <div class="field full"><label for="vf-exe">التنفيذ والرفع على المنصات ومتابعة الحالة</label><select id="vf-exe">${opt(f.exe)}</select></div>
+    <p class="hint field full">التغيير ده بيمشي على الملفات الجديدة. لو عاوز تغيّر ملف معيّن، افتحه وغيّر من «تغيير المسؤولين».</p></div>
+    <div class="form-foot"><button class="btn primary" id="vfSave">حفظ</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  $("#vfSave").onclick = async () => {
+    const r = S.users.find(u => u.uid === $("#vf-reg").value), x = S.users.find(u => u.uid === $("#vf-exe").value); if (!r || !x) return;
+    const o = { reg:r.uid, regName:r.name, exe:x.uid, exeName:x.name };
+    $("#vfSave").disabled = true;
+    try { await api.setVisaFlow(o); S.vflow = o; m.remove(); toast("اتحفظ"); vDraw(); }
+    catch(e){ console.error(e); toast("الحفظ ما نجحش"); $("#vfSave").disabled = false; }
   };
 }
 

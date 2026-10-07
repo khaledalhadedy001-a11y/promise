@@ -32,6 +32,9 @@ service cloud.firestore {
     match /meta/archiveCounter {
       allow read, write: if member();
     }
+    match /meta/visaCounter {
+      allow read, write: if isSup();
+    }
 
     match /tasks/{taskId} {
       function assignee() { return resource.data.assignedTo == request.auth.uid; }
@@ -143,6 +146,40 @@ service cloud.firestore {
             && request.resource.data.outAt == request.time
             && validScan(request.resource.data.outCode, request.resource.data.outLat, request.resource.data.outLng));
       allow delete: if isSup();
+    }
+
+    // ===== التأشيرات =====
+    // المسار: مراجعة الجوازات والصور (مدير التشغيل) ← التسجيل (regUid) ← التنفيذ والمتابعة (exeUid) ← صدرت ورجعت لمدير التشغيل ← اتسلمت
+    match /visas/{vid} {
+      function inFile() { return request.auth.uid in resource.data.get('people', []); }
+      function vKeys(extra) { return changed().hasOnly(noteKeys().concat(extra)); }
+
+      allow read: if isSup() || isMgr() || (isEmp() && inFile());
+      allow create: if isSup() && request.resource.data.createdBy == request.auth.uid;
+      allow delete: if isSup();
+
+      allow update: if isSup()
+        // المدير العام: ملاحظات بس
+        || (isMgr() && vKeys([]))
+        // أي موظف في الملف: ملاحظات وربط ملفات من الأرشيف
+        || (isEmp() && inFile() && vKeys(['files']))
+        // اللي بيسجّل: يخلّص التسجيل فيروح للتنفيذ، أو يرجّعه لمدير التشغيل
+        || (isEmp() && resource.data.stage == 'register' && resource.data.regUid == request.auth.uid
+            && vKeys(['files', 'reg', 'stage', 'stageAt', 'registeredAt', 'backReason'])
+            && request.resource.data.stage in ['register', 'execute', 'review'])
+        // اللي بينفّذ: يحدّث الحالة، ولما تصدر أو تترفض الملف يرجع لمدير التشغيل
+        || (isEmp() && resource.data.stage == 'execute' && resource.data.exeUid == request.auth.uid
+            && vKeys(['files', 'status', 'platform', 'appRef', 'stage', 'stageAt', 'issuedAt', 'result', 'backReason'])
+            && (request.resource.data.stage in ['execute', 'review']
+                || (request.resource.data.stage == 'back' && request.resource.data.status in ['issued', 'rejected'])));
+
+      function visaDoc() { return get(/databases/$(database)/documents/visas/$(vid)).data; }
+      function canSeeVisa() { return isSup() || isMgr() || (isEmp() && request.auth.uid in visaDoc().get('people', [])); }
+      match /log/{logId} {
+        allow read: if canSeeVisa();
+        allow create: if canSeeVisa() && request.resource.data.by == request.auth.uid;
+        allow update, delete: if false;
+      }
     }
 
     // أرشيف الملفات
