@@ -1146,9 +1146,10 @@ const startMin = () => toMin(attCfg().start), lateMin = () => toMin(attCfg().lat
 const lateTxt = () => { const m = lateMin(); return new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" }); };
 const minOf = t => { const d = new Date(ms(t)); return d.getHours() * 60 + d.getMinutes(); };
 const startTxt = () => { const m = startMin(); return new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" }); };
+const creditTxt = m => m < lateMin() ? ` <span class="flag f-early">رصيد +${hm((lateMin() - m) * MIN)}</span>` : "";
 function arrivalTag(inAt){ const m = minOf(inAt);
-  if (m <= startMin()) return `<span class="flag f-early">بدري</span>`;
-  if (m <= lateMin()) return `<span class="flag f-ontime">في الميعاد</span>`;
+  if (m <= startMin()) return `<span class="flag f-early">بدري</span>${creditTxt(m)}`;
+  if (m <= lateMin()) return `<span class="flag f-ontime">في الميعاد</span>${creditTxt(m)}`;
   return `<span class="flag f-late">متأخر ${hm((m - lateMin()) * MIN)}</span>`; }
 const signedHm = d => Math.abs(d) < MIN ? "٠" : (d > 0 ? "+" : "−") + hm(Math.abs(d));
 function dayStats(recs){ // لكل يوم: أول حضور وإجمالي الساعات
@@ -1186,30 +1187,32 @@ function renderAtt(){
     const ins = days.map(d => minOf(d.firstIn)), lates = ins.filter(m => m > lt0), earlies = ins.filter(m => m <= st0);
     const avgIn = ins.length ? Math.round(ins.reduce((a,b) => a + b, 0) / ins.length) : null;
     return { p, days:days.length, total, avg: days.length ? total / days.length : 0, miss, avgIn, req:days.length * H8, full:days.filter(d => d.total >= H8).length,
-      early:earlies.length, ontime:ins.length - earlies.length - lates.length, late:lates.length, lateMin:lates.reduce((a,m) => a + m - lt0, 0) }; })
-    .sort((a,b) => b.early - a.early || a.late - b.late || a.lateMin - b.lateMin || (a.avgIn ?? 1e9) - (b.avgIn ?? 1e9));
+      early:earlies.length, ontime:ins.length - earlies.length - lates.length, late:lates.length, lateMin:lates.reduce((a,m) => a + m - lt0, 0), creditMin:ins.filter(m => m < lt0).reduce((a,m) => a + lt0 - m, 0) }; })
+    .map(x => ({ ...x, net:x.creditMin - x.lateMin }))
+    .sort((a,b) => b.net - a.net || a.late - b.late || b.early - a.early || (a.avgIn ?? 1e9) - (b.avgIn ?? 1e9));
+  const netTxt = x => !x.days ? "—" : x.net > 0 ? `<span class="flag f-early">مكافأة +${hm(x.net * MIN)}</span>` : x.net < 0 ? `<span class="flag f-late">تأخير صافي ${hm(-x.net * MIN)}</span>` : "متعادل";
   const avgInTxt = m => m == null ? "—" : new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" });
   const sup = r === "supervisor";
   const firstOf = new Map(); recs.forEach(x => { const k = x.uid + "|" + x.day; if (!firstOf.has(k)) firstOf.set(k, x.id); });
   const rowsHtml = recs.slice().reverse().map(x => { const dur = recDur(x), editing = S.attEdit === x.id, k = x.uid + "|" + x.day, first = firstOf.get(k) === x.id, dd = DS.get(k);
     if (editing) return `<tr><td>${esc(new Date(x.day + "T00:00").toLocaleDateString("ar-EG", { weekday:"short", day:"numeric", month:"short" }))}</td><td>${esc(x.name)}</td>
       <td><input type="datetime-local" id="ae-in" value="${toInput(ms(x.inAt))}"></td><td><input type="datetime-local" id="ae-out" value="${x.outAt ? toInput(ms(x.outAt)) : ""}"></td><td></td>
-      <td></td><td></td><td><button class="btn primary sm" data-att="save" data-id="${x.id}">حفظ</button><button class="btn sm" data-att="cancel">إلغاء</button></td></tr>`;
+      <td></td><td></td><td></td><td><button class="btn primary sm" data-att="save" data-id="${x.id}">حفظ</button><button class="btn sm" data-att="cancel">إلغاء</button></td></tr>`;
     return `<tr><td>${esc(new Date(x.day + "T00:00").toLocaleDateString("ar-EG", { weekday:"short", day:"numeric", month:"short" }))}</td><td>${esc(x.name)}</td><td>${tOf(x.inAt)}</td>
       <td class="${!x.outAt && !isOpenRec(x) ? "warn" : ""}">${x.outAt ? tOf(x.outAt) : isOpenRec(x) ? "لسه موجود" : "ما سجّلش انصراف"}</td><td>${dur ? hm(dur) : "—"}</td>
-      <td>${first ? arrivalTag(x.inAt) : ""}</td><td class="${first && dd.total < H8 ? "warn" : "good"}">${first && (x.outAt || !isOpenRec(x)) ? signedHm(dd.total - H8) : ""}</td>
+      <td>${first ? arrivalTag(x.inAt) : ""}</td><td class="${first ? (minOf(x.inAt) > lt0 ? "warn" : "good") : ""}">${first ? signedHm((lt0 - minOf(x.inAt)) * MIN) : ""}</td><td class="${first && dd.total < H8 ? "warn" : "good"}">${first && (x.outAt || !isOpenRec(x)) ? signedHm(dd.total - H8) : ""}</td>
       ${sup ? `<td><button class="btn sm" data-att="edit" data-id="${x.id}">تعديل</button><button class="btn danger sm" data-att="del" data-id="${x.id}">${S.attArm === x.id ? "تأكيد" : "حذف"}</button></td>` : ""}</tr>`; }).join("");
   html += `<section class="att-sec"><header><h2>التقرير الشهري — ${M.label}</h2>
       <div class="chips-row">${[0,1,2].map(i => `<button class="chip ${(S.attMonth || 0) === i ? "on" : ""}" data-attm="${i}">${i === 0 ? "الشهر ده" : i === 1 ? "الشهر اللي فات" : "من شهرين"}</button>`).join("")}</div>
       ${boss ? `<select id="attEmp" class="btn sm" aria-label="الموظف"><option value="">الكل</option>${attPeople().map(p => `<option value="${p.uid}" ${S.attEmp === p.uid ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select>` : ""}
       ${recs.length ? `<button class="btn sm" data-att="copy">نسخ التقرير لإكسل</button>` : ""}</header>
-    <p class="hint">الدوام ${fmtNum(attCfg().hours)} ساعات في اليوم. الحضور قبل ${startTxt()} «بدري»، ومن ${startTxt()} لـ ${lateTxt()} «في الميعاد»، وبعد ${lateTxt()} «تأخير». الترتيب حسب الالتزام: الأكتر حضوراً بدري، وبعدها الأقل تأخير.</p>
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>الترتيب</th><th>الاسم</th><th>أيام الحضور</th><th>بدري (قبل ${startTxt()})</th><th>في الميعاد</th><th>اتأخر (بعد ${lateTxt()})</th><th>إجمالي التأخير</th><th>متوسط وقت الحضور</th><th>إجمالي الساعات</th><th>المطلوب</th><th>الفرق</th><th>أيام كمّلت ${fmtNum(attCfg().hours)} س</th><th>من غير انصراف</th></tr></thead>
+    <p class="hint">الدوام ${fmtNum(attCfg().hours)} ساعات في اليوم. الحضور قبل ${startTxt()} «بدري»، ومن ${startTxt()} لـ ${lateTxt()} «في الميعاد»، وبعد ${lateTxt()} «تأخير». أي حضور قبل ${lateTxt()} بيتحسب الوقت اللي قبلها «رصيد بدري»، والرصيد ده بيتخصم منه دقايق التأخير في الشهر: لو الصافي موجب يبقى مكافأة، ولو سالب يبقى تأخير مستحق. الترتيب حسب الصافي.</p>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>الترتيب</th><th>الاسم</th><th>أيام الحضور</th><th>بدري (قبل ${startTxt()})</th><th>في الميعاد</th><th>اتأخر (بعد ${lateTxt()})</th><th>إجمالي التأخير</th><th>رصيد البدري (قبل ${lateTxt()})</th><th>الصافي</th><th>متوسط وقت الحضور</th><th>إجمالي الساعات</th><th>المطلوب</th><th>الفرق</th><th>أيام كمّلت ${fmtNum(attCfg().hours)} س</th><th>من غير انصراف</th></tr></thead>
       <tbody>${sums.map((x, i) => `<tr class="sum"><td>${x.days ? (i === 0 && sums.length > 1 ? `<span class="flag f-early">الأول</span>` : fmtNum(i + 1)) : "—"}</td><td>${esc(x.p.name)}</td><td>${fmtNum(x.days)}</td>
-        <td class="good">${fmtNum(x.early)}</td><td>${fmtNum(x.ontime)}</td><td class="${x.late ? "warn" : ""}">${fmtNum(x.late)}</td><td class="${x.lateMin ? "warn" : ""}">${x.lateMin ? hm(x.lateMin * MIN) : "—"}</td><td>${avgInTxt(x.avgIn)}</td>
+        <td class="good">${fmtNum(x.early)}</td><td>${fmtNum(x.ontime)}</td><td class="${x.late ? "warn" : ""}">${fmtNum(x.late)}</td><td class="${x.lateMin ? "warn" : ""}">${x.lateMin ? hm(x.lateMin * MIN) : "—"}</td><td class="${x.creditMin ? "good" : ""}">${x.creditMin ? "+" + hm(x.creditMin * MIN) : "—"}</td><td>${netTxt(x)}</td><td>${avgInTxt(x.avgIn)}</td>
         <td>${hm(x.total)}</td><td>${hm(x.req)}</td><td class="${x.total - x.req < 0 ? "warn" : "good"}">${x.days ? signedHm(x.total - x.req) : "—"}</td><td>${fmtNum(x.full)} من ${fmtNum(x.days)}</td><td class="${x.miss ? "warn" : ""}">${fmtNum(x.miss)}</td></tr>`).join("")}</tbody></table></div>
     <h3 class="timeline-h">التفاصيل يوم بيوم</h3>
-    ${recs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>اليوم</th><th>الاسم</th><th>حضور</th><th>انصراف</th><th>الساعات</th><th>الالتزام</th><th>الفرق عن ${fmtNum(attCfg().hours)} س</th>${sup ? "<th></th>" : ""}</tr></thead><tbody>${rowsHtml}</tbody></table></div>` : `<p class="hint">مفيش تسجيلات في الشهر ده.</p>`}
+    ${recs.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>اليوم</th><th>الاسم</th><th>حضور</th><th>انصراف</th><th>الساعات</th><th>الالتزام</th><th>رصيد/تأخير</th><th>الفرق عن ${fmtNum(attCfg().hours)} س</th>${sup ? "<th></th>" : ""}</tr></thead><tbody>${rowsHtml}</tbody></table></div>` : `<p class="hint">مفيش تسجيلات في الشهر ده.</p>`}
   </section>`;
   if (sup){
     html += `<section class="att-sec"><header><h2>إعدادات الحضور</h2></header><div class="set-grid">
@@ -1310,7 +1313,8 @@ async function attClick(b){
   if (k === "copy"){ const M = attMonth();
     const rows = (S.att || []).filter(x => x.day && x.day.startsWith(M.key) && (!S.attEmp || x.uid === S.attEmp)).sort((a,b) => ms(a.inAt) - ms(b.inAt));
     const st0 = startMin(), lt0 = lateMin(), lvl = m => m <= st0 ? "بدري" : m <= lt0 ? "في الميعاد" : "متأخر";
-    const tsv = ["اليوم\tالاسم\tحضور\tانصراف\tالساعات\tالالتزام\tتأخير (دقيقة)", ...rows.map(x => [x.day, x.name, tOf(x.inAt), x.outAt ? tOf(x.outAt) : "", (recDur(x) / HOUR).toFixed(2), lvl(minOf(x.inAt)), Math.max(0, minOf(x.inAt) - lt0)].join("\t"))].join("\n");
+    const fst = new Set(), seenD = new Set(); rows.forEach(x => { const k = x.uid + "|" + x.day; if (!seenD.has(k)){ seenD.add(k); fst.add(x); } });
+    const tsv = ["اليوم\tالاسم\tحضور\tانصراف\tالساعات\tالالتزام\tتأخير (دقيقة)\tرصيد بدري (دقيقة)", ...rows.map(x => [x.day, x.name, tOf(x.inAt), x.outAt ? tOf(x.outAt) : "", (recDur(x) / HOUR).toFixed(2), lvl(minOf(x.inAt)), fst.has(x) ? Math.max(0, minOf(x.inAt) - lt0) : "", fst.has(x) ? Math.max(0, lt0 - minOf(x.inAt)) : ""].join("\t"))].join("\n");
     try { await navigator.clipboard.writeText(tsv); toast("التقرير اتنسخ. الزقه في إكسل"); } catch { toast("المتصفح منع النسخ"); } }
 }
 
