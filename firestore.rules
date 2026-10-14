@@ -125,12 +125,14 @@ service cloud.firestore {
       allow write: if isSup();
     }
     match /attendance/{recId} {
-      // الكود لازم يطابق اللي على الشاشة (صالح ٧٠ ثانية)، والموقع لازم يكون جوه نطاق الشركة
+      // الكود لازم يطابق اللي على الشاشة (صالح ٧٠ ثانية) أو الكود الثابت المطبوع، والموقع لازم يكون جوه نطاق الشركة
       function validScan(code, lat, lng) {
-        let k = get(/databases/$(database)/documents/attKiosk/current).data;
+        let kp = /databases/$(database)/documents/attKiosk/current;
+        let fp = /databases/$(database)/documents/attKiosk/fixed;
         let o = get(/databases/$(database)/documents/settings/office).data;
-        return ((code == k.code && request.time < k.at + duration.value(70, 's'))
-                || (code == k.prev && request.time < k.at + duration.value(30, 's')))
+        return ((exists(kp) && code == get(kp).data.code && request.time < get(kp).data.at + duration.value(70, 's'))
+                || (exists(kp) && code == get(kp).data.prev && request.time < get(kp).data.at + duration.value(30, 's'))
+                || (exists(fp) && code == get(fp).data.code))   // الكود الثابت المطبوع (شغال لحد ما مدير التشغيل يغيّره)
           && math.abs(lat - o.lat) <= o.dLat && math.abs(lng - o.lng) <= o.dLng;
       }
       allow read: if isSup() || isMgr() || (signedIn() && resource.data.uid == request.auth.uid);

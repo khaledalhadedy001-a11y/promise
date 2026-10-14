@@ -671,6 +671,9 @@ async function makeFirebase(){
     },
     async getOffice(){ const d = await F.getDoc(F.doc(db,"settings","office")); return d.exists() ? d.data() : null; },
     setOffice:o => F.setDoc(F.doc(db,"settings","office"), o, { merge:true }),
+    /* 🖨 الكود الثابت المطبوع — في attKiosk/fixed (الموظفين مايقدروش يقروه، مدير التشغيل بس) */
+    async getFixed(){ const d = await F.getDoc(F.doc(db,"attKiosk","fixed")); return d.exists() ? d.data() : null; },
+    setFixed:(code, by) => F.setDoc(F.doc(db,"attKiosk","fixed"), { code, by, at:F.serverTimestamp() }),
     addAtt:r => F.addDoc(F.collection(db,"attendance"), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : {}) }),
     editAtt:(id, r) => F.updateDoc(F.doc(db,"attendance",id), { ...r, inAt:F.Timestamp.fromMillis(r.inAt), ...(r.outAt ? { outAt:F.Timestamp.fromMillis(r.outAt) } : { outAt:F.deleteField() }) }),
     delAtt:id => F.deleteDoc(F.doc(db,"attendance",id)),
@@ -844,9 +847,10 @@ function makeDemo(){
     createUser({ name, email, role }){ return later(() => { users.push({ uid:"u"+Date.now(), name, email, role, active:true }); emitU(); }); },
     updateUser(uid, patch){ return later(() => { Object.assign(U(uid), patch); emitU(); }); },
     watchAtt(m, cb){ const f = () => cb(att.filter(r => m.role !== "employee" || r.uid === m.uid).map(r => ({ ...r }))); attSubs.add(f); f(); return () => attSubs.delete(f); },
-    punch(m, open, code, pos){ return later(() => { if (code !== "DEMO42") throw new Error("code"); const n = Date.now();
+    punch(m, open, code, pos){ return later(() => { if (code !== "DEMO42" && code !== (fixedDemo && fixedDemo.code)) throw new Error("code"); const n = Date.now();
       if (open) Object.assign(att.find(r => r.id === open.id), { outAt:n, outLat:pos.lat, outLng:pos.lng });
       else att.push({ id:"a" + n, uid:m.uid, name:m.name, day:dayKey(n), inAt:n, inLat:pos.lat, inLng:pos.lng }); emitA(); }); },
+    getFixed(){ return later(() => fixedDemo); }, setFixed(code, by){ return later(() => { fixedDemo = { code, by, at:Date.now() }; }); },
     getOffice(){ return later(() => office); }, setOffice(o){ return later(() => { office = { ...office, ...o }; }); },
     addAtt(r){ return later(() => { att.push({ ...r, id:"a" + Date.now() }); emitA(); }); },
     editAtt(id, r){ return later(() => { const x = att.find(a => a.id === id); Object.assign(x, r); if (!r.outAt) delete x.outAt; emitA(); }); },
@@ -878,6 +882,7 @@ let sheetEl = null, visaEl = null;
 let pendingCode = (location.hash.match(/^#att-([A-Za-z0-9]{4,10})$/) || [])[1] || "";
 if (pendingCode) try { history.replaceState(null, "", location.pathname + location.search); } catch {}
 window.addEventListener("hashchange", () => { const m = location.hash.match(/^#att-([A-Za-z0-9]{4,10})$/); if (!m) return; try { history.replaceState(null, "", location.pathname + location.search); } catch {} if (S.me) doPunch(m[1]); else pendingCode = m[1]; });
+let fixedDemo = null;
 const api = DEMO ? makeDemo() : await makeFirebase();
 const app = $("#app");
 
@@ -1273,7 +1278,7 @@ function renderAtt(){
     html += `<section class="att-me" aria-label="حضوري">
       <div class="att-status ${open ? "in" : "out"}"><span class="dotbig"></span><div><b>${open ? "إنت مسجّل حضور من الساعة " + tOf(open.inAt) : "إنت مش مسجّل حضور دلوقتي"}</b><br><span>${todayDur ? "اشتغلت النهارده " + hm(todayDur) + (offT ? " — يوم إجازة، كله شغل إضافي" : todayDur >= attCfg().hours * HOUR ? " — كمّلت " + fmtNum(attCfg().hours) + " ساعات" : " — باقي " + hm(attCfg().hours * HOUR - todayDur) + " عشان تكمّل " + fmtNum(attCfg().hours) + " ساعات") : "لسه ما سجّلتش حضور النهارده. الحضور قبل " + startTxt() + " بيتحسب بدري، وبعد " + lateTxt() + " بيتحسب تأخير."}</span>
         ${mine.length ? `<div style="margin-top:6px">${arrivalTag(mine.slice().sort((a,b) => ms(a.inAt) - ms(b.inAt))[0].inAt)}</div>` : ""}</div></div>
-      <p class="hint">عشان تسجّل ${open ? "انصراف" : "حضور"}: دوس «امسح الكود بالكاميرا» ووجّه الموبايل على شاشة الشركة، أو اكتب الحروف اللي تحت الكود. لازم تكون في الشركة والموقع مفتوح.</p>
+      <p class="hint">عشان تسجّل ${open ? "انصراف" : "حضور"}: دوس «امسح الكود بالكاميرا» ووجّه الموبايل على الكود اللي في الشركة (الشاشة أو الورقة المطبوعة)، أو اكتب الحروف اللي تحت الكود. لازم تكون في الشركة والموقع مفتوح.</p>
       <div class="act-row"><button class="btn primary" data-att="scan" style="padding:12px 18px;font-size:16px">${ic("cam")}امسح الكود بالكاميرا</button></div>
       <div class="act-row"><input id="attCode" dir="ltr" maxlength="8" autocomplete="off" placeholder="ABC123" aria-label="كود الحضور"><button class="btn" data-att="punch">${ic(open ? "out" : "pin")}${open ? "تسجيل انصراف" : "تسجيل حضور"} بالكود المكتوب</button></div>
       ${DEMO ? `<p class="hint">في النسخة التجريبية الكود هو DEMO42.</p>` : ""}</section>`;
@@ -1348,6 +1353,9 @@ function renderAtt(){
         <label class="check">الحضور قبل الساعة دي «بدري» <input type="time" id="cfgStart" value="${attCfg().start}"></label>
         <label class="check">بعد الساعة دي «تأخير» <input type="time" id="cfgLate" value="${attCfg().late}"></label>
         <div class="act-row"><button class="btn primary sm" data-att="cfg">حفظ مواعيد الدوام</button></div></div>
+      <div><h3>🖨 الكود الثابت (للطباعة)</h3><p class="hint">كود ثابت تطبعه وتلزقه في مكان واضح في الشركة. بيفضل شغال لحد ما تغيّره إنت (يُفضّل كل أسبوع). التسجيل بيفضل مربوط بموقع الشركة، فاللي برا الشركة مش هيعرف يسجّل بيه حتى لو معاه صورته.</p>
+        <div id="fixedBox" class="hint">بيحمّل…</div>
+        <div class="act-row"><button class="btn primary sm" data-att="fixprint">${ic("qr")}طباعة الكود</button><button class="btn sm" data-att="fixnew">${S.fixArm ? "متأكد؟ الورقة القديمة هتبطل" : "تغيير الكود"}</button></div></div>
       <div><h3>شاشة الكود</h3><p class="hint">افتح الصفحة دي على جهاز ثابت في الشركة وسيبها شغالة. الأحسن تدخل عليها بحساب «جهاز الحضور» من صفحة الفريق.</p>
         <div class="act-row"><a class="btn sm" href="kiosk.html" target="_blank" rel="noopener">${ic("qr")}فتح شاشة الكود</a></div></div>
       <div style="grid-column:1/-1"><h3>الإجازات</h3>
@@ -1377,9 +1385,46 @@ function renderAtt(){
   if ($("#attCode")) $("#attCode").value = keepCode;
   $("#attEmp") && ($("#attEmp").onchange = e => { S.attEmp = e.target.value; renderAtt(); });
   $("#attCode") && ($("#attCode").onkeydown = e => { if (e.key === "Enter") doPunch(e.target.value); });
+  if (sup) loadFixed();
   if (sup) api.getOffice().then(o => { const t = $("#officeTxt"); if (!t) return;
     t.textContent = o ? `متحدد: ${o.lat.toFixed(5)}, ${o.lng.toFixed(5)} — المسافة المسموحة ${fmtNum(o.radius)} متر` : "لسه ما اتحددش. لازم تحدده عشان الحضور يشتغل.";
     if (o && $("#officeR")) $("#officeR").value = String(o.radius); }).catch(() => {});
+}
+/* 🖨 الكود الثابت المطبوع */
+const FIX_ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const newFixCode = () => { const a = new Uint32Array(6); crypto.getRandomValues(a); return [...a].map(x => FIX_ALPHA[x % FIX_ALPHA.length]).join(""); };
+const attLink = code => new URL("./#att-" + code, location.href.split("#")[0]).href;
+let qrLoading = null;
+const loadQR = () => window.qrcode ? Promise.resolve() : (qrLoading ||= new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "qrcode.js"; sc.onload = res; sc.onerror = () => { qrLoading = null; rej(); }; document.head.appendChild(sc); }));
+async function loadFixed(){
+  let f = null; try { f = await api.getFixed(); } catch(e){ console.error(e); }
+  S.fixed = f; const box = $("#fixedBox"); if (!box) return;
+  if (!f || !f.code){ box.innerHTML = "لسه مفيش كود ثابت. دوس «تغيير الكود» عشان يتعمل واحد، وبعدين اطبعه."; return; }
+  const at = f.at ? ms(f.at) : 0, days = at ? Math.floor((Date.now() - at) / (24 * HOUR)) : 0;
+  box.innerHTML = `الكود الحالي: <b dir="ltr" style="font-size:20px;letter-spacing:3px">${esc(f.code)}</b>${at ? ` — اتعمل ${new Date(at).toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long" })}` : ""}${days >= 7 ? ` <span class="flag f-late">عدّى عليه ${fmtNum(days)} يوم — يُفضّل تغيّره</span>` : ""}`;
+}
+async function printFixed(){
+  const f = S.fixed; if (!f || !f.code) return toast("اعمل كود الأول من «تغيير الكود»");
+  const w = window.open("", "_blank"); if (!w) return toast("المتصفح منع فتح صفحة الطباعة");
+  try { await loadQR(); } catch { w.close(); return toast("ما قدرتش أحمّل مولّد الكود"); }
+  const q = qrcode(0, "M"); q.addData(attLink(f.code)); q.make();
+  const svg = q.createSvgTag({ cellSize:10, margin:2, scalable:true });
+  const d = new Date(f.at ? ms(f.at) : Date.now()).toLocaleDateString("ar-EG", { day:"numeric", month:"long", year:"numeric" });
+  w.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>كود الحضور والانصراف</title><style>
+    @page{size:A4;margin:14mm} *{box-sizing:border-box} body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;margin:0;color:#14262b;text-align:center}
+    .pg{border:3px solid #0e5a4a;border-radius:24px;padding:28px 24px;min-height:260mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    h1{margin:0;font-size:38px;color:#0e5a4a} .sub{font-size:20px;color:#40585e;margin:0}
+    .qr{width:120mm;height:120mm} .qr svg{width:100%;height:100%}
+    .code{font-size:44px;font-weight:800;letter-spacing:10px;direction:ltr;border:2px dashed #0e5a4a;border-radius:14px;padding:6px 22px}
+    ol{text-align:right;font-size:18px;line-height:1.9;margin:0;padding-inline-start:26px} .mu{color:#6b7f84;font-size:13px}
+  </style></head><body><div class="pg">
+    <h1>🕘 تسجيل الحضور والانصراف</h1><p class="sub">صوّر الكود بكاميرا الموبايل</p>
+    <div class="qr">${svg}</div>
+    <div class="code">${esc(f.code)}</div>
+    <ol><li>افتح كاميرا الموبايل ووجّهها على الكود، أو افتح السيستم ودوس «امسح الكود بالكاميرا».</li><li>لو الكاميرا ماشتغلتش اكتب الحروف اللي تحت الكود.</li><li>لازم تكون جوه الشركة والموقع (GPS) مفتوح.</li></ol>
+    <p class="mu">كود ساري من ${d} لحد ما يتغير</p>
+  </div><script>setTimeout(() => print(), 400)<\/script></body></html>`);
+  w.document.close();
 }
 /* ماسح الكود بالكاميرا */
 let jsqrLoading = null;
@@ -1458,6 +1503,13 @@ async function attClick(b){
     S.holArm = null; return saveCfg({ holidays:attOff().hol.filter(h => h.d !== id) }, "الإجازة اتشالت"); }
   if (k === "attstart"){ const attStart = $("#cfgAttStart").value; if (!attStart) return toast("اختار التاريخ");
     return saveCfg({ attStart }, "اتحفظ"); }
+  if (k === "fixprint") return printFixed();
+  if (k === "fixnew"){
+    if (S.fixed && S.fixed.code && !S.fixArm){ S.fixArm = true; renderAtt(); setTimeout(() => { if (S.fixArm){ S.fixArm = false; renderAtt(); } }, 4000); return; }
+    S.fixArm = false; b.disabled = true;
+    try { await api.setFixed(newFixCode(), S.me.name); toast("اتعمل كود جديد — اطبعه والزقه مكان القديم"); renderAtt(); }
+    catch(e){ console.error(e); toast("الحفظ ما نجحش"); b.disabled = false; }
+    return; }
   if (k === "office"){ b.disabled = true; toast("بيحدد موقعك…");
     try { const pos = await getPos(), radius = +$("#officeR").value, tol = radius + 100;
       await api.setOffice({ lat:pos.lat, lng:pos.lng, radius, dLat: tol / 111320, dLng: tol / (111320 * Math.cos(pos.lat * Math.PI / 180)), setBy:S.me.name, setAt:Date.now() });
