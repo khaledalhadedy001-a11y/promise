@@ -197,7 +197,7 @@ service cloud.firestore {
         allow read: if isSup() || isMgr();
         allow create, update, delete: if isSup();
         // المعتمر من اللينك (من غير تسجيل دخول): رقم الجواز لازم يطابق المسجل والتسجيل مفتوح.
-        // مسموح يأكد تاني (update) عشان ميبانش لحد إن الاسم ده أكد قبل كده ولا لأ — ومفيش قراءة للتأكيدات خالص
+        // التأكيد مرة واحدة بس لكل معتمر (create بس) — ولو مدير التشغيل لغى التأكيد يقدر يأكد تاني. ومفيش قراءة للتأكيدات خالص
         function okJoin() {
           return request.resource.data.keys().hasOnly(['passport', 'phone', 'at'])
             && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 20))
@@ -208,7 +208,7 @@ service cloud.firestore {
             && request.resource.data.passport == get(/databases/$(database)/documents/trips/$(tid)/people/$(pid)).data.get('passport', '')
             && get(/databases/$(database)/documents/joinPub/$(tid)).data.open == true;
         }
-        allow create, update: if okJoin();
+        allow create: if okJoin();
       }
     }
     // joinPub/{id}: اللي بيظهر في صفحة المعتمر (العنوان وأرقام المشرفين — من غير أسماء)
