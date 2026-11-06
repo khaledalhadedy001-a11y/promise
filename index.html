@@ -486,6 +486,10 @@ main{padding-bottom:56px}
 .tr-st{display:flex;flex-direction:column;align-items:flex-start;gap:2px}.tr-st small{font-size:11.5px;color:var(--muted)}
 .tr-ops{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .btn.ok-o{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.ct-rows{display:flex;flex-direction:column;gap:6px}
+.ct-row{display:grid;grid-template-columns:1.2fr 1.2fr 1fr auto;gap:6px}
+.ct-row input{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:7px 10px;min-width:0;width:100%}
+@media (max-width:620px){ .ct-row{grid-template-columns:1fr 1fr auto} .ct-row [data-c=phone]{grid-column:1/3} }
 .np{background:var(--surface-2);border-radius:10px;padding:10px 12px;max-height:220px;overflow-y:auto}
 .np-sum{margin:0 0 4px;font-size:14px}.np-warn{margin:0 0 6px;padding-inline-start:18px;font-size:12.5px}.np-warn .w{color:var(--warn)}
 .np-list{margin:0;padding-inline-start:26px;font-size:13px;columns:2 220px;column-gap:20px}
@@ -2605,8 +2609,14 @@ function normPass(v){
 }
 function rid(n = 20){ const a = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789", r = new Uint32Array(n); crypto.getRandomValues(r); return [...r].map(x => a[x % a.length]).join(""); }
 // اللي بيظهر في صفحة المعتمر: العنوان وأرقام المشرفين — لا أسماء ولا جوازات ولا مين أكد
-const SUPF = ["supEg","supEgPhone","supSa","supSaPhone"];
-function tripPublic(t){ const o = { title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false }; SUPF.forEach(k => o[k] = t[k] || ""); return o; }
+// أرقام تهمك: قايمة حرة (المسمى + الاسم + الرقم) — والرحلات القديمة اللي فيها مشرف مصر/السعودية بتتحول لها
+function tContacts(t){
+  if (Array.isArray(t.contacts)) return t.contacts.filter(c => c && (c.name || c.phone));
+  return [["مشرف الرحلة في مصر", t.supEg, t.supEgPhone], ["مشرف الرحلة في السعودية", t.supSa, t.supSaPhone]].filter(x => x[1] || x[2]).map(([label, name, phone]) => ({ label, name:name || "", phone:phone || "" }));
+}
+function fixUrl(u){ u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { return new URL(u).href; } catch { return ""; } }
+function tripPublic(t){ return { title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false, routeUrl:fixUrl(t.routeUrl),
+  contacts:tContacts(t).map(c => ({ label:String(c.label || "").slice(0, 60), name:String(c.name || "").slice(0, 80), phone:String(c.phone || "").slice(0, 25) })) }; }
 const tFields = t => tripPublic(t);
 // الاسم الأول (عبد/أبو بتتلزق في اللي بعدها): نفس الدالة بالظبط في join.html
 const normName = s => String(s || "").replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[^\u0621-\u064Aa-zA-Z ]/g, " ").replace(/\s+/g, " ").trim().toLowerCase().replace(/^(عبد|ابو) /, "$1");
@@ -2736,7 +2746,7 @@ function tripDrawDetail(){
   const P = S.tripPeople, done = tDone(t.id), sup = tSup();
   const tot = P ? P.length : (t.count || 0), n = P ? P.filter(p => done.has(p.id)).length : done.size, left = Math.max(tot - n, 0), pc = tot ? Math.round(n / tot * 100) : 0;
   $("#trHead").innerHTML = `<div class="vhead tr-h"><h2>${esc(t.title || "رحلة")}</h2><span class="pill ${t.open === false ? "tr-lock" : "tr-on"}">${t.open === false ? "التسجيل مقفول" : "التسجيل مفتوح"}</span></div>
-    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${t.supEg || t.supEgPhone ? `<br><b>المشرف في مصر:</b> ${esc(t.supEg || "")} <bdi dir="ltr">${esc(t.supEgPhone || "")}</bdi>` : ""}${t.supSa || t.supSaPhone ? `<br><b>المشرف في السعودية:</b> ${esc(t.supSa || "")} <bdi dir="ltr">${esc(t.supSaPhone || "")}</bdi>` : ""}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !t.supEgPhone && !t.supSaPhone ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
+    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${tContacts(t).map(c => `<br><b>${esc(c.label || "رقم")}:</b> ${esc(c.name || "")} <bdi dir="ltr">${esc(c.phone || "")}</bdi>`).join("")}<br><b>مسار الرحلة:</b> ${t.routeUrl ? `<a href="${esc(fixUrl(t.routeUrl))}" target="_blank" rel="noopener" style="color:var(--accent)">فتح اللينك</a>` : `<span class="hint">لسه ما اترفعش — بيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</span>`}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !tContacts(t).length ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
   let last = null; if (P) P.forEach(p => { const a = done.get(p.id); if (a && (!last || a > last.at)) last = { name:p.name, at:a }; });
   $("#trStats").innerHTML = `<div class="tr-stats">
     <div class="tr-ring" style="--p:${pc}"><b>${fmtNum(pc)}٪</b><span>أكدوا</span></div>
@@ -2832,23 +2842,29 @@ function tripForm(t){
   const m = modal(isNew ? "رحلة جديدة" : "تعديل الرحلة", `<form class="form" id="tfForm" novalidate>
     <div class="field"><label for="tf-title">اسم الرحلة *</label><input id="tf-title" value="${esc(t ? t.title : "")}" placeholder="مثلاً: عمرة ٩ نوفمبر"></div>
     <div class="field"><label for="tf-date">ميعاد السفر</label><input id="tf-date" type="date" value="${esc(t ? t.date || "" : "")}"></div>
-    <div class="field"><label for="tf-supEg">المشرف في مصر</label><input id="tf-supEg" value="${esc(t ? t.supEg || "" : "")}" placeholder="الاسم"></div>
-    <div class="field"><label for="tf-supEgPhone">رقمه (مصر)</label><input id="tf-supEgPhone" type="tel" dir="ltr" value="${esc(t ? t.supEgPhone || "" : "")}" placeholder="01xxxxxxxxx"></div>
-    <div class="field"><label for="tf-supSa">المشرف في السعودية</label><input id="tf-supSa" value="${esc(t ? t.supSa || "" : "")}" placeholder="الاسم"></div>
-    <div class="field"><label for="tf-supSaPhone">رقمه (السعودية)</label><input id="tf-supSaPhone" type="tel" dir="ltr" value="${esc(t ? t.supSaPhone || "" : "")}" placeholder="05xxxxxxxx"></div>
-    <p class="hint field full">الأسماء والأرقام دي بتظهر للمعتمر بعد التأكيد في جزء «أرقام تهمك». ممكن تسيب أي خانة فاضية.</p>
+    <div class="field full"><span class="lbl">أرقام تهمك <small class="hint">— بتظهر للمعتمر بعد التأكيد. اكتب المسمى زي ما تحب (مشرف الرحلة، مشرف السكن، خدمة العملاء…)</small></span>
+      <div class="ct-rows" id="tf-cts"></div>
+      <button type="button" class="btn sm" id="tf-ctAdd" style="align-self:flex-start">${ic("plus")}إضافة رقم</button></div>
+    <div class="field full"><label for="tf-route">لينك مسار الرحلة <small class="hint">— لو سبته فاضي هيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</small></label><input id="tf-route" type="url" dir="ltr" inputmode="url" placeholder="https://…" value="${esc(t ? t.routeUrl || "" : "")}"></div>
     <div class="field full"><label for="tf-note">رسالة تظهر للمعتمر بعد ما يأكد <small class="hint">— اختياري، مثلاً ميعاد ومكان التجمع</small></label><textarea id="tf-note" rows="2" maxlength="600">${esc(t ? t.note || "" : "")}</textarea></div>
     ${isNew ? namesField("tf-names", []) : ""}
     <p class="err field full" id="tf-err" hidden></p></form>
     <div class="form-foot"><button class="btn primary" id="tfSave">${isNew ? "إنشاء الرحلة" : "حفظ"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
   const getRows = isNew ? bindNames("tf-names", []) : () => [];
+  const ctBox = $("#tf-cts"), ctRow = (c = {}) => { const d = document.createElement("div"); d.className = "ct-row";
+    d.innerHTML = `<input data-c="label" placeholder="المسمى (مثلاً: مشرف الرحلة)" value="${esc(c.label || "")}" aria-label="المسمى"><input data-c="name" placeholder="الاسم" value="${esc(c.name || "")}" aria-label="الاسم"><input data-c="phone" type="tel" dir="ltr" placeholder="الرقم" value="${esc(c.phone || "")}" aria-label="الرقم"><button type="button" class="btn sm ghost" aria-label="مسح">✕</button>`;
+    d.querySelector("button").onclick = () => d.remove(); ctBox.appendChild(d); return d; };
+  const cs = t ? tContacts(t) : []; (cs.length ? cs : [{ label:"مشرف الرحلة" }]).forEach(ctRow);
+  $("#tf-ctAdd").onclick = () => ctRow().querySelector("input").focus();
   $("#tf-title").focus();
   const save = async () => {
     const er = $("#tf-err"), date = $("#tf-date").value || "";
     const title = $("#tf-title").value.trim() || (date ? "عمرة " + tDate(date, { day:"numeric", month:"long" }) : "");
     if (!title){ er.textContent = "اكتب اسم الرحلة."; er.hidden = false; return; }
     const fields = { ...(t ? tFields(t) : { open:true }), title, date, note:$("#tf-note").value.trim() };
-    SUPF.forEach(k => fields[k] = $("#tf-" + k).value.trim());
+    fields.contacts = [...m.querySelectorAll(".ct-row")].map(r => ({ label:r.querySelector("[data-c=label]").value.trim(), name:r.querySelector("[data-c=name]").value.trim(), phone:r.querySelector("[data-c=phone]").value.trim() })).filter(c => c.name || c.phone);
+    const ru = $("#tf-route").value.trim(); fields.routeUrl = fixUrl(ru);
+    if (ru && !fields.routeUrl){ er.textContent = "لينك مسار الرحلة مش صحيح."; er.hidden = false; return; }
     $("#tfSave").disabled = true;
     try {
       if (isNew){
