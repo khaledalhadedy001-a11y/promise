@@ -199,7 +199,8 @@ service cloud.firestore {
         // المعتمر من اللينك (من غير تسجيل دخول): رقم الجواز لازم يطابق المسجل والتسجيل مفتوح.
         // مسموح يأكد تاني (update) عشان ميبانش لحد إن الاسم ده أكد قبل كده ولا لأ — ومفيش قراءة للتأكيدات خالص
         function okJoin() {
-          return request.resource.data.keys().hasOnly(['passport', 'at'])
+          return request.resource.data.keys().hasOnly(['passport', 'phone', 'at'])
+            && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 20))
             && request.resource.data.at == request.time
             && request.resource.data.passport is string
             && request.resource.data.passport.size() >= 5
