@@ -2621,7 +2621,10 @@ async function tripGroups(tid, all){
 const tSup = () => S.me.role === "supervisor";
 const tripById = id => (S.trips || []).find(t => t.id === id);
 const tDone = id => (S.tripDone || {})[id] || new Map();
-const tripLink = id => new URL("join.html?t=" + encodeURIComponent(id), location.href).href;
+// لينك قصير: …/promise/join?K9X2QM
+const tripLink = id => new URL("join", location.href).href + "?" + encodeURIComponent(id);
+// كود رحلة قصير (٦ حروف وأرقام من غير الحروف اللي بتتلخبط زي O و0 و I و1)
+function tripCode(){ let c; do c = [...crypto.getRandomValues(new Uint32Array(6))].map(x => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[x % 31]).join(""); while (tripById(c)); return c; }
 const tDate = (d, o = { weekday:"long", day:"numeric", month:"long" }) => d ? new Date(d + "T12:00").toLocaleDateString("ar-EG", o) : "";
 function tRel(d){ if (!d) return ""; const n = Math.round((new Date(d + "T12:00") - new Date(dayKey(Date.now()) + "T12:00")) / DAY);
   return n === 0 ? "النهارده" : n === 1 ? "بكرة" : n === -1 ? "امبارح" : n > 1 ? "بعد " + span(n * DAY) : "من " + span(-n * DAY); }
@@ -2849,7 +2852,7 @@ function tripForm(t){
     $("#tfSave").disabled = true;
     try {
       if (isNew){
-        const rows = getRows().filter(r => r.name), id = rid(), people = rows.map((r, i) => ({ id:rid(), n:i + 1, ...r }));
+        const rows = getRows().filter(r => r.name), id = tripCode(), people = rows.map((r, i) => ({ id:rid(), n:i + 1, ...r }));
         await api.tripWrite(id, { ...fields, createdBy:S.me.uid, createdByName:S.me.name }, people, [], people, true);
         m.remove(); toast("الرحلة اتعملت" + (people.length ? " بـ" + fmtNum(people.length) + " معتمر" : "")); S.view = "trips"; renderView(); tripOpen(id);
       } else {

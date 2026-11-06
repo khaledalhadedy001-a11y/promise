@@ -183,7 +183,8 @@ const FIREBASE_CONFIG = {
   appId: "1:773091705898:web:4ae08acc81d0067dd2ef53"
 };
 
-const TID = (new URLSearchParams(location.search).get("t") || "").trim();
+// اللينك: join?K9X2QM (أو الشكل القديم join.html?t=…)
+const TID = ((new URLSearchParams(location.search).get("t")) || (location.search.slice(1).includes("=") ? "" : decodeURIComponent(location.search.slice(1))) || "").trim().replace(/^[a-z0-9]{6}$/i, x => x.toUpperCase());
 const DEMO = TID === "demoTrip" || !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("PASTE") || /claude|anthropic/.test(location.hostname) || location.protocol === "file:";
 const $ = s => document.querySelector(s);
 const card = $("#card");
