@@ -482,7 +482,9 @@ main{padding-bottom:56px}
 .tr-n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface-2);color:var(--muted);font:600 13px/1 var(--f-display);font-variant-numeric:tabular-nums}
 .tr-row.in .tr-n{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
 .tr-who{display:flex;flex-direction:column;min-width:0}.tr-who b{font-weight:600;overflow-wrap:anywhere}.tr-who > span{font-size:12.5px;color:var(--muted)}
-.tr-who a{color:var(--accent)}.miss{color:var(--p-urgent)}
+.tr-who a{color:var(--accent)}.tr-ht{font-size:12px;color:var(--t-umrah)}
+.imp-drop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px;border:2px dashed var(--line);border-radius:12px;background:var(--surface-2)}
+.imp-tbl{width:100%;border-collapse:collapse;font-size:12.5px}.imp-tbl td,.imp-tbl th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}.imp-tbl th{color:var(--muted);font-weight:500}.miss{color:var(--p-urgent)}
 .tr-st{display:flex;flex-direction:column;align-items:flex-start;gap:2px}.tr-st small{font-size:11.5px;color:var(--muted)}
 .tr-ops{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .btn.ok-o{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
@@ -769,13 +771,16 @@ async function makeFirebase(){
     watchTripPeople(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"people"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
     watchTripJoins(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"joins"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
     async tripWrite(id, trip, upserts, removes, all, isNew){
-      const { id:_x, keys:_k, ...t } = trip, groups = await tripGroups(id, all), prev = (tripById(id) || {}).keys || [];
+      const { id:_x, keys:_k, hkeys:_hk, ...t } = trip, groups = await tripGroups(id, all), prev = (tripById(id) || {}).keys || [];
+      const hot = await tripHotels(id, all), hprev = (tripById(id) || {}).hkeys || [];
       const ops = [];
-      ops.push(b => b.set(F.doc(db,"trips",id), fix({ ...t, count:all.length, keys:[...groups.keys()], pubV:2, updatedAt:NOW, ...(isNew ? { createdAt:NOW } : {}) }), { merge:true }));
+      ops.push(b => b.set(F.doc(db,"trips",id), fix({ ...t, count:all.length, keys:[...groups.keys()], hkeys:[...hot.keys()], pubV:2, updatedAt:NOW, ...(isNew ? { createdAt:NOW } : {}) }), { merge:true }));
       upserts.forEach(({ id:pid, ...p }) => ops.push(b => b.set(F.doc(db,"trips",id,"people",pid), p)));
       removes.forEach(pid => ops.push(b => b.delete(F.doc(db,"trips",id,"people",pid)), b => b.delete(F.doc(db,"trips",id,"joins",pid)), b => b.delete(F.doc(db,"joinPub",id,"done",pid))));
       prev.filter(h => !groups.has(h)).forEach(h => ops.push(b => b.delete(F.doc(db,"joinPub",id,"k",h))));
       groups.forEach((names, h) => ops.push(b => b.set(F.doc(db,"joinPub",id,"k",h), { names })));
+      hprev.filter(h => !hot.has(h)).forEach(h => ops.push(b => b.delete(F.doc(db,"joinPub",id,"h",h))));
+      hot.forEach((v, h) => ops.push(b => b.set(F.doc(db,"joinPub",id,"h",h), v)));
       ops.push(b => b.set(F.doc(db,"joinPub",id), tripPublic(trip)));
       for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(f => f(b)); await b.commit(); }
     },
@@ -783,7 +788,7 @@ async function makeFirebase(){
     tripConfirm:(id, pid, passport, me) => F.setDoc(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name }),
     async tripUnconfirm(id, pid){ const b = F.writeBatch(db); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid)); await b.commit(); },
     async deleteTrip(id, pids){
-      const ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)].concat(((tripById(id) || {}).keys || []).map(h => F.doc(db,"joinPub",id,"k",h)));
+      const T0 = tripById(id) || {}, ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)].concat((T0.keys || []).map(h => F.doc(db,"joinPub",id,"k",h)), (T0.hkeys || []).map(h => F.doc(db,"joinPub",id,"h",h)));
       pids.forEach(pid => ops.push(F.doc(db,"trips",id,"people",pid), F.doc(db,"trips",id,"joins",pid), F.doc(db,"joinPub",id,"done",pid)));
       for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(r => b.delete(r)); await b.commit(); }
     }
@@ -909,7 +914,8 @@ function makeDemo(){
   const trEmit = id => { trSubs.forEach(cb => cb(trips.map(t => ({ ...t })))); ["done:","people:","joins:"].forEach(p => (trW.get(p + id) || new Set()).forEach(f => f())); };
   { const id = "demoTrip", names = ["محمود عبد الله السيد","فاطمة محمد حسن","أحمد سمير عبد الفتاح","نادية حسن علي","كريم فؤاد إبراهيم","سامية رمضان محمود","عبد الرحمن خالد","هالة فتحي أحمد","يوسف محمد سعيد","منى عادل حسين","إبراهيم عبد العزيز","زينب مصطفى كامل","حسن علي حسن","سعاد إبراهيم","مصطفى جمال الدين","آمال عبد الحميد"];
     trips.push({ id, title:"رحلة عمرة ٩ نوفمبر", date:inD(2), note:"التجمع يوم السفر الساعة ٦ الصبح أمام مقر الشركة. برجاء إحضار جواز السفر الأصلي.", open:true, count:names.length, createdBy:"sup", createdAt:now - 30*HOUR, updatedAt:now - 30*HOUR });
-    tPeople[id] = names.map((name, i) => ({ id:"p" + (i + 1), n:i + 1, name, passport:"A" + String(20456100 + i * 1371).padStart(8, "0"), phone:"" }));
+    tPeople[id] = names.map((name, i) => ({ id:"p" + (i + 1), n:i + 1, name, passport:"A" + String(20456100 + i * 1371).padStart(8, "0"), phone:"",
+      ...(i < 10 ? { mk:i % 2 ? "فندق دار التوحيد إنتركونتيننتال" : "فندق سويس أوتيل مكة", md:"فندق دار الإيمان إنتركونتيننتال" } : {}) }));
     tJoins[id] = {}; [1,2,3,5,6,8,9,11,12,14].forEach((k, j) => tJoins[id]["p" + k] = { passport:tPeople[id][k - 1].passport, phone:"2010" + String(12345670 + k * 911).slice(0, 8), at:now - (20 - j * 2) * HOUR, ...(j < 4 ? { waSent:now - HOUR } : {}) }); }
   return {
     demo:true, users,
@@ -2623,7 +2629,12 @@ const tFields = t => tripPublic(t);
 // الاسم الأول (عبد/أبو بتتلزق في اللي بعدها): نفس الدالة بالظبط في join.html
 const normName = s => String(s || "").replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[^\u0621-\u064Aa-zA-Z ]/g, " ").replace(/\s+/g, " ").trim().toLowerCase().replace(/^(عبد|ابو) /, "$1");
 const firstKey = s => normName(s).split(" ")[0] || "";
-async function nameHash(tid, key){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(tid + "|" + key)); return [...new Uint8Array(b)].slice(0, 20).map(x => x.toString(16).padStart(2, "0")).join(""); }
+async function sha(str){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)); return [...new Uint8Array(b)].slice(0, 20).map(x => x.toString(16).padStart(2, "0")).join(""); }
+const nameHash = (tid, key) => sha(tid + "|" + key);
+// فنادق كل معتمر: وثيقة رقمها بصمة (الرحلة + المعتمر + الجواز) — نفس اللي في join.html
+async function tripHotels(tid, all){ const m = new Map();
+  for (const p of all) if (p.passport && (p.mk || p.md)) m.set(await sha(tid + "|h|" + p.id + "|" + p.passport), { mk:p.mk || "", md:p.md || "" });
+  return m; }
 async function tripGroups(tid, all){
   const g = new Map();
   for (const p of all.slice().sort((a,b) => a.n - b.n)){ const k = firstKey(p.name); if (!k) continue; const h = await nameHash(tid, k);
@@ -2647,6 +2658,7 @@ function welcomeMsg(t, p){
   const L = [`السلام عليكم ورحمة الله وبركاته`, `أهلًا وسهلًا ${p.name}،`, `تم تأكيد انضمامكم إلى مجموعة ${t.title || "الرحلة"} مع برومس للسياحة ✅`, ""];
   if (t.date) L.push(`📅 تاريخ السفر: ${tDate(t.date, { weekday:"long", day:"numeric", month:"long", year:"numeric" })}`);
   L.push(`🔖 رقم التأكيد: ${tRef(t, p)}`, "");
+  if (p.mk || p.md){ L.push("🏨 الإقامة:"); if (p.mk) L.push(`• فندق مكة المكرمة: ${p.mk}`); if (p.md) L.push(`• فندق المدينة المنورة: ${p.md}`); L.push(""); }
   const route = fixUrl(t.routeUrl); L.push(route ? `🗺️ مسار الرحلة:\n${route}` : `🗺️ مسار الرحلة: سيتاح قريبًا`, "");
   const cs = tContacts(t); if (cs.length){ L.push("📞 أرقام تهمك:"); cs.forEach(c => L.push(`• ${c.label ? c.label + ": " : ""}${c.name || ""}${c.phone ? " — " + c.phone : ""}`)); L.push(""); }
   if (t.note) L.push("📌 تعليمات الرحلة:", t.note, "");
@@ -2663,9 +2675,9 @@ function tripCsv(t, P){
   const done = tDone(t.id), fmt = a => new Date(a).toLocaleString("ar-EG", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" });
   const txt = v => /^\+?\d+$/.test(v) ? `="${v}"` : v;   // عشان إكسل مايبوّظش الأرقام الطويلة
   const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
-  const rows = [["م","الاسم","رقم الجواز","رقم الواتساب","الحالة","وقت التأكيد","طريقة التأكيد","رسالة الترحيب"]]
+  const rows = [["م","الاسم","رقم الجواز","رقم الواتساب","فندق مكة","فندق المدينة","الحالة","وقت التأكيد","طريقة التأكيد","رسالة الترحيب"]]
     .concat(P.slice().sort((a,b) => a.n - b.n).map(x => { const a = done.get(x.id), j = S.tripJoins[x.id] || {}, ph = tPhone(x);
-      return [x.n, x.name, txt(x.passport || ""), ph ? txt("+" + ph) : "", a ? "أكد" : "لسه", a ? fmt(a) : "", a ? (j.manual ? "يدوي" : "من اللينك") : "", j.waSent ? "اتبعتت" : ""]; }));
+      return [x.n, x.name, txt(x.passport || ""), ph ? txt("+" + ph) : "", x.mk || "", x.md || "", a ? "أكد" : "لسه", a ? fmt(a) : "", a ? (j.manual ? "يدوي" : "من اللينك") : "", j.waSent ? "اتبعتت" : ""]; }));
   const blob = new Blob(["\ufeff" + rows.map(r => r.map(q).join(",")).join("\r\n")], { type:"text/csv;charset=utf-8" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = (t.title || "الرحلة").replace(/[\\/:*?"<>|]/g, "-") + " — كشف المعتمرين.csv";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
@@ -2676,7 +2688,7 @@ function tripPrint(t, P){
   const w = window.open("", "_blank"); if (!w) return toast("المتصفح منع فتح صفحة الطباعة");
   const logo = new URL("logo.png", location.href).href;
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${esc(t.title || "الرحلة")} — كشف المعتمرين</title>
-  <style>@page{size:A4;margin:12mm}body{font:13px/1.5 "IBM Plex Sans Arabic",Tahoma,sans-serif;color:#13262b;margin:0}
+  <style>@page{size:A4 landscape;margin:10mm}body{font:12.5px/1.5 "IBM Plex Sans Arabic",Tahoma,sans-serif;color:#13262b;margin:0}
   .hd{display:flex;align-items:center;gap:16px;border-bottom:3px solid #c8962a;padding-bottom:10px;margin-bottom:12px}.hd img{width:74px;border-radius:8px}
   h1{font-size:19px;margin:0}.hd p{margin:2px 0 0;color:#5f6f72}.sum{margin-inline-start:auto;text-align:center;border:1px solid #ddd;border-radius:8px;padding:6px 12px}.sum b{display:block;font-size:18px}
   table{width:100%;border-collapse:collapse}th,td{border:1px solid #cfd6d6;padding:6px 8px;text-align:right}th{background:#033735;color:#fff;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -2684,8 +2696,8 @@ function tripPrint(t, P){
   .ft{margin-top:10px;color:#5f6f72;font-size:11px;display:flex;justify-content:space-between}</style></head><body>
   <div class="hd"><img src="${logo}" alt=""><div><h1>${esc(t.title || "الرحلة")} — كشف المعتمرين</h1><p>${t.date ? "تاريخ السفر: " + esc(tDate(t.date, { weekday:"long", day:"numeric", month:"long", year:"numeric" })) : ""}</p></div>
   <div class="sum"><b>${fmtNum(n)} / ${fmtNum(L.length)}</b>أكدوا الانضمام</div></div>
-  <table><thead><tr><th style="width:34px">م</th><th>الاسم</th><th>رقم الجواز</th><th>رقم الواتساب</th><th>الحالة</th><th style="width:22%">ملاحظات</th></tr></thead><tbody>
-  ${L.map(x => { const ph = tPhone(x), a = done.has(x.id); return `<tr><td class="c">${fmtNum(x.n)}</td><td>${esc(x.name)}</td><td class="l"><bdi dir="ltr">${esc(x.passport || "")}</bdi></td><td class="l"><bdi dir="ltr">${esc(fmtPhone(ph))}</bdi></td><td class="${a ? "ok" : "no"}">${a ? "أكد" : "لسه"}</td><td></td></tr>`; }).join("")}
+  <table><thead><tr><th style="width:34px">م</th><th>الاسم</th><th>رقم الجواز</th><th>رقم الواتساب</th><th>فندق مكة</th><th>فندق المدينة</th><th>الحالة</th><th style="width:14%">ملاحظات</th></tr></thead><tbody>
+  ${L.map(x => { const ph = tPhone(x), a = done.has(x.id); return `<tr><td class="c">${fmtNum(x.n)}</td><td>${esc(x.name)}</td><td class="l"><bdi dir="ltr">${esc(x.passport || "")}</bdi></td><td class="l"><bdi dir="ltr">${esc(fmtPhone(ph))}</bdi></td><td>${esc(x.mk || "")}</td><td>${esc(x.md || "")}</td><td class="${a ? "ok" : "no"}">${a ? "أكد" : "لسه"}</td><td></td></tr>`; }).join("")}
   </tbody></table><div class="ft"><span>برومس للسياحة</span><span>اتطبع ${esc(new Date().toLocaleString("ar-EG", { day:"numeric", month:"long", hour:"numeric", minute:"2-digit" }))}</span></div>
   <script>window.onload = () => setTimeout(() => print(), 300)<\/script></body></html>`);
   w.document.close();
@@ -2816,6 +2828,7 @@ function tripDrawDetail(){
     ${sup ? (() => { const q = waQueue(t, P || []); return q.length ? `<button class="btn ok-o" data-trip="waNext">${ic("chat")}إرسال الترحيب على الواتساب للتالي (${fmtNum(q.length)})</button>` : ""; })() : ""}
     ${sup ? `<span class="tr-sep"></span>
     <button class="btn" data-trip="add">${ic("plus")}إضافة أسماء</button>
+    <button class="btn" data-trip="import">استيراد الفنادق والأرقام من شيت</button>
     <button class="btn" data-trip="edit">تعديل الرحلة</button>
     <button class="btn" data-trip="toggle">${t.open === false ? "فتح التسجيل" : "قفل التسجيل"}</button>
     <button class="btn danger ${armDel ? "armed" : ""}" data-trip="del">${armDel ? "متأكد؟ اضغط تاني للمسح" : "مسح الرحلة"}</button>` : ""}`;
@@ -2837,7 +2850,7 @@ function tripDrawTable(){
   box.innerHTML = `<div class="list tr-list">${L.map(p => { const at = done.get(p.id), j = S.tripJoins[p.id], arm = S.tripArm;
     return `<div class="tr-row ${at ? "in" : ""}">
       <span class="tr-n">${fmtNum(p.n)}</span>
-      <div class="tr-who"><b>${esc(p.name)}</b><span><bdi dir="ltr" class="${p.passport ? "" : "miss"}">${esc(p.passport || "مفيش رقم جواز")}</bdi>${tPhone(p) ? ` · <a href="https://wa.me/${esc(tPhone(p))}" target="_blank" rel="noopener"><bdi dir="ltr">${esc(fmtPhone(tPhone(p)))}</bdi></a>` : ""}</span></div>
+      <div class="tr-who"><b>${esc(p.name)}</b><span><bdi dir="ltr" class="${p.passport ? "" : "miss"}">${esc(p.passport || "مفيش رقم جواز")}</bdi>${p.mk || p.md ? `<br><span class="tr-ht">🏨 ${esc(p.mk || "—")} · ${esc(p.md || "—")}</span>` : ""}${tPhone(p) ? ` · <a href="https://wa.me/${esc(tPhone(p))}" target="_blank" rel="noopener"><bdi dir="ltr">${esc(fmtPhone(tPhone(p)))}</bdi></a>` : ""}</span></div>
       <div class="tr-st">${at ? `<span class="pill tr-in">✓ أكد الانضمام</span><small>${esc(ago(at))}${j && j.manual ? " · يدوي" + (j.by ? " (" + esc(j.by) + ")" : "") : ""}${j && j.waSent ? " · الترحيب اتبعت ✓" : ""}</small>` : `<span class="pill tr-out">لسه</span>`}</div>
       ${sup ? `<div class="tr-ops">${at && tPhone(p) ? `<button class="btn sm ${j && j.waSent ? "ghost" : "ok-o"}" data-trip="wa" data-id="${p.id}">${j && j.waSent ? "إرسال تاني" : "إرسال الترحيب"}</button>` : ""}${at ? `<button class="btn sm ${arm === "undo:" + p.id ? "danger armed" : "ghost"}" data-trip="undo" data-id="${p.id}">${arm === "undo:" + p.id ? "متأكد؟" : "إلغاء التأكيد"}</button>`
         : `<button class="btn sm ok-o" data-trip="manual" data-id="${p.id}">تأكيد يدوي</button>`}
@@ -2872,6 +2885,7 @@ ${tripLink(t.id)}
   if (k === "print") return tripPrint(t, P);
   if (!tSup()) return;
   if (k === "add") return tripAddNames(t);
+  if (k === "import") return tripImport(t);
   if (k === "edit") return tripForm(t);
   if (k === "editP" && p) return tripPersonForm(t, p);
   if (k === "wa" && p) return sendWelcome(t, p);
@@ -2957,7 +2971,9 @@ function tripPersonForm(t, p){
   const m = modal("تعديل بيانات المعتمر", `<form class="form" id="tpForm" novalidate>
     <div class="field full"><label for="tp-name">الاسم *</label><input id="tp-name" value="${esc(p.name)}"></div>
     <div class="field"><label for="tp-pass">رقم الجواز</label><input id="tp-pass" dir="ltr" autocapitalize="characters" value="${esc(p.passport || "")}"></div>
-    <div class="field"><label for="tp-phone">التليفون</label><input id="tp-phone" type="tel" dir="ltr" value="${esc(p.phone || "")}"></div>
+    <div class="field"><label for="tp-phone">رقم الواتساب</label><input id="tp-phone" type="tel" dir="ltr" value="${esc(p.phone || "")}"></div>
+    <div class="field"><label for="tp-mk">فندق مكة</label><input id="tp-mk" value="${esc(p.mk || "")}"></div>
+    <div class="field"><label for="tp-md">فندق المدينة</label><input id="tp-md" value="${esc(p.md || "")}"></div>
     <p class="hint field full">المعتمر بيأكد برقم الجواز ده بالظبط (السيستم بيتجاهل المسافات والحروف الصغيرة).</p>
     <p class="err field full" id="tp-err" hidden></p></form>
     <div class="form-foot"><button class="btn primary" id="tpSave">حفظ</button><button class="btn ghost" data-x>إلغاء</button></div>`);
@@ -2967,13 +2983,84 @@ function tripPersonForm(t, p){
     if (!name){ er.textContent = "اكتب الاسم."; er.hidden = false; return; }
     const d = (S.tripPeople || []).find(x => x.id !== p.id && passport && x.passport === passport);
     if (d){ er.textContent = "رقم الجواز ده مسجل لـ" + d.name + "."; er.hidden = false; return; }
-    const np = { ...p, name, passport, phone:$("#tp-phone").value.trim() };
+    const np = { ...p, name, passport, phone:$("#tp-phone").value.trim(), mk:$("#tp-mk").value.trim(), md:$("#tp-md").value.trim() };
     $("#tpSave").disabled = true;
     try { await api.tripWrite(t.id, tFields(t), [np], [], S.tripPeople.map(x => x.id === p.id ? np : x)); m.remove(); toast("اتحفظ"); }
     catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش."; er.hidden = false; $("#tpSave").disabled = false; }
   };
   $("#tpSave").onclick = save;
   $("#tpForm").addEventListener("submit", e => { e.preventDefault(); save(); });
+}
+
+/* ---------- استيراد الفنادق وأرقام الواتساب من شيت ---------- */
+// بيقرا ملف إكسل/CSV أو كلام ملزوق، ويطابق كل سطر بالمعتمر بالجواز (لو موجود) أو بالاسم
+let XLSXmod = null;
+async function readSheetFile(f){
+  if (/\.(csv|txt)$/i.test(f.name)) return parseGrid(await f.text());
+  if (!XLSXmod) XLSXmod = await new Promise((ok, no) => { if (window.XLSX) return ok(window.XLSX);   // SheetJS محفوظة جوه الريبو (xlsx.mini.min.js)
+    const sc = document.createElement("script"); sc.src = "xlsx.mini.min.js"; sc.onload = () => ok(window.XLSX); sc.onerror = no; document.head.appendChild(sc); });
+  const wb = XLSXmod.read(await f.arrayBuffer(), { type:"array" });
+  return XLSXmod.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:false, defval:"" });
+}
+function parseGrid(text){
+  const lines = String(text || "").split(/\r?\n/).filter(l => l.trim());
+  const sep = lines.some(l => l.includes("\t")) ? "\t" : lines.some(l => l.includes(",")) ? "," : lines.some(l => l.includes("؛") || l.includes(";")) ? /[;؛]/ : "\t";
+  return lines.map(l => l.split(sep).map(c => c.replace(/^"|"$/g, "").trim()));
+}
+function mapRows(grid){
+  const G = grid.filter(r => r.some(c => String(c).trim()));
+  if (!G.length) return [];
+  const H = G[0].map(c => normName(c));
+  const find = re => H.findIndex(h => re.test(h));
+  let ci = { name:find(/اسم|name/), pass:find(/جواز|passport/), mk:find(/مكه|مكة|makk?ah|mecca/), md:find(/مدين|madinah|medina/), ph:find(/تليفون|هاتف|موبايل|محمول|واتس|رقم ال?تواصل|phone|mobile|whats/) };
+  let body = G.slice(1);
+  if (ci.name < 0 && ci.mk < 0 && ci.md < 0){ ci = { name:0, pass:-1, mk:1, md:2, ph:-1 }; body = G; }   // من غير عناوين: الاسم، مكة، المدينة
+  if (ci.name < 0) ci.name = 0;
+  const v = (r, i) => i >= 0 ? String(r[i] ?? "").trim() : "";
+  return body.map(r => ({ name:v(r, ci.name), pass:normPass(v(r, ci.pass)), mk:v(r, ci.mk), md:v(r, ci.md), phone:v(r, ci.ph) })).filter(r => r.name || r.pass);
+}
+function matchRows(rows, P){
+  const byPass = new Map(P.filter(p => p.passport).map(p => [p.passport, p])), byName = new Map();
+  P.forEach(p => { const k = normName(p.name); byName.set(k, byName.has(k) ? null : p); });
+  const hits = [], miss = [], used = new Set();
+  rows.forEach(r => {
+    let p = r.pass && byPass.get(r.pass);
+    if (!p && r.name){ const k = normName(r.name); p = byName.get(k);
+      if (p === undefined){ const c = P.filter(x => { const a = normName(x.name); return a.startsWith(k + " ") || k.startsWith(a + " "); }); p = c.length === 1 ? c[0] : null; } }
+    if (p && !used.has(p.id)){ used.add(p.id); hits.push({ p, r }); } else miss.push(r);
+  });
+  return { hits, miss, none:P.filter(p => !used.has(p.id)) };
+}
+function tripImport(t){
+  if (!S.tripPeople) return toast("استنى الأسماء تحمّل");
+  let res = null;
+  const m = modal("استيراد الفنادق وأرقام الواتساب", `<div class="form">
+    <div class="field full"><span class="lbl">ارفع الشيت (Excel أو CSV) — أول صف فيه عناوين الأعمدة زي: الاسم، رقم الجواز، فندق مكة، فندق المدينة، رقم الواتساب</span>
+      <label class="imp-drop"><input type="file" id="im-file" accept=".xlsx,.xls,.csv,.txt"><span class="hint">أو الصق الأعمدة من إكسل في الخانة اللي تحت</span></label></div>
+    <div class="field full"><label for="im-paste">أو الصق من إكسل <small class="hint">— بالعناوين، أو من غيرها بالترتيب: الاسم، فندق مكة، فندق المدينة</small></label><textarea id="im-paste" rows="4"></textarea></div>
+    <div class="field full np" id="im-pv"><p class="hint">السيستم هيطابق كل سطر بالمعتمر برقم الجواز لو موجود، وإلا بالاسم، ويوريك النتيجة قبل الحفظ.</p></div>
+    <p class="err field full" id="im-err" hidden></p></div>
+    <div class="form-foot"><button class="btn primary" id="imSave" disabled>حفظ</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  const show = grid => {
+    const rows = mapRows(grid); res = matchRows(rows, S.tripPeople);
+    const H = res.hits;
+    $("#im-pv").innerHTML = !rows.length ? `<p class="hint">مفيش بيانات اتقرت.</p>` : `<p class="np-sum"><b>${fmtNum(H.length)}</b> معتمر اتطابقوا من ${fmtNum(rows.length)} سطر</p>
+      <ul class="np-warn">${res.miss.length ? `<li class="w">سطور ما لقيتلهاش معتمر (${fmtNum(res.miss.length)}): ${res.miss.slice(0, 8).map(r => esc(r.name || r.pass)).join("، ")}${res.miss.length > 8 ? " …" : ""}</li>` : ""}
+        ${res.none.length ? `<li class="w">معتمرين مش في الشيت (${fmtNum(res.none.length)}): ${res.none.slice(0, 8).map(p => esc(p.name)).join("، ")}${res.none.length > 8 ? " …" : ""}</li>` : ""}</ul>
+      <table class="imp-tbl"><tr><th>المعتمر</th><th>فندق مكة</th><th>فندق المدينة</th><th>الواتساب</th></tr>${H.map(({ p, r }) => `<tr><td>${esc(p.name)}</td><td>${esc(r.mk || "—")}</td><td>${esc(r.md || "—")}</td><td dir="ltr">${esc(r.phone || "")}</td></tr>`).join("")}</table>`;
+    $("#imSave").disabled = !H.length;
+  };
+  $("#im-file").onchange = async e => { const f = e.target.files[0]; if (!f) return; $("#im-pv").innerHTML = `<p class="hint">بيقرا الملف…</p>`;
+    try { show(await readSheetFile(f)); } catch(x){ console.error(x); $("#im-pv").innerHTML = `<p class="miss">مش قادر يقرا الملف ده. جرّب تحفظه xlsx أو CSV، أو الصق الأعمدة.</p>`; } };
+  $("#im-paste").addEventListener("input", e => show(parseGrid(e.target.value)));
+  $("#imSave").onclick = async () => {
+    if (!res || !res.hits.length) return;
+    const ups = res.hits.map(({ p, r }) => ({ ...p, ...(r.mk ? { mk:r.mk } : {}), ...(r.md ? { md:r.md } : {}), ...(r.phone ? { phone:r.phone } : {}) }));
+    const map = new Map(ups.map(x => [x.id, x]));
+    $("#imSave").disabled = true;
+    try { await api.tripWrite(t.id, tFields(t), ups, [], S.tripPeople.map(x => map.get(x.id) || x)); m.remove(); toast("اتحدّث " + fmtNum(ups.length) + " معتمر"); }
+    catch(x){ console.error(x); const er = $("#im-err"); er.textContent = "الحفظ ما نجحش. اتأكد من النت."; er.hidden = false; $("#imSave").disabled = false; }
+  };
 }
 
 if (DEMO) api.demoLogin("sup");

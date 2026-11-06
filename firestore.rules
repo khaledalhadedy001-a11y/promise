@@ -222,6 +222,12 @@ service cloud.firestore {
         allow list: if false;
         allow write: if isSup();
       }
+      // فنادق كل معتمر: رقم الوثيقة = بصمة (الرحلة + المعتمر + رقم الجواز)، فمحدش يوصلها غير اللي معاه الجواز
+      match /h/{x} {
+        allow get: if true;
+        allow list: if false;
+        allow write: if isSup();
+      }
       // قديم (من النسخة الأولى): مقفول، ومدير التشغيل بس يمسحه
       match /done/{pid} {
         allow read: if isSup() || isMgr();
