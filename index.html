@@ -758,28 +758,27 @@ async function makeFirebase(){
     setVisaFlow:o => F.setDoc(F.doc(db,"settings","visaFlow"), o, { merge:true }),
     // ===== الرحلات: تأكيد انضمام المعتمرين للجروب =====
     // trips/{id} (بيانات الرحلة) + people (الأسماء والجوازات) + joins (تأكيدات بالجواز) — للإدارة بس
-    // joinPub/{id} (العنوان والأسماء من غير جوازات) + done (مين أكد) — اللي معاه اللينك يشوفها
+    // joinPub/{id}: العنوان وأرقام المشرفين بس — مفيش أسماء ولا مين أكد
+    // joinPub/{id}/k/{hash}: الأسماء متقسمة بالاسم الأول، ومحدش يوصل لمجموعة غير لو كتب الاسم الأول صح
     watchTrips(cb, onErr){ return F.onSnapshot(F.collection(db,"trips"), s => cb(s.docs.map(withId)), e => { console.warn(e); onErr && onErr(e); }); },
-    watchTripDone(id, cb){ return F.onSnapshot(F.collection(db,"joinPub",id,"done"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    watchTripDone(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"joins"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
     watchTripPeople(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"people"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
     watchTripJoins(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"joins"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
     async tripWrite(id, trip, upserts, removes, all, isNew){
-      const b = F.writeBatch(db), { id:_x, ...t } = trip;
-      b.set(F.doc(db,"trips",id), fix({ ...t, count:all.length, updatedAt:NOW, ...(isNew ? { createdAt:NOW } : {}) }), { merge:true });
-      upserts.forEach(({ id:pid, ...p }) => b.set(F.doc(db,"trips",id,"people",pid), p));
-      removes.forEach(pid => { b.delete(F.doc(db,"trips",id,"people",pid)); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid)); });
-      b.set(F.doc(db,"joinPub",id), tripPublic(trip, all));
-      await b.commit();
+      const { id:_x, keys:_k, ...t } = trip, groups = await tripGroups(id, all), prev = (tripById(id) || {}).keys || [];
+      const ops = [];
+      ops.push(b => b.set(F.doc(db,"trips",id), fix({ ...t, count:all.length, keys:[...groups.keys()], pubV:2, updatedAt:NOW, ...(isNew ? { createdAt:NOW } : {}) }), { merge:true }));
+      upserts.forEach(({ id:pid, ...p }) => ops.push(b => b.set(F.doc(db,"trips",id,"people",pid), p)));
+      removes.forEach(pid => ops.push(b => b.delete(F.doc(db,"trips",id,"people",pid)), b => b.delete(F.doc(db,"trips",id,"joins",pid)), b => b.delete(F.doc(db,"joinPub",id,"done",pid))));
+      prev.filter(h => !groups.has(h)).forEach(h => ops.push(b => b.delete(F.doc(db,"joinPub",id,"k",h))));
+      groups.forEach((names, h) => ops.push(b => b.set(F.doc(db,"joinPub",id,"k",h), { names })));
+      ops.push(b => b.set(F.doc(db,"joinPub",id), tripPublic(trip)));
+      for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(f => f(b)); await b.commit(); }
     },
-    async tripConfirm(id, pid, passport, me){
-      const b = F.writeBatch(db);
-      b.set(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name });
-      b.set(F.doc(db,"joinPub",id,"done",pid), { at:F.serverTimestamp() });
-      await b.commit();
-    },
+    tripConfirm:(id, pid, passport, me) => F.setDoc(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name }),
     async tripUnconfirm(id, pid){ const b = F.writeBatch(db); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid)); await b.commit(); },
     async deleteTrip(id, pids){
-      const ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)];
+      const ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)].concat(((tripById(id) || {}).keys || []).map(h => F.doc(db,"joinPub",id,"k",h)));
       pids.forEach(pid => ops.push(F.doc(db,"trips",id,"people",pid), F.doc(db,"trips",id,"joins",pid), F.doc(db,"joinPub",id,"done",pid)));
       for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(r => b.delete(r)); await b.commit(); }
     }
@@ -2605,12 +2604,20 @@ function normPass(v){
     .toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 function rid(n = 20){ const a = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789", r = new Uint32Array(n); crypto.getRandomValues(r); return [...r].map(x => a[x % a.length]).join(""); }
-// اللي بيظهر في صفحة المعتمر: العنوان والأسماء بس — الجوازات عمرها ما بتطلع برّه
-function tripPublic(t, all){
-  return { title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false,
-    names:all.slice().sort((a,b) => a.n - b.n).map(p => p.passport ? { id:p.id, n:p.n, name:p.name } : { id:p.id, n:p.n, name:p.name, np:true }) };
+// اللي بيظهر في صفحة المعتمر: العنوان وأرقام المشرفين — لا أسماء ولا جوازات ولا مين أكد
+const SUPF = ["supEg","supEgPhone","supSa","supSaPhone"];
+function tripPublic(t){ const o = { title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false }; SUPF.forEach(k => o[k] = t[k] || ""); return o; }
+const tFields = t => tripPublic(t);
+// الاسم الأول (عبد/أبو بتتلزق في اللي بعدها): نفس الدالة بالظبط في join.html
+const normName = s => String(s || "").replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[^\u0621-\u064Aa-zA-Z ]/g, " ").replace(/\s+/g, " ").trim().toLowerCase().replace(/^(عبد|ابو) /, "$1");
+const firstKey = s => normName(s).split(" ")[0] || "";
+async function nameHash(tid, key){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(tid + "|" + key)); return [...new Uint8Array(b)].slice(0, 20).map(x => x.toString(16).padStart(2, "0")).join(""); }
+async function tripGroups(tid, all){
+  const g = new Map();
+  for (const p of all.slice().sort((a,b) => a.n - b.n)){ const k = firstKey(p.name); if (!k) continue; const h = await nameHash(tid, k);
+    if (!g.has(h)) g.set(h, []); g.get(h).push(p.passport ? { id:p.id, n:p.n, name:p.name } : { id:p.id, n:p.n, name:p.name, np:true }); }
+  return g;
 }
-const tFields = t => ({ title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false });
 const tSup = () => S.me.role === "supervisor";
 const tripById = id => (S.trips || []).find(t => t.id === id);
 const tDone = id => (S.tripDone || {})[id] || new Map();
@@ -2683,7 +2690,9 @@ function tripsStart(){
 function tripRedraw(){ if (S.view === "trips") renderTrips(true); }
 function tripOpen(id){
   tripClose(); S.tripOpen = id; S.tripPeople = null; S.tripJoins = {}; S.tripF = "all"; S.tripQ = ""; S.tripArm = "";
-  const a = api.watchTripPeople(id, L => { S.tripPeople = L; tripRedraw(); });
+  let mig = false;
+  const a = api.watchTripPeople(id, L => { S.tripPeople = L; tripRedraw();
+    const t = tripById(id); if (!mig && t && t.pubV !== 2 && tSup() && !api.demo){ mig = true; api.tripWrite(id, tFields(t), [], [], L).catch(e => console.warn(e)); } });
   const b = api.watchTripJoins(id, L => { S.tripJoins = Object.fromEntries(L.map(j => [j.id, j])); tripRedraw(); });
   S.tripUnsub = () => { a(); b(); };
   renderTrips(); window.scrollTo(0, 0);
@@ -2724,7 +2733,7 @@ function tripDrawDetail(){
   const P = S.tripPeople, done = tDone(t.id), sup = tSup();
   const tot = P ? P.length : (t.count || 0), n = P ? P.filter(p => done.has(p.id)).length : done.size, left = Math.max(tot - n, 0), pc = tot ? Math.round(n / tot * 100) : 0;
   $("#trHead").innerHTML = `<div class="vhead tr-h"><h2>${esc(t.title || "رحلة")}</h2><span class="pill ${t.open === false ? "tr-lock" : "tr-on"}">${t.open === false ? "التسجيل مقفول" : "التسجيل مفتوح"}</span></div>
-    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}</p>`;
+    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${t.supEg || t.supEgPhone ? `<br><b>المشرف في مصر:</b> ${esc(t.supEg || "")} <bdi dir="ltr">${esc(t.supEgPhone || "")}</bdi>` : ""}${t.supSa || t.supSaPhone ? `<br><b>المشرف في السعودية:</b> ${esc(t.supSa || "")} <bdi dir="ltr">${esc(t.supSaPhone || "")}</bdi>` : ""}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !t.supEgPhone && !t.supSaPhone ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
   let last = null; if (P) P.forEach(p => { const a = done.get(p.id); if (a && (!last || a > last.at)) last = { name:p.name, at:a }; });
   $("#trStats").innerHTML = `<div class="tr-stats">
     <div class="tr-ring" style="--p:${pc}"><b>${fmtNum(pc)}٪</b><span>أكدوا</span></div>
@@ -2820,6 +2829,11 @@ function tripForm(t){
   const m = modal(isNew ? "رحلة جديدة" : "تعديل الرحلة", `<form class="form" id="tfForm" novalidate>
     <div class="field"><label for="tf-title">اسم الرحلة *</label><input id="tf-title" value="${esc(t ? t.title : "")}" placeholder="مثلاً: عمرة ٩ نوفمبر"></div>
     <div class="field"><label for="tf-date">ميعاد السفر</label><input id="tf-date" type="date" value="${esc(t ? t.date || "" : "")}"></div>
+    <div class="field"><label for="tf-supEg">المشرف في مصر</label><input id="tf-supEg" value="${esc(t ? t.supEg || "" : "")}" placeholder="الاسم"></div>
+    <div class="field"><label for="tf-supEgPhone">رقمه (مصر)</label><input id="tf-supEgPhone" type="tel" dir="ltr" value="${esc(t ? t.supEgPhone || "" : "")}" placeholder="01xxxxxxxxx"></div>
+    <div class="field"><label for="tf-supSa">المشرف في السعودية</label><input id="tf-supSa" value="${esc(t ? t.supSa || "" : "")}" placeholder="الاسم"></div>
+    <div class="field"><label for="tf-supSaPhone">رقمه (السعودية)</label><input id="tf-supSaPhone" type="tel" dir="ltr" value="${esc(t ? t.supSaPhone || "" : "")}" placeholder="05xxxxxxxx"></div>
+    <p class="hint field full">الأسماء والأرقام دي بتظهر للمعتمر بعد التأكيد في جزء «أرقام تهمك». ممكن تسيب أي خانة فاضية.</p>
     <div class="field full"><label for="tf-note">رسالة تظهر للمعتمر بعد ما يأكد <small class="hint">— اختياري، مثلاً ميعاد ومكان التجمع</small></label><textarea id="tf-note" rows="2" maxlength="600">${esc(t ? t.note || "" : "")}</textarea></div>
     ${isNew ? namesField("tf-names", []) : ""}
     <p class="err field full" id="tf-err" hidden></p></form>
@@ -2831,6 +2845,7 @@ function tripForm(t){
     const title = $("#tf-title").value.trim() || (date ? "عمرة " + tDate(date, { day:"numeric", month:"long" }) : "");
     if (!title){ er.textContent = "اكتب اسم الرحلة."; er.hidden = false; return; }
     const fields = { ...(t ? tFields(t) : { open:true }), title, date, note:$("#tf-note").value.trim() };
+    SUPF.forEach(k => fields[k] = $("#tf-" + k).value.trim());
     $("#tfSave").disabled = true;
     try {
       if (isNew){
