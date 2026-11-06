@@ -451,6 +451,52 @@ main{padding-bottom:56px}
 .vbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--p-urgent);color:#fff;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;margin-inline-start:2px}
 @media (max-width:900px){ .vtabs{display:flex;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px} .vtabs .tab{flex:0 0 auto} }
 @media (max-width:460px){ .views button .ic{display:none} .views button{font-size:13px} .vsteps{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* الرحلات */
+.trip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:16px}
+.trip-card{display:flex;flex-direction:column;gap:8px;text-align:right;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 16px;border-top:3px solid var(--t-umrah)}
+.trip-card:hover{border-color:var(--accent);border-top-color:var(--t-umrah);box-shadow:0 6px 20px rgba(10,40,46,.08)}
+.trip-card.past{opacity:.7;border-top-color:var(--line)}
+.tc-top{display:flex;align-items:center;gap:8px;justify-content:space-between}.tc-top b{font:600 16px/1.35 var(--f-display)}
+.tc-date{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}.tc-date .ic{width:15px;height:15px}
+.tc-bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}.tc-bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .4s}
+.tc-foot{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}.tc-foot b{color:var(--ink);font-variant-numeric:tabular-nums}
+.tc-left{color:var(--warn);font-weight:600}.tc-all{color:var(--ok);font-weight:600}
+.tr-lock{--h:var(--p-low)}.tr-on{--h:var(--ok)}.tr-in{--h:var(--ok)}.tr-out{--h:var(--warn)}
+.tr-sub{font-size:15px;color:var(--muted);margin-top:22px}
+.tr-back{padding-top:12px}
+.tr-h{padding-top:6px}.vpath .ic{width:15px;height:15px;vertical-align:-3px}
+.tr-stats{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.tr-ring{--p:0;width:92px;height:92px;border-radius:50%;flex:none;display:grid;place-content:center;text-align:center;background:radial-gradient(closest-side,var(--surface) 76%,transparent 77%),conic-gradient(var(--ok) calc(var(--p)*1%),var(--surface-2) 0)}
+.tr-ring b{font:700 20px/1 var(--f-display)}.tr-ring span{font-size:12px;color:var(--muted)}
+.tr-nums{display:flex;gap:10px;flex-wrap:wrap;flex:1}
+.tr-nums div{display:flex;flex-direction:column;padding:6px 14px;border-inline-start:3px solid var(--line);min-width:110px}
+.tr-nums div.ok{border-color:var(--ok)}.tr-nums div.wait{border-color:var(--warn)}
+.tr-nums b{font:700 24px/1.2 var(--f-display);font-variant-numeric:tabular-nums}.tr-nums span{font-size:12.5px;color:var(--muted)}
+.tr-last{display:flex;align-items:center;gap:6px;margin:0;font-size:13px;color:var(--muted);width:100%}
+.tr-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.tr-sep{flex:1}
+.tr-tools{align-items:center;margin-top:8px}.tr-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.tr-chips .chip b{font-variant-numeric:tabular-nums}
+.tr-list{margin-top:6px}
+.tr-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+.tr-row:last-child{border-bottom:0}
+.tr-row.in{background:color-mix(in srgb,var(--ok) 5%,transparent)}
+.tr-n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface-2);color:var(--muted);font:600 13px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.tr-row.in .tr-n{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.tr-who{display:flex;flex-direction:column;min-width:0}.tr-who b{font-weight:600;overflow-wrap:anywhere}.tr-who > span{font-size:12.5px;color:var(--muted)}
+.tr-who a{color:var(--accent)}.miss{color:var(--p-urgent)}
+.tr-st{display:flex;flex-direction:column;align-items:flex-start;gap:2px}.tr-st small{font-size:11.5px;color:var(--muted)}
+.tr-ops{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.btn.ok-o{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.np{background:var(--surface-2);border-radius:10px;padding:10px 12px;max-height:220px;overflow-y:auto}
+.np-sum{margin:0 0 4px;font-size:14px}.np-warn{margin:0 0 6px;padding-inline-start:18px;font-size:12.5px}.np-warn .w{color:var(--warn)}
+.np-list{margin:0;padding-inline-start:26px;font-size:13px;columns:2 220px;column-gap:20px}
+.np-list li{break-inside:avoid;display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px dashed var(--line)}
+.np-list li bdi{color:var(--muted);font-variant-numeric:tabular-nums}
+@media (max-width:620px){
+  .tr-row{grid-template-columns:30px minmax(0,1fr) auto;padding:10px 12px}
+  .tr-ops{grid-column:2/-1;justify-content:flex-start}
+  .tr-ring{width:76px;height:76px}.tr-nums div{min-width:0;padding:4px 10px}.tr-nums b{font-size:20px}
+  .tr-sep{display:none}
+}
 #toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:10px;z-index:40;font-size:14px;max-width:calc(100% - 32px)}
 
 @media (max-width:760px){
@@ -709,7 +755,34 @@ async function makeFirebase(){
     },
     deleteVisa:id => F.deleteDoc(F.doc(db,"visas",id)),
     async getVisaFlow(){ const d = await F.getDoc(F.doc(db,"settings","visaFlow")); return d.exists() ? d.data() : null; },
-    setVisaFlow:o => F.setDoc(F.doc(db,"settings","visaFlow"), o, { merge:true })
+    setVisaFlow:o => F.setDoc(F.doc(db,"settings","visaFlow"), o, { merge:true }),
+    // ===== الرحلات: تأكيد انضمام المعتمرين للجروب =====
+    // trips/{id} (بيانات الرحلة) + people (الأسماء والجوازات) + joins (تأكيدات بالجواز) — للإدارة بس
+    // joinPub/{id} (العنوان والأسماء من غير جوازات) + done (مين أكد) — اللي معاه اللينك يشوفها
+    watchTrips(cb, onErr){ return F.onSnapshot(F.collection(db,"trips"), s => cb(s.docs.map(withId)), e => { console.warn(e); onErr && onErr(e); }); },
+    watchTripDone(id, cb){ return F.onSnapshot(F.collection(db,"joinPub",id,"done"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    watchTripPeople(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"people"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    watchTripJoins(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"joins"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    async tripWrite(id, trip, upserts, removes, all, isNew){
+      const b = F.writeBatch(db), { id:_x, ...t } = trip;
+      b.set(F.doc(db,"trips",id), fix({ ...t, count:all.length, updatedAt:NOW, ...(isNew ? { createdAt:NOW } : {}) }), { merge:true });
+      upserts.forEach(({ id:pid, ...p }) => b.set(F.doc(db,"trips",id,"people",pid), p));
+      removes.forEach(pid => { b.delete(F.doc(db,"trips",id,"people",pid)); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid)); });
+      b.set(F.doc(db,"joinPub",id), tripPublic(trip, all));
+      await b.commit();
+    },
+    async tripConfirm(id, pid, passport, me){
+      const b = F.writeBatch(db);
+      b.set(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name });
+      b.set(F.doc(db,"joinPub",id,"done",pid), { at:F.serverTimestamp() });
+      await b.commit();
+    },
+    async tripUnconfirm(id, pid){ const b = F.writeBatch(db); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid)); await b.commit(); },
+    async deleteTrip(id, pids){
+      const ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)];
+      pids.forEach(pid => ops.push(F.doc(db,"trips",id,"people",pid), F.doc(db,"trips",id,"joins",pid), F.doc(db,"joinPub",id,"done",pid)));
+      for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(r => b.delete(r)); await b.commit(); }
+    }
   };
 }
 
@@ -826,6 +899,14 @@ function makeDemo(){
     [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",72],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",70],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",50],["e2","event","حدّث حالة الطلب: محتاجة استيفاء\nصورة جواز واحد من المعتمرين مش واضحة، كلمت العميل يبعت غيرها",3]]);
   vseed({ client:"عائلة رأفت", vtype:"سياحة", country:"الإمارات", count:3, travel:inD(9), stage:"back", stageH:1, status:"issued", result:"issued", issuedAt:now - HOUR, platform:"منصة التأشيرات", appRef:"AE-77120", reviewedAt:now - 90*HOUR, registeredAt:now - 80*HOUR },
     [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",92],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",90],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",80],["e2","event","صدرت التأشيرة ✓ — الملف رجع لمدير التشغيل",1]]);
+  // رحلات تجريبية
+  const trips = [], tPeople = {}, tJoins = {}, trSubs = new Set(), trW = new Map();
+  const trWatch = (k, cb, get) => { const f = () => cb(get()); if (!trW.has(k)) trW.set(k, new Set()); trW.get(k).add(f); f(); return () => trW.get(k).delete(f); };
+  const trEmit = id => { trSubs.forEach(cb => cb(trips.map(t => ({ ...t })))); ["done:","people:","joins:"].forEach(p => (trW.get(p + id) || new Set()).forEach(f => f())); };
+  { const id = "demoTrip", names = ["محمود عبد الله السيد","فاطمة محمد حسن","أحمد سمير عبد الفتاح","نادية حسن علي","كريم فؤاد إبراهيم","سامية رمضان محمود","عبد الرحمن خالد","هالة فتحي أحمد","يوسف محمد سعيد","منى عادل حسين","إبراهيم عبد العزيز","زينب مصطفى كامل","حسن علي حسن","سعاد إبراهيم","مصطفى جمال الدين","آمال عبد الحميد"];
+    trips.push({ id, title:"رحلة عمرة ٩ نوفمبر", date:inD(2), note:"التجمع يوم السفر الساعة ٦ الصبح أمام مقر الشركة. برجاء إحضار جواز السفر الأصلي.", open:true, count:names.length, createdBy:"sup", createdAt:now - 30*HOUR, updatedAt:now - 30*HOUR });
+    tPeople[id] = names.map((name, i) => ({ id:"p" + (i + 1), n:i + 1, name, passport:"A" + String(20456100 + i * 1371).padStart(8, "0"), phone:"" }));
+    tJoins[id] = {}; [1,2,3,5,6,8,9,11,12,14].forEach((k, j) => tJoins[id]["p" + k] = { passport:tPeople[id][k - 1].passport, at:now - (20 - j * 2) * HOUR }); }
   return {
     demo:true, users,
     onAuth(cb){ authCb = cb; cb(null); },
@@ -871,7 +952,21 @@ function makeDemo(){
       Object.assign(v, fix(patch), { updatedAt:n, lastUpdate:entry.text.slice(0,160), lastUpdateBy:m.name, lastUpdateAt:n });
       (vlogs[id] ||= []).push({ id:"vl" + n, kind:entry.kind, text:entry.text, by:m.uid, byName:m.name, role:m.role, createdAt:n }); emitV(); emitVL(id); }); },
     deleteVisa(id){ return later(() => { visas.splice(visas.findIndex(v => v.id === id), 1); emitV(); }); },
-    getVisaFlow(){ return later(() => vflow); }, setVisaFlow(o){ return later(() => { vflow = { ...vflow, ...o }; }); }
+    getVisaFlow(){ return later(() => vflow); }, setVisaFlow(o){ return later(() => { vflow = { ...vflow, ...o }; }); },
+    watchTrips(cb){ trSubs.add(cb); cb(trips.map(t => ({ ...t }))); return () => trSubs.delete(cb); },
+    watchTripDone(id, cb){ return trWatch("done:" + id, cb, () => Object.entries(tJoins[id] || {}).map(([pid, j]) => ({ id:pid, at:j.at }))); },
+    watchTripPeople(id, cb){ return trWatch("people:" + id, cb, () => (tPeople[id] || []).map(p => ({ ...p }))); },
+    watchTripJoins(id, cb){ return trWatch("joins:" + id, cb, () => Object.entries(tJoins[id] || {}).map(([pid, j]) => ({ id:pid, ...j }))); },
+    tripWrite(id, trip, upserts, removes, all, isNew){ return later(() => { const n = Date.now();
+      let t = trips.find(x => x.id === id); if (!t){ t = { id, createdAt:n }; trips.push(t); }
+      const { id:_x, ...rest } = trip; Object.assign(t, fix(rest), { count:all.length, updatedAt:n });
+      const P = tPeople[id] ||= [], J = tJoins[id] ||= {};
+      upserts.forEach(p => { const i = P.findIndex(x => x.id === p.id); if (i < 0) P.push({ ...p }); else P[i] = { ...p }; });
+      removes.forEach(pid => { const i = P.findIndex(x => x.id === pid); if (i >= 0) P.splice(i, 1); delete J[pid]; });
+      trEmit(id); }); },
+    tripConfirm(id, pid, passport, m){ return later(() => { (tJoins[id] ||= {})[pid] = { passport, at:Date.now(), manual:true, by:m.name }; trEmit(id); }); },
+    tripUnconfirm(id, pid){ return later(() => { delete (tJoins[id] || {})[pid]; trEmit(id); }); },
+    deleteTrip(id){ return later(() => { trips.splice(trips.findIndex(t => t.id === id), 1); delete tPeople[id]; delete tJoins[id]; trEmit(id); }); }
   };
 }
 
@@ -886,7 +981,7 @@ let fixedDemo = null;
 const api = DEMO ? makeDemo() : await makeFirebase();
 const app = $("#app");
 
-function cleanup(){ S.unsub.forEach(f => f && f()); S.unsub = []; closeTask(); closeVisa(); closePop(); S.tasks = []; S.users = []; S.visas = []; S.firstLoad = true; }
+function cleanup(){ S.unsub.forEach(f => f && f()); S.unsub = []; S.tripOpen = null; closeTask(); closeVisa(); closePop(); S.tasks = []; S.users = []; S.visas = []; S.firstLoad = true; }
 
 api.onAuth(p => {
   cleanup(); S.me = p && !p.blocked ? p : null;
@@ -901,10 +996,11 @@ api.onAuth(p => {
   api.getVisaFlow().then(o => { S.vflow = o; if (S.view === "visa") vDraw(); }).catch(() => {});
   S.unsub.push(api.watchVisas(S.me, vs => { S.visas = vs; S.visaErr = false; if (S.view === "visa") vDraw(); if (S.vOpen) renderVisa(); vCheck(vFirst); vFirst = false; },
     () => { S.visaErr = true; if (S.view === "visa") vDraw(); }));
+  if (S.me.role !== "employee") tripsStart();
   if (pendingCode){ const c = pendingCode; pendingCode = ""; setTimeout(() => doPunch(c), 300); }
   S.unsub.push(api.watchUsers(us => { S.users = us; renderToolbar(); if (S.openId) renderDetail(); if (S.view === "perf") renderView(); if (S.view === "visa") vDraw(); }));
 });
-setInterval(() => { if (S.me){ checkAlerts(false); if (S.view !== "perf" && !(S.view === "att" && (S.attEdit || document.activeElement && document.activeElement.closest && document.activeElement.closest(".att-wrap")))) renderView(true); } }, 30e3);
+setInterval(() => { if (S.me){ checkAlerts(false); if (S.view !== "perf" && S.view !== "trips" && !(S.view === "att" && (S.attEdit || document.activeElement && document.activeElement.closest && document.activeElement.closest(".att-wrap")))) renderView(true); } }, 30e3);
 
 function demoStrip(){
   if (!DEMO) return "";
@@ -942,6 +1038,7 @@ function renderShell(){
       <button data-view="perf">${ic("chart")}${m.role === "employee" ? "أدائي" : "الأداء"}</button>
       <button data-view="att">${ic("clock")}الحضور</button>
       <button data-view="visa">${ic("passport")}التأشيرات<span class="vbadge" id="vBadge" hidden></span></button>
+      ${m.role !== "employee" ? `<button data-view="trips">${ic("users")}الرحلات</button>` : ""}
     </nav>
     <div class="head-actions">
       <button class="hbtn" id="btnBell" aria-label="التنبيهات">${ic("bell")}<span class="badge" id="bellBadge" hidden></span></button>
@@ -968,6 +1065,7 @@ function renderView(soft){
   } else if (S.view === "cal") renderCalendar();
   else if (S.view === "att") renderAtt();
   else if (S.view === "visa") renderVisas(soft);
+  else if (S.view === "trips") renderTrips(soft);
   else renderPerf();
 }
 
@@ -1621,7 +1719,8 @@ document.addEventListener("click", async e => {
   const vt = t.closest("[data-vtab]"); if (vt){ S.vTab = vt.dataset.vtab; S.vq = ""; const q = $("#vq"); if (q) q.value = ""; return vDraw(); }
   if (t.closest("[data-vnew]")) return openNewVisa();
   if (t.closest("[data-vflow]")) return openVisaFlow();
-  const v = t.closest("[data-view]"); if (v){ S.view = v.dataset.view; return renderView(); }
+  const trb = t.closest("[data-trip]"); if (trb) return tripClick(trb);
+  const v = t.closest("[data-view]"); if (v){ S.view = v.dataset.view; if (S.view === "trips") tripClose(); return renderView(); }
   const d = t.closest("[data-day]"); if (d){ S.calDay = d.dataset.day; return renderCalendar(); }
   const c = t.closest("[data-cal]"); if (c){ const k = c.dataset.cal;
     if (k === "today"){ const n = new Date(); S.calMonth = new Date(n.getFullYear(), n.getMonth(), 1); S.calDay = dayKey(n); }
@@ -2496,6 +2595,293 @@ function openVisaFlow(){
     try { await api.setVisaFlow(o); S.vflow = o; m.remove(); toast("اتحفظ"); vDraw(); }
     catch(e){ console.error(e); toast("الحفظ ما نجحش"); $("#vfSave").disabled = false; }
   };
+}
+
+/* ====================== الرحلات: تأكيد انضمام المعتمرين للجروب ====================== */
+// رقم الجواز: أرقام عربي ← إنجليزي، والحروف لو اتكتبت والكيبورد عربي (ش = A …)، وكابيتال من غير مسافات
+const AR_KEYS = { "ض":"Q","ص":"W","ث":"E","ق":"R","ف":"T","غ":"Y","ع":"U","ه":"I","خ":"O","ح":"P","ش":"A","س":"S","ي":"D","ب":"F","ل":"G","ا":"H","أ":"H","إ":"H","آ":"H","ت":"J","ن":"K","م":"L","ئ":"Z","ء":"X","ؤ":"C","ر":"V","ى":"N","ة":"M" };
+function normPass(v){
+  return String(v || "").replace(/لا/g, "B").replace(/[؀-ۿ]/g, c => { let d = "٠١٢٣٤٥٦٧٨٩".indexOf(c); if (d >= 0) return d; d = "۰۱۲۳۴۵۶۷۸۹".indexOf(c); if (d >= 0) return d; return AR_KEYS[c] || ""; })
+    .toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+function rid(n = 20){ const a = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789", r = new Uint32Array(n); crypto.getRandomValues(r); return [...r].map(x => a[x % a.length]).join(""); }
+// اللي بيظهر في صفحة المعتمر: العنوان والأسماء بس — الجوازات عمرها ما بتطلع برّه
+function tripPublic(t, all){
+  return { title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false,
+    names:all.slice().sort((a,b) => a.n - b.n).map(p => p.passport ? { id:p.id, n:p.n, name:p.name } : { id:p.id, n:p.n, name:p.name, np:true }) };
+}
+const tFields = t => ({ title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false });
+const tSup = () => S.me.role === "supervisor";
+const tripById = id => (S.trips || []).find(t => t.id === id);
+const tDone = id => (S.tripDone || {})[id] || new Map();
+const tripLink = id => new URL("join.html?t=" + encodeURIComponent(id), location.href).href;
+const tDate = (d, o = { weekday:"long", day:"numeric", month:"long" }) => d ? new Date(d + "T12:00").toLocaleDateString("ar-EG", o) : "";
+function tRel(d){ if (!d) return ""; const n = Math.round((new Date(d + "T12:00") - new Date(dayKey(Date.now()) + "T12:00")) / DAY);
+  return n === 0 ? "النهارده" : n === 1 ? "بكرة" : n === -1 ? "امبارح" : n > 1 ? "بعد " + span(n * DAY) : "من " + span(-n * DAY); }
+const isPass = s => /^[A-Z]{0,2}\d{6,9}$/.test(s);
+async function copyTxt(text, msg){
+  try { await navigator.clipboard.writeText(text); }
+  catch { const ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch {} ta.remove(); if (!ok) return toast("المتصفح منع النسخ"); }
+  toast(msg);
+}
+
+// قراءة الأسماء: كل معتمر في سطر — الاسم ورقم الجواز (وممكن التليفون) بأي ترتيب، أو عمودين ملزوقين من إكسل
+function parseNames(text){
+  const out = [];
+  String(text || "").split(/\r?\n/).forEach(line => {
+    const toks = line.replace(/[‏‎]/g, "").split(/[\s\t,;|،:]+/).filter(Boolean);
+    const name = [], nums = [];
+    toks.forEach((tk, i) => {
+      if (/[0-9٠-٩۰-۹]/.test(tk)){
+        if (i === 0 && /^[0-9٠-٩۰-۹]{1,3}[\-\.\)ـ]*$/.test(tk)) return;             // ترقيم في أول السطر
+        nums.push(tk);
+      } else if (/^[A-Za-z]{1,2}$/.test(tk) && toks[i + 1] && /^[0-9٠-٩]/.test(toks[i + 1])) { toks[i + 1] = tk + toks[i + 1]; }  // A 12345678
+      else if (!/^[\-–—\.ـ]+$/.test(tk)) name.push(tk);
+    });
+    let passport = "", phone = "";
+    nums.forEach(x => { const p = normPass(x), d = p.replace(/\D/g, "");
+      if (!phone && /^\d+$/.test(p) && (/^01\d{9}$/.test(d) || /^(20|966|00)\d{9,12}$/.test(d))) phone = d;
+      else if (!passport) passport = p; });
+    const nm = name.join(" ").trim();
+    if (nm || passport) out.push({ name:nm, passport, phone });
+  });
+  return out;
+}
+function parseIssues(rows, existing){
+  const seen = new Map(); (existing || []).forEach(p => p.passport && seen.set(p.passport, p.name));
+  const noPass = [], badPass = [], dup = [], noName = [];
+  rows.forEach(r => {
+    if (!r.name) noName.push(r.passport);
+    if (!r.passport) noPass.push(r.name);
+    else { if (!isPass(r.passport)) badPass.push(r.name + " (" + r.passport + ")"); if (seen.has(r.passport)) dup.push(r.name + " = " + seen.get(r.passport)); seen.set(r.passport, r.name); }
+  });
+  return { noPass, badPass, dup, noName };
+}
+function namesPreview(rows, existing){
+  if (!rows.length) return `<p class="hint">الصق الأسماء وهتشوف هنا السيستم فهمها إزاي قبل الحفظ.</p>`;
+  const I = parseIssues(rows, existing), base = (existing || []).reduce((m, p) => Math.max(m, p.n || 0), 0);
+  const warn = (t, L) => L.length ? `<li class="w">${t}: ${L.slice(0, 6).map(esc).join("، ")}${L.length > 6 ? " …" : ""}</li>` : "";
+  return `<p class="np-sum"><b>${fmtNum(rows.length)}</b> معتمر جاهزين يتضافوا</p>
+    <ul class="np-warn">${warn("من غير رقم جواز — مش هيقدر يأكد لحد ما تضيفه", I.noPass)}${warn("رقم جواز شكله غريب، راجعه", I.badPass)}${warn("رقم جواز متكرر", I.dup)}${I.noName.length ? `<li class="w">سطر فيه رقم من غير اسم: ${I.noName.map(esc).join("، ")}</li>` : ""}</ul>
+    <ol class="np-list" start="${base + 1}">${rows.map(r => `<li><span>${esc(r.name || "— من غير اسم —")}</span><bdi dir="ltr" class="${r.passport ? "" : "miss"}">${esc(r.passport || "مفيش جواز")}</bdi></li>`).join("")}</ol>`;
+}
+
+/* ---------- الاشتراك في البيانات ---------- */
+function tripsStart(){
+  S.trips = []; S.tripDone = {}; S.tripErr = false; S.tripOpen = null; S.tripArm = "";
+  const subs = new Map();
+  const un = api.watchTrips(ts => {
+    S.trips = ts; S.tripErr = false;
+    ts.forEach(t => { if (!subs.has(t.id)) subs.set(t.id, api.watchTripDone(t.id, L => { S.tripDone[t.id] = new Map(L.map(d => [d.id, d.at ? ms(d.at) : Date.now()])); tripRedraw(); })); });
+    [...subs.keys()].forEach(id => { if (!ts.some(t => t.id === id)){ subs.get(id)(); subs.delete(id); delete S.tripDone[id]; } });
+    if (S.tripOpen && !ts.some(t => t.id === S.tripOpen)){ tripClose(); if (S.view === "trips") renderTrips(); return; }
+    tripRedraw();
+  }, () => { S.tripErr = true; tripRedraw(); });
+  S.unsub.push(() => { un(); subs.forEach(f => f()); subs.clear(); tripClose(); });
+}
+function tripRedraw(){ if (S.view === "trips") renderTrips(true); }
+function tripOpen(id){
+  tripClose(); S.tripOpen = id; S.tripPeople = null; S.tripJoins = {}; S.tripF = "all"; S.tripQ = ""; S.tripArm = "";
+  const a = api.watchTripPeople(id, L => { S.tripPeople = L; tripRedraw(); });
+  const b = api.watchTripJoins(id, L => { S.tripJoins = Object.fromEntries(L.map(j => [j.id, j])); tripRedraw(); });
+  S.tripUnsub = () => { a(); b(); };
+  renderTrips(); window.scrollTo(0, 0);
+}
+function tripClose(){ if (S.tripUnsub){ S.tripUnsub(); S.tripUnsub = null; } S.tripOpen = null; S.tripPeople = null; }
+
+/* ---------- العرض ---------- */
+function renderTrips(soft){
+  const main = $("#main"); if (!main) return;
+  if (S.tripOpen && tripById(S.tripOpen)){
+    if (!$("#trTable") || !soft){
+      main.innerHTML = `<div class="tr-back"><button class="btn ghost sm" data-trip="back">${ic("prev")}كل الرحلات</button></div>
+        <div id="trHead"></div><div id="trStats"></div><div class="tr-acts" id="trActs"></div>
+        <div class="toolbar tr-tools"><div class="tr-chips" id="trChips"></div><input id="trq" type="search" placeholder="دوّر بالاسم أو رقم الجواز…" value="${esc(S.tripQ || "")}" aria-label="بحث في أسماء الرحلة"></div>
+        <div id="trTable"></div>`;
+      $("#trq").addEventListener("input", e => { S.tripQ = e.target.value; tripDrawTable(); });
+    }
+    return tripDrawDetail();
+  }
+  if (S.tripOpen) tripClose();
+  const T = (S.trips || []).slice(), today = dayKey(Date.now());
+  const up = T.filter(t => !t.date || t.date >= today).sort((a,b) => (a.date || "9") < (b.date || "9") ? -1 : 1);
+  const past = T.filter(t => t.date && t.date < today).sort((a,b) => a.date < b.date ? 1 : -1);
+  const card = t => { const n = tDone(t.id).size, tot = t.count || 0, left = Math.max(tot - n, 0), pc = tot ? Math.round(n / tot * 100) : 0, isPast = t.date && t.date < today;
+    return `<button class="trip-card ${isPast ? "past" : ""}" data-trip="open" data-id="${esc(t.id)}">
+      <span class="tc-top"><b>${esc(t.title || "رحلة")}</b>${t.open === false ? `<span class="pill tr-lock">التسجيل مقفول</span>` : ""}</span>
+      <span class="tc-date">${ic("cal")}${t.date ? esc(tDate(t.date)) + ` <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد"}</span>
+      <span class="tc-bar" aria-hidden="true"><i style="width:${pc}%"></i></span>
+      <span class="tc-foot"><span><b>${fmtNum(n)}</b> من ${fmtNum(tot)} أكدوا</span><span class="${left ? "tc-left" : "tc-all"}">${tot ? left ? "لسه " + fmtNum(left) : "الكل أكد ✓" : "مفيش أسماء"}</span></span></button>`; };
+  main.innerHTML = `<div class="vhead"><h2>الرحلات</h2>${tSup() ? `<button class="btn primary" data-trip="new">${ic("plus")}رحلة جديدة</button>` : ""}</div>
+    <p class="vpath">ضيف أسماء المعتمرين وأرقام جوازاتهم وانسخ رسالة الجروب. كل معتمر بيفتح اللينك، يختار اسمه ويكتب رقم جوازه ويأكد — وإنت بتشوف هنا مين انضم ومين لسه أول بأول.</p>
+    ${S.tripErr ? `<div class="list" style="margin-top:14px"><div class="empty"><b>مش قادر يقرا الرحلات</b>اتأكد إن ملف firestore.rules الجديد اتنشر من Firestore ← Rules ← Publish.</div></div>`
+      : !T.length ? `<div class="list" style="margin-top:14px"><div class="empty"><b>مفيش رحلات لسه</b>${tSup() ? "دوس «رحلة جديدة» وضيف أسماء المعتمرين." : "أول ما مدير التشغيل يضيف رحلة هتظهر هنا."}</div></div>`
+      : `<div class="trip-grid">${up.map(card).join("")}</div>${past.length ? `<h3 class="tr-sub">رحلات فاتت</h3><div class="trip-grid">${past.map(card).join("")}</div>` : ""}`}`;
+}
+function tripDrawDetail(){
+  const t = tripById(S.tripOpen); if (!t || !$("#trHead")) return;
+  const P = S.tripPeople, done = tDone(t.id), sup = tSup();
+  const tot = P ? P.length : (t.count || 0), n = P ? P.filter(p => done.has(p.id)).length : done.size, left = Math.max(tot - n, 0), pc = tot ? Math.round(n / tot * 100) : 0;
+  $("#trHead").innerHTML = `<div class="vhead tr-h"><h2>${esc(t.title || "رحلة")}</h2><span class="pill ${t.open === false ? "tr-lock" : "tr-on"}">${t.open === false ? "التسجيل مقفول" : "التسجيل مفتوح"}</span></div>
+    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}</p>`;
+  let last = null; if (P) P.forEach(p => { const a = done.get(p.id); if (a && (!last || a > last.at)) last = { name:p.name, at:a }; });
+  $("#trStats").innerHTML = `<div class="tr-stats">
+    <div class="tr-ring" style="--p:${pc}"><b>${fmtNum(pc)}٪</b><span>أكدوا</span></div>
+    <div class="tr-nums"><div class="ok"><b>${fmtNum(n)}</b><span>أكدوا الانضمام</span></div><div class="${left ? "wait" : "ok"}"><b>${fmtNum(left)}</b><span>لسه ما أكدوش</span></div><div><b>${fmtNum(tot)}</b><span>إجمالي المعتمرين</span></div></div>
+    ${last ? `<p class="tr-last">${ic("clock")}آخر تأكيد: <b>${esc(last.name)}</b> ${esc(ago(last.at))}</p>` : ""}</div>`;
+  const armDel = S.tripArm === "del";
+  $("#trActs").innerHTML = `<button class="btn primary" data-trip="msg">${ic("chat")}نسخ رسالة الجروب</button>
+    <button class="btn" data-trip="link">نسخ اللينك</button>
+    <a class="btn" href="${esc(tripLink(t.id))}" target="_blank" rel="noopener">فتح صفحة المعتمر</a>
+    ${sup ? `<span class="tr-sep"></span>
+    <button class="btn" data-trip="add">${ic("plus")}إضافة أسماء</button>
+    <button class="btn" data-trip="edit">تعديل الرحلة</button>
+    <button class="btn" data-trip="toggle">${t.open === false ? "فتح التسجيل" : "قفل التسجيل"}</button>
+    <button class="btn danger ${armDel ? "armed" : ""}" data-trip="del">${armDel ? "متأكد؟ اضغط تاني للمسح" : "مسح الرحلة"}</button>` : ""}`;
+  $("#trChips").innerHTML = [["all","الكل",tot],["in","أكدوا",n],["out","لسه",left]].map(([k,l,c]) => `<button class="chip ${S.tripF === k ? "on" : ""}" data-trip="f" data-f="${k}">${l} <b>${fmtNum(c)}</b></button>`).join("")
+    + `<button class="btn sm" data-trip="copyLeft" ${left ? "" : "disabled"}>نسخ أسماء اللي لسه</button><button class="btn sm" data-trip="xls" ${tot ? "" : "disabled"}>نسخ الشيت لإكسل</button>`;
+  tripDrawTable();
+}
+function tripRows(){
+  const P = S.tripPeople || [], done = tDone(S.tripOpen), q = (S.tripQ || "").trim().toLowerCase(), qp = normPass(S.tripQ);
+  return P.filter(p => S.tripF === "in" ? done.has(p.id) : S.tripF === "out" ? !done.has(p.id) : true)
+    .filter(p => !q || String(p.name).toLowerCase().includes(q) || (qp && String(p.passport || "").includes(qp)))
+    .sort((a,b) => a.n - b.n);
+}
+function tripDrawTable(){
+  const box = $("#trTable"); if (!box) return;
+  if (!S.tripPeople){ box.innerHTML = `<div class="list"><div class="empty">بيحمّل الأسماء…</div></div>`; return; }
+  const done = tDone(S.tripOpen), sup = tSup(), L = tripRows();
+  if (!S.tripPeople.length){ box.innerHTML = `<div class="list"><div class="empty"><b>مفيش أسماء في الرحلة دي</b>${sup ? "دوس «إضافة أسماء» والصق الأسماء وأرقام الجوازات." : ""}</div></div>`; return; }
+  box.innerHTML = `<div class="list tr-list">${L.map(p => { const at = done.get(p.id), j = S.tripJoins[p.id], arm = S.tripArm;
+    return `<div class="tr-row ${at ? "in" : ""}">
+      <span class="tr-n">${fmtNum(p.n)}</span>
+      <div class="tr-who"><b>${esc(p.name)}</b><span><bdi dir="ltr" class="${p.passport ? "" : "miss"}">${esc(p.passport || "مفيش رقم جواز")}</bdi>${p.phone ? ` · <a href="${esc(waLink(p.phone))}" target="_blank" rel="noopener" dir="ltr">${esc(p.phone)}</a>` : ""}</span></div>
+      <div class="tr-st">${at ? `<span class="pill tr-in">✓ أكد الانضمام</span><small>${esc(ago(at))}${j && j.manual ? " · يدوي" + (j.by ? " (" + esc(j.by) + ")" : "") : ""}</small>` : `<span class="pill tr-out">لسه</span>`}</div>
+      ${sup ? `<div class="tr-ops">${at ? `<button class="btn sm ${arm === "undo:" + p.id ? "danger armed" : "ghost"}" data-trip="undo" data-id="${p.id}">${arm === "undo:" + p.id ? "متأكد؟" : "إلغاء التأكيد"}</button>`
+        : `<button class="btn sm ok-o" data-trip="manual" data-id="${p.id}">تأكيد يدوي</button>`}
+        <button class="btn sm ghost" data-trip="editP" data-id="${p.id}">تعديل</button>
+        <button class="btn sm ${arm === "delP:" + p.id ? "danger armed" : "ghost"}" data-trip="delP" data-id="${p.id}" aria-label="مسح ${esc(p.name)}">${arm === "delP:" + p.id ? "متأكد؟" : "مسح"}</button></div>` : ""}
+    </div>`; }).join("") || `<div class="empty">مفيش أسماء بالفلتر ده.</div>`}</div>`;
+}
+
+/* ---------- الأوامر ---------- */
+function tArm(key){ if (S.tripArm === key){ S.tripArm = ""; return true; } S.tripArm = key; tripDrawDetail();
+  clearTimeout(tArm.t); tArm.t = setTimeout(() => { if (S.tripArm === key){ S.tripArm = ""; tripDrawDetail(); } }, 4000); return false; }
+async function tripClick(b){
+  const k = b.dataset.trip, t = tripById(S.tripOpen), P = S.tripPeople || [], p = b.dataset.id ? P.find(x => x.id === b.dataset.id) : null;
+  if (k === "new") return tripForm(null);
+  if (k === "open") return tripOpen(b.dataset.id);
+  if (k === "back"){ tripClose(); return renderTrips(); }
+  if (!t) return;
+  if (k === "f"){ S.tripF = b.dataset.f; return tripDrawDetail(); }
+  if (k === "link") return copyTxt(tripLink(t.id), "اللينك اتنسخ");
+  if (k === "msg") return copyTxt(`السلام عليكم ورحمة الله وبركاته 🕋
+أهلاً بحضراتكم في جروب ${t.title || "الرحلة"}${t.date ? " (السفر " + tDate(t.date) + ")" : ""} مع برومس للسياحة.
+
+برجاء تأكيد انضمام حضرتك للجروب من اللينك ده:
+${tripLink(t.id)}
+
+اختار اسمك ← اكتب رقم جواز السفر ← اضغط «تأكيد الانضمام».
+جزاكم الله خيرًا.`, "رسالة الجروب اتنسخت. الزقها في الواتساب");
+  const done = tDone(t.id);
+  if (k === "copyLeft"){ const L = P.filter(x => !done.has(x.id)).sort((a,b) => a.n - b.n);
+    return copyTxt(`لسه ما أكدوش في ${t.title || "الرحلة"} (${fmtNum(L.length)}):\n` + L.map((x, i) => fmtNum(i + 1) + "- " + x.name).join("\n"), "أسماء اللي لسه اتنسخت"); }
+  if (k === "xls"){ const fmt = a => new Date(a).toLocaleString("ar-EG", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" });
+    const tsv = ["م\tالاسم\tرقم الجواز\tالتليفون\tالحالة\tوقت التأكيد\tطريقة التأكيد"].concat(P.slice().sort((a,b) => a.n - b.n).map(x => { const a = done.get(x.id), j = S.tripJoins[x.id];
+      return [x.n, x.name, x.passport || "", x.phone || "", a ? "أكد" : "لسه", a ? fmt(a) : "", a ? (j && j.manual ? "يدوي" : "من اللينك") : ""].join("\t"); })).join("\n");
+    return copyTxt(tsv, "الشيت اتنسخ. الزقه في إكسل على طول"); }
+  if (!tSup()) return;
+  if (k === "add") return tripAddNames(t);
+  if (k === "edit") return tripForm(t);
+  if (k === "editP" && p) return tripPersonForm(t, p);
+  if (!S.tripPeople) return toast("استنى الأسماء تحمّل");
+  try {
+    if (k === "toggle"){ b.disabled = true; await api.tripWrite(t.id, { ...tFields(t), open:t.open === false }, [], [], P); return toast(t.open === false ? "التسجيل اتفتح" : "التسجيل اتقفل — محدش هيقدر يأكد من اللينك"); }
+    if (k === "del"){ if (!tArm("del")) return; b.disabled = true; await api.deleteTrip(t.id, P.map(x => x.id)); tripClose(); renderTrips(); return toast("الرحلة اتمسحت"); }
+    if (k === "manual" && p){ if (!p.passport) return toast("ضيف رقم جواز " + p.name + " الأول من «تعديل»"); b.disabled = true; await api.tripConfirm(t.id, p.id, p.passport, S.me); return toast("اتأكد انضمام " + p.name); }
+    if (k === "undo" && p){ if (!tArm("undo:" + p.id)) return; b.disabled = true; await api.tripUnconfirm(t.id, p.id); return toast("اتلغى تأكيد " + p.name); }
+    if (k === "delP" && p){ if (!tArm("delP:" + p.id)) return; b.disabled = true; await api.tripWrite(t.id, tFields(t), [], [p.id], P.filter(x => x.id !== p.id)); return toast(p.name + " اتشال من الرحلة"); }
+  } catch(e){ console.error(e); toast("العملية ما نجحتش. اتأكد من النت وإن قواعد Firestore الجديدة اتنشرت."); b.disabled = false; }
+}
+
+/* ---------- النماذج ---------- */
+function namesField(id, existing){
+  return `<div class="field full"><label for="${id}">أسماء المعتمرين وأرقام الجوازات <small class="hint">— كل معتمر في سطر، أو الصق عمودين من إكسل (الاسم، رقم الجواز)</small></label>
+    <textarea id="${id}" rows="7" placeholder="محمود عبد الله السيد  A12345678&#10;فاطمة محمد حسن  A23456789"></textarea></div>
+    <div class="field full np" id="${id}-pv">${namesPreview([], existing)}</div>`;
+}
+function bindNames(id, existing){ const ta = $("#" + id); let rows = [];
+  ta.addEventListener("input", () => { rows = parseNames(ta.value); $("#" + id + "-pv").innerHTML = namesPreview(rows, existing); });
+  return () => rows; }
+function tripForm(t){
+  const isNew = !t;
+  const m = modal(isNew ? "رحلة جديدة" : "تعديل الرحلة", `<form class="form" id="tfForm" novalidate>
+    <div class="field"><label for="tf-title">اسم الرحلة *</label><input id="tf-title" value="${esc(t ? t.title : "")}" placeholder="مثلاً: عمرة ٩ نوفمبر"></div>
+    <div class="field"><label for="tf-date">ميعاد السفر</label><input id="tf-date" type="date" value="${esc(t ? t.date || "" : "")}"></div>
+    <div class="field full"><label for="tf-note">رسالة تظهر للمعتمر بعد ما يأكد <small class="hint">— اختياري، مثلاً ميعاد ومكان التجمع</small></label><textarea id="tf-note" rows="2" maxlength="600">${esc(t ? t.note || "" : "")}</textarea></div>
+    ${isNew ? namesField("tf-names", []) : ""}
+    <p class="err field full" id="tf-err" hidden></p></form>
+    <div class="form-foot"><button class="btn primary" id="tfSave">${isNew ? "إنشاء الرحلة" : "حفظ"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  const getRows = isNew ? bindNames("tf-names", []) : () => [];
+  $("#tf-title").focus();
+  const save = async () => {
+    const er = $("#tf-err"), date = $("#tf-date").value || "";
+    const title = $("#tf-title").value.trim() || (date ? "عمرة " + tDate(date, { day:"numeric", month:"long" }) : "");
+    if (!title){ er.textContent = "اكتب اسم الرحلة."; er.hidden = false; return; }
+    const fields = { ...(t ? tFields(t) : { open:true }), title, date, note:$("#tf-note").value.trim() };
+    $("#tfSave").disabled = true;
+    try {
+      if (isNew){
+        const rows = getRows().filter(r => r.name), id = rid(), people = rows.map((r, i) => ({ id:rid(), n:i + 1, ...r }));
+        await api.tripWrite(id, { ...fields, createdBy:S.me.uid, createdByName:S.me.name }, people, [], people, true);
+        m.remove(); toast("الرحلة اتعملت" + (people.length ? " بـ" + fmtNum(people.length) + " معتمر" : "")); S.view = "trips"; renderView(); tripOpen(id);
+      } else {
+        if (!S.tripPeople) throw new Error("not loaded");
+        await api.tripWrite(t.id, fields, [], [], S.tripPeople); m.remove(); toast("اتحفظ");
+      }
+    } catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت وإن قواعد Firestore الجديدة اتنشرت."; er.hidden = false; $("#tfSave").disabled = false; }
+  };
+  $("#tfSave").onclick = save;
+  $("#tfForm").addEventListener("submit", e => { e.preventDefault(); save(); });
+}
+function tripAddNames(t){
+  if (!S.tripPeople) return toast("استنى الأسماء تحمّل");
+  const ex = S.tripPeople;
+  const m = modal("إضافة أسماء — " + (t.title || "الرحلة"), `<div class="form">${namesField("ta-names", ex)}<p class="err field full" id="ta-err" hidden></p></div>
+    <div class="form-foot"><button class="btn primary" id="taSave">إضافة</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  const getRows = bindNames("ta-names", ex); $("#ta-names").focus();
+  $("#taSave").onclick = async () => {
+    const rows = getRows().filter(r => r.name), er = $("#ta-err");
+    if (!rows.length){ er.textContent = "الصق الأسماء الأول."; er.hidden = false; return; }
+    const base = ex.reduce((x, p) => Math.max(x, p.n || 0), 0), add = rows.map((r, i) => ({ id:rid(), n:base + i + 1, ...r }));
+    $("#taSave").disabled = true;
+    try { await api.tripWrite(t.id, tFields(t), add, [], ex.concat(add)); m.remove(); toast("اتضاف " + fmtNum(add.length) + " معتمر"); }
+    catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت."; er.hidden = false; $("#taSave").disabled = false; }
+  };
+}
+function tripPersonForm(t, p){
+  const m = modal("تعديل بيانات المعتمر", `<form class="form" id="tpForm" novalidate>
+    <div class="field full"><label for="tp-name">الاسم *</label><input id="tp-name" value="${esc(p.name)}"></div>
+    <div class="field"><label for="tp-pass">رقم الجواز</label><input id="tp-pass" dir="ltr" autocapitalize="characters" value="${esc(p.passport || "")}"></div>
+    <div class="field"><label for="tp-phone">التليفون</label><input id="tp-phone" type="tel" dir="ltr" value="${esc(p.phone || "")}"></div>
+    <p class="hint field full">المعتمر بيأكد برقم الجواز ده بالظبط (السيستم بيتجاهل المسافات والحروف الصغيرة).</p>
+    <p class="err field full" id="tp-err" hidden></p></form>
+    <div class="form-foot"><button class="btn primary" id="tpSave">حفظ</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  const pi = $("#tp-pass"); pi.addEventListener("input", () => { const v = normPass(pi.value); if (v !== pi.value) pi.value = v; });
+  const save = async () => {
+    const name = $("#tp-name").value.trim(), passport = normPass(pi.value), er = $("#tp-err");
+    if (!name){ er.textContent = "اكتب الاسم."; er.hidden = false; return; }
+    const d = (S.tripPeople || []).find(x => x.id !== p.id && passport && x.passport === passport);
+    if (d){ er.textContent = "رقم الجواز ده مسجل لـ" + d.name + "."; er.hidden = false; return; }
+    const np = { ...p, name, passport, phone:$("#tp-phone").value.trim() };
+    $("#tpSave").disabled = true;
+    try { await api.tripWrite(t.id, tFields(t), [np], [], S.tripPeople.map(x => x.id === p.id ? np : x)); m.remove(); toast("اتحفظ"); }
+    catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش."; er.hidden = false; $("#tpSave").disabled = false; }
+  };
+  $("#tpSave").onclick = save;
+  $("#tpForm").addEventListener("submit", e => { e.preventDefault(); save(); });
 }
 
 if (DEMO) api.demoLogin("sup");

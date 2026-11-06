@@ -184,6 +184,45 @@ service cloud.firestore {
       }
     }
 
+    // ===== الرحلات: تأكيد انضمام المعتمرين للجروب =====
+    // trips/{id}: بيانات الرحلة + people (الأسماء والجوازات) + joins (التأكيدات) — الإدارة بس تقراها
+    match /trips/{tid} {
+      allow read: if isSup() || isMgr();
+      allow write: if isSup();
+      match /people/{pid} {
+        allow read: if isSup() || isMgr();
+        allow write: if isSup();
+      }
+      match /joins/{pid} {
+        allow read: if isSup() || isMgr();
+        allow create, delete: if isSup();
+        // المعتمر من اللينك (من غير تسجيل دخول): رقم الجواز لازم يطابق المسجل، والتسجيل مفتوح، ومرة واحدة بس
+        allow create: if request.resource.data.keys().hasOnly(['passport', 'at'])
+          && request.resource.data.at == request.time
+          && request.resource.data.passport is string
+          && request.resource.data.passport.size() >= 5
+          && exists(/databases/$(database)/documents/trips/$(tid)/people/$(pid))
+          && request.resource.data.passport == get(/databases/$(database)/documents/trips/$(tid)/people/$(pid)).data.get('passport', '')
+          && get(/databases/$(database)/documents/joinPub/$(tid)).data.open == true
+          && existsAfter(/databases/$(database)/documents/joinPub/$(tid)/done/$(pid));
+      }
+    }
+    // joinPub/{id}: اللي بيظهر في صفحة المعتمر (العنوان والأسماء — من غير جوازات)
+    match /joinPub/{tid} {
+      allow get: if true;
+      allow list: if isSup() || isMgr();
+      allow write: if isSup();
+      // مين أكد: بيتكتب مع التأكيد في نفس اللحظة، ومايتكتبش غير لو التأكيد نفسه اتقبل
+      match /done/{pid} {
+        allow read: if true;
+        allow delete: if isSup();
+        allow create: if isSup()
+          || (request.resource.data.keys().hasOnly(['at'])
+              && request.resource.data.at == request.time
+              && existsAfter(/databases/$(database)/documents/trips/$(tid)/joins/$(pid)));
+      }
+    }
+
     // أرشيف الملفات
     match /archive/{ref} {
       allow read: if member();
