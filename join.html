@@ -388,6 +388,7 @@ function contactsOf(t){
 const safeUrl = u => /^https?:\/\//i.test(String(u || "")) ? String(u) : "";
 function routeBox(t){
   const u = safeUrl(t.routeUrl), f = t.routeFile;
+  if (Array.isArray(t.plan) && t.plan.length) return `<a class="route" href="route?${encodeURIComponent(TID)}" target="_blank" rel="noopener">${ICO.map}<span><b>برنامج الرحلة</b><small>المحطات يوم بيوم — إحنا فين النهارده وبكرة عندنا إيه</small></span><i aria-hidden="true">‹</i></a>`;
   if (f) return `<button type="button" class="route" data-route>${ICO.map}<span><b>مسار الرحلة</b><small>البرنامج والتنقلات يومًا بيوم — اضغط لفتح الملف</small></span><i aria-hidden="true">‹</i></button>`;
   return u ? `<a class="route" href="${esc(u)}" target="_blank" rel="noopener">${ICO.map}<span><b>مسار الرحلة</b><small>البرنامج والتنقلات يومًا بيوم</small></span><i aria-hidden="true">‹</i></a>`
     : `<div class="route soon">${ICO.map}<span><b>مسار الرحلة</b><small>سيتاح مسار الرحلة قريبًا</small></span></div>`;
@@ -445,7 +446,7 @@ async function openRoute(btn){
 document.addEventListener("click", e => { const b = e.target.closest("[data-route]"); if (b) openRoute(b); });
 function renderRouteOnly(){
   const t = S.trip;
-  card.innerHTML = head() + `<div class="body"><p class="lead">مسار رحلة ${esc(t.title || "")}</p>${t.routeFile ? routeBox(t) : `<div class="route soon">${ICO.map}<span><b>مسار الرحلة</b><small>سيتاح مسار الرحلة قريبًا</small></span></div>`}
+  card.innerHTML = head() + `<div class="body"><p class="lead">مسار رحلة ${esc(t.title || "")}</p>${t.routeFile || (t.plan && t.plan.length) ? routeBox(t) : `<div class="route soon">${ICO.map}<span><b>مسار الرحلة</b><small>سيتاح مسار الرحلة قريبًا</small></span></div>`}
     <div class="row"><a class="btn" href="?${esc(TID)}">تأكيد الانضمام للمجموعة</a></div></div>`;
 }
 card.addEventListener("click", e => {

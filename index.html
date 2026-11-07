@@ -498,7 +498,7 @@ main{padding-bottom:56px}
 .tr-views button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;border-radius:9px;padding:7px 14px;font-weight:500;color:var(--muted)}
 .tr-views button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.tr-views small{font-size:11.5px;color:var(--muted);font-weight:400}
 .tr-rm{color:var(--accent);font-weight:500}
-#trRooms{margin-top:12px}#trRooms[hidden],#trTools[hidden],#trTable[hidden],#trChecks[hidden],#trStats[hidden],#trActs[hidden]{display:none!important}
+#trRooms{margin-top:12px}#trRooms[hidden],#trTools[hidden],#trTable[hidden],#trChecks[hidden],#trPlan[hidden],#trStats[hidden],#trActs[hidden]{display:none!important}
 .rm-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
 .rm-sum{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}.rm-sum b{font:700 17px/1 var(--f-display);color:var(--ink);font-variant-numeric:tabular-nums}
 .rm-sum .wait b{color:var(--warn)}.rm-sum .ok b{color:var(--ok)}.rm-acts{display:flex;gap:6px;flex-wrap:wrap}
@@ -558,6 +558,23 @@ main{padding-bottom:56px}
 .ck-done{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}.ck-done summary{cursor:pointer;font-weight:600;color:var(--ok)}
 .ck-d{display:flex;align-items:center;gap:9px;padding:7px 4px;border-bottom:1px dashed var(--line)}.ck-d.ex .ck-nm{color:var(--muted)}
 @media (max-width:620px){ .ck-big > div:first-child b{font-size:46px} .ck-call{width:42px} .ck-more{padding:0 6px;font-size:11px} .ck-tap{padding:12px 10px;gap:8px} .ck-tools{top:calc(env(safe-area-inset-top,0px) + 100px)} }
+#trPlan{margin-top:12px}
+.pl-bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.pl-bar > div:first-child{display:flex;flex-direction:column;gap:2px;min-width:220px;flex:1}.pl-bar b{font:600 16px var(--f-display)}.pl-acts{display:flex;gap:6px;flex-wrap:wrap}
+.pl-save{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--gold) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 45%,var(--line))}
+.pl-save span{flex:1;font-weight:600;font-size:14px}
+.pl-gen{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:flex-end;margin-top:14px}
+.pl-gen label{display:flex;flex-direction:column;gap:4px;font-size:13px;text-align:right}.pl-gen input,.pl-gen select{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:7px 10px;width:110px}
+.pl-days{list-style:none;margin:14px 0 10px;padding:0 18px 0 0;border-inline-start:3px solid color-mix(in srgb,var(--t-umrah) 50%,var(--line));display:flex;flex-direction:column;gap:12px}
+.pl-day{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.pl-dot{position:absolute;inset-inline-start:-28px;top:16px;width:15px;height:15px;border-radius:50%;background:var(--t-umrah);box-shadow:0 0 0 4px var(--bg)}
+.pl-dh{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pl-dh input,.pl-dh select,.pl-items input{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:6px 9px;min-width:0}
+.pl-dh .pl-title{flex:1 1 200px;font-weight:600}
+.pl-items{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.pl-items li{display:flex;gap:6px;align-items:center}.pl-items li input[data-pi=x]{flex:1}.pl-items li input[type=time]{width:118px}
+.pl-t{min-width:70px;color:var(--accent);font-weight:600;font-size:13px}
+@media (max-width:620px){ .pl-days{padding-inline-start:14px} .pl-dot{inset-inline-start:-24px} .pl-items li input[type=time]{width:96px} .pl-save{top:calc(env(safe-area-inset-top,0px) + 100px)} }
 .np{background:var(--surface-2);border-radius:10px;padding:10px 12px;max-height:220px;overflow-y:auto}
 .np-sum{margin:0 0 4px;font-size:14px}.np-warn{margin:0 0 6px;padding-inline-start:18px;font-size:12.5px}.np-warn .w{color:var(--warn)}
 .np-list{margin:0;padding-inline-start:26px;font-size:13px;columns:2 220px;column-gap:20px}
@@ -863,6 +880,7 @@ async function makeFirebase(){
     },
     async routeRemove(id, old){ for (const k of (old && old.parts) || []) try { await F.deleteDoc(F.doc(db,"joinPub",id,"route",k)); } catch {} },
     async routeGet(id, meta){ const out = []; for (const k of meta.parts) out.push((await F.getDoc(F.doc(db,"joinPub",id,"route",k))).data().d); return out; },
+    async tripPlan(id, plan){ const b = F.writeBatch(db); b.update(F.doc(db,"trips",id), { plan, updatedAt:F.serverTimestamp() }); b.update(F.doc(db,"joinPub",id), { plan }); await b.commit(); },
     tripRooms:(id, rooms) => F.updateDoc(F.doc(db,"trips",id), { rooms, updatedAt:F.serverTimestamp() }),
     tripMarkWa:(id, pid) => F.updateDoc(F.doc(db,"trips",id,"joins",pid), { waSent:F.serverTimestamp() }),
     tripConfirm:(id, pid, passport, me) => F.setDoc(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name }),
@@ -1070,6 +1088,7 @@ function makeDemo(){
     checkMark(id, cid, pid, on, field){ const c = (tChecks[id] || []).find(x => x.id === cid); if (c){ c[field] = c[field].filter(x => x !== pid); if (on) c[field].push(pid); } trEmit(id); return later(() => {}); },
     checkPatch(id, cid, patch){ return later(() => { const c = (tChecks[id] || []).find(x => x.id === cid); if (c) Object.assign(c, fix(patch)); trEmit(id); }); },
     checkDelete(id, cid){ return later(() => { tChecks[id] = (tChecks[id] || []).filter(x => x.id !== cid); trEmit(id); }); },
+    tripPlan(id, plan){ return later(() => { const t = trips.find(x => x.id === id); if (t) t.plan = JSON.parse(JSON.stringify(plan)); trEmit(id); }); },
     routeUpload(id, parts){ return later(() => { parts.forEach(x => demoRoute[x.id] = x.d); }); },
     routeRemove(){ return later(() => {}); },
     routeGet(id, meta){ return later(() => meta.parts.map(k => demoRoute[k])); },
@@ -2721,9 +2740,11 @@ function tContacts(t){
   return [["مشرف الرحلة في مصر", t.supEg, t.supEgPhone], ["مشرف الرحلة في السعودية", t.supSa, t.supSaPhone]].filter(x => x[1] || x[2]).map(([label, name, phone]) => ({ label, name:name || "", phone:phone || "" }));
 }
 function fixUrl(u){ u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { return new URL(u).href; } catch { return ""; } }
-function tripPublic(t){ return { resets:t.resets || {}, title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false, routeUrl:fixUrl(t.routeUrl), routeFile:t.routeFile || null,
+function tripPublic(t){ return { resets:t.resets || {}, title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false, routeUrl:fixUrl(t.routeUrl), routeFile:t.routeFile || null, plan:Array.isArray(t.plan) ? t.plan : [],
   contacts:tContacts(t).map(c => ({ label:String(c.label || "").slice(0, 60), name:String(c.name || "").slice(0, 80), phone:String(c.phone || "").slice(0, 25) })) }; }
 const tFields = t => tripPublic(t);
+const planLink = id => new URL("route", location.href).href + "?" + encodeURIComponent(id);
+const hasPlan = t => Array.isArray(t.plan) && t.plan.length > 0;
 const ROUTE_MAX = 10 * 1024 * 1024, ROUTE_PART = 700000;
 const fmtSize = b => b >= 1048576 ? (b / 1048576).toLocaleString("ar-EG", { maximumFractionDigits:1 }) + " ميجا" : Math.max(1, Math.round(b / 1024)).toLocaleString("ar-EG") + " كيلو";
 const fileB64 = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(f); });
@@ -2768,7 +2789,7 @@ function welcomeMsg(t, p){
   if (t.date) L.push(`📅 تاريخ السفر: ${tDate(t.date, { weekday:"long", day:"numeric", month:"long", year:"numeric" })}`);
   L.push(`🔖 رقم التأكيد: ${tRef(t, p)}`, "");
   if (p.mk || p.md){ L.push("🏨 الإقامة:"); if (p.mk) L.push(`• فندق مكة المكرمة: ${p.mk}`); if (p.md) L.push(`• فندق المدينة المنورة: ${p.md}`); L.push(""); }
-  const route = t.routeFile ? tripLink(t.id) + "&route" : fixUrl(t.routeUrl); L.push(route ? `🗺️ مسار الرحلة:\n${route}` : `🗺️ مسار الرحلة: سيتاح قريبًا`, "");
+  const route = hasPlan(t) ? planLink(t.id) : t.routeFile ? tripLink(t.id) + "&route" : fixUrl(t.routeUrl); L.push(route ? `🗺️ مسار الرحلة:\n${route}` : `🗺️ مسار الرحلة: سيتاح قريبًا`, "");
   const cs = tContacts(t); if (cs.length){ L.push("📞 أرقام تهمك:"); cs.forEach(c => L.push(`• ${c.label ? c.label + ": " : ""}${c.name || ""}${c.phone ? " — " + c.phone : ""}`)); L.push(""); }
   if (t.note) L.push("📌 تعليمات الرحلة:", t.note, "");
   L.push("🤍 أهلاً بيك في عيلة برومس — هنا بنشارك صور الرحلات وفعالياتها، ومواعيد رحلاتنا الجاية:", "https://www.facebook.com/Promisetravil", "");
@@ -2886,7 +2907,7 @@ function tripOpen(id){
   const a = api.watchTripPeople(id, L => { S.tripPeople = L; tripRedraw();
     const t = tripById(id); if (!mig && t && t.pubV !== 2 && tSup() && !api.demo){ mig = true; api.tripWrite(id, tFields(t), [], [], L).catch(e => console.warn(e)); } });
   const b = api.watchTripJoins(id, L => { S.tripJoins = Object.fromEntries(L.map(j => [j.id, j])); tripRedraw(); });
-  S.tripChecks = null; S.checkOpen = null; S.ckQ = "";
+  S.tripChecks = null; S.checkOpen = null; S.ckQ = ""; S.planDraft = null;
   const c = api.watchChecks(id, L => { S.tripChecks = L; if (S.tripView === "checks") tripDrawChecks(); else tripDrawViews(); });
   S.tripUnsub = () => { a(); b(); c(); releaseWake(); };
   renderTrips(); window.scrollTo(0, 0);
@@ -2901,7 +2922,7 @@ function renderTrips(soft){
       main.innerHTML = `<div class="tr-back"><button class="btn ghost sm" data-trip="back">${ic("prev")}كل الرحلات</button></div>
         <div id="trHead"></div><div id="trStats"></div><div class="tr-acts" id="trActs"></div>
         <nav class="tr-views" id="trViews" aria-label="عرض الرحلة"></nav>
-        <div id="trRooms" hidden></div><div id="trChecks" hidden></div>
+        <div id="trRooms" hidden></div><div id="trChecks" hidden></div><div id="trPlan" hidden></div>
         <div class="toolbar tr-tools" id="trTools"><div class="tr-chips" id="trChips"></div><input id="trq" type="search" placeholder="دوّر بالاسم أو رقم الجواز…" value="${esc(S.tripQ || "")}" aria-label="بحث في أسماء الرحلة"></div>
         <div id="trTable"></div>`;
       $("#trq").addEventListener("input", e => { S.tripQ = e.target.value; tripDrawTable(); });
@@ -2929,7 +2950,7 @@ function tripDrawDetail(){
   const P = S.tripPeople, done = tDone(t.id), sup = tSup();
   const tot = P ? P.length : (t.count || 0), n = P ? P.filter(p => done.has(p.id)).length : done.size, left = Math.max(tot - n, 0), pc = tot ? Math.round(n / tot * 100) : 0;
   $("#trHead").innerHTML = `<div class="vhead tr-h"><h2>${esc(t.title || "رحلة")}</h2><span class="pill ${t.open === false ? "tr-lock" : "tr-on"}">${t.open === false ? "التسجيل مقفول" : "التسجيل مفتوح"}</span></div>
-    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${tContacts(t).map(c => `<br><b>${esc(c.label || "رقم")}:</b> ${esc(c.name || "")} <bdi dir="ltr">${esc(c.phone || "")}</bdi>`).join("")}<br><b>مسار الرحلة:</b> ${t.routeFile ? `<a href="#" data-trip="routeOpen" style="color:var(--accent)">📄 ${esc(t.routeFile.name || "ملف المسار")}</a> <small class="hint">(${esc(fmtSize(t.routeFile.size || 0))})</small>` : t.routeUrl ? `<a href="${esc(fixUrl(t.routeUrl))}" target="_blank" rel="noopener" style="color:var(--accent)">فتح اللينك</a>` : `<span class="hint">لسه ما اترفعش — بيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</span>`}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !tContacts(t).length ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
+    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${tContacts(t).map(c => `<br><b>${esc(c.label || "رقم")}:</b> ${esc(c.name || "")} <bdi dir="ltr">${esc(c.phone || "")}</bdi>`).join("")}<br><b>مسار الرحلة:</b> ${hasPlan(t) ? `<a href="${esc(planLink(t.id))}" target="_blank" rel="noopener" style="color:var(--accent)">🗺️ برنامج الرحلة (${fmtNum(t.plan.length)} ${t.plan.length >= 3 && t.plan.length <= 10 ? "أيام" : "يوم"})</a>` : t.routeFile ? `<a href="#" data-trip="routeOpen" style="color:var(--accent)">📄 ${esc(t.routeFile.name || "ملف المسار")}</a> <small class="hint">(${esc(fmtSize(t.routeFile.size || 0))})</small>` : t.routeUrl ? `<a href="${esc(fixUrl(t.routeUrl))}" target="_blank" rel="noopener" style="color:var(--accent)">فتح اللينك</a>` : `<span class="hint">لسه ما اترفعش — بيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</span>`}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !tContacts(t).length ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
   let last = null; if (P) P.forEach(p => { const a = done.get(p.id); if (a && (!last || a > last.at)) last = { name:p.name, at:a }; });
   tripDrawViews();
   $("#trStats").innerHTML = `<div class="tr-stats">
@@ -2949,14 +2970,14 @@ function tripDrawDetail(){
     <button class="btn danger ${armDel ? "armed" : ""}" data-trip="del">${armDel ? "متأكد؟ اضغط تاني للمسح" : "مسح الرحلة"}</button>` : ""}`;
   $("#trChips").innerHTML = [["all","الكل",tot],["in","أكدوا",n],["out","لسه",left]].map(([k,l,c]) => `<button class="chip ${S.tripF === k ? "on" : ""}" data-trip="f" data-f="${k}">${l} <b>${fmtNum(c)}</b></button>`).join("")
     + `<button class="btn sm" data-trip="copyLeft" ${left ? "" : "disabled"}>نسخ أسماء اللي لسه</button><button class="btn sm" data-trip="csv" ${tot ? "" : "disabled"}>تحميل الشيت (Excel)</button><button class="btn sm" data-trip="print" ${tot ? "" : "disabled"}>طباعة الكشف</button>`;
-  if (S.tripView === "rooms") tripDrawRooms(); else if (S.tripView === "checks") tripDrawChecks(); else tripDrawTable();
+  if (S.tripView === "rooms") tripDrawRooms(); else if (S.tripView === "checks") tripDrawChecks(); else if (S.tripView === "plan") tripDrawPlan(); else tripDrawTable();
 }
 function tripDrawViews(){
   const t = tripById(S.tripOpen); if (!t || !$("#trViews")) return;
   const tot = S.tripPeople ? S.tripPeople.length : (t.count || 0), R = roomsOf(t), inR = R.reduce((x, r) => x + r.members.length, 0), v = S.tripView || "names";
   const nC = (S.tripChecks || []).length, run = S.checkOpen && v === "checks";
-  $("#trViews").innerHTML = `<button class="${v === "names" ? "on" : ""}" data-trip="view" data-v="names">${ic("list")}الأسماء والتأكيد</button><button class="${v === "rooms" ? "on" : ""}" data-trip="view" data-v="rooms">${ic("users")}التسكين <small>(${fmtNum(R.length)} ${R.length >= 3 && R.length <= 10 ? "غرف" : "غرفة"}، ${fmtNum(inR)} من ${fmtNum(tot)})</small></button><button class="${v === "checks" ? "on" : ""}" data-trip="view" data-v="checks">${ic("star")}التمام${nC ? ` <small>(${fmtNum(nC)})</small>` : ""}</button>`;
-  $("#trRooms").hidden = v !== "rooms"; $("#trChecks").hidden = v !== "checks"; $("#trTools").hidden = v !== "names"; $("#trTable").hidden = v !== "names";
+  $("#trViews").innerHTML = `<button class="${v === "names" ? "on" : ""}" data-trip="view" data-v="names">${ic("list")}الأسماء والتأكيد</button><button class="${v === "rooms" ? "on" : ""}" data-trip="view" data-v="rooms">${ic("users")}التسكين <small>(${fmtNum(R.length)} ${R.length >= 3 && R.length <= 10 ? "غرف" : "غرفة"}، ${fmtNum(inR)} من ${fmtNum(tot)})</small></button><button class="${v === "plan" ? "on" : ""}" data-trip="view" data-v="plan">${ic("cal")}برنامج الرحلة${hasPlan(t) ? ` <small>(${fmtNum(t.plan.length)})</small>` : ""}</button><button class="${v === "checks" ? "on" : ""}" data-trip="view" data-v="checks">${ic("star")}التمام${nC ? ` <small>(${fmtNum(nC)})</small>` : ""}</button>`;
+  $("#trRooms").hidden = v !== "rooms"; $("#trChecks").hidden = v !== "checks"; $("#trPlan").hidden = v !== "plan"; $("#trTools").hidden = v !== "names"; $("#trTable").hidden = v !== "names";
   // وقت الجرد: الشاشة كلها للجرد
   ["#trStats","#trActs"].forEach(q => { const el = $(q); if (el) el.hidden = run; }); const hd = $("#trHead .vpath"); if (hd) hd.hidden = run;
 }
@@ -2996,6 +3017,7 @@ async function tripClick(b){
   if (k === "routeOpen") return openRouteFile(t);
   if (k === "view"){ S.tripView = b.dataset.v; if (S.tripView !== "checks"){ S.checkOpen = null; releaseWake(); } return tripDrawDetail(); }
   if (k.startsWith("ck")) return checkClick(b, t);
+  if (k.startsWith("pl")) return planClick(b, t);
   if (k.startsWith("rm")) return roomClick(b, t);
   if (k === "link") return copyTxt(tripLink(t.id), "اللينك اتنسخ");
   if (k === "msg") return copyTxt(`السلام عليكم ورحمة الله وبركاته 🕋
@@ -3481,6 +3503,95 @@ async function checkClick(b, t){
     if (k === "ckUndo"){ const f = b.dataset.f; c[f] = (c[f] || []).filter(x => x !== id); ckDraw(t, c); await api.checkMark(t.id, c.id, id, false, f); return; }
     if (k === "ckClose"){ b.disabled = true; await api.checkPatch(t.id, c.id, { closedAt:NOW }); const cc = { ...c, closedAt:Date.now() }; S.checkOpen = null; releaseWake(); tripDrawChecks(); return ckSend(t, cc); }
   } catch(e){ console.error(e); toast("ما اتحفظش — اتأكد من النت"); }
+}
+
+/* ---------- برنامج الرحلة (محطات يوم بيوم — صفحة route للمعتمرين) ---------- */
+const PL_CITIES = ["السفر","مكة المكرمة","المدينة المنورة","العودة"];
+const plClone = t => JSON.parse(JSON.stringify(Array.isArray(t.plan) ? t.plan : []));
+const plDayName = d => d ? new Date(d + "T12:00").toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long" }) : "";
+function plSorted(P){ return P.slice().sort((a, b) => (a.date || "9") < (b.date || "9") ? -1 : (a.date || "9") > (b.date || "9") ? 1 : 0); }
+function tripDrawPlan(force){
+  const box = $("#trPlan"), t = tripById(S.tripOpen); if (!box || !t) return;
+  tripDrawViews();
+  if (!S.planDraft || S.planDraft.tid !== t.id){ S.planDraft = { tid:t.id, days:plClone(t), dirty:false }; force = true; }
+  if (!force && box.dataset.k === "plan:" + t.id) return plDirtyBar();
+  box.dataset.k = "plan:" + t.id;
+  const D = S.planDraft.days, sup = tSup();
+  box.innerHTML = `<div class="pl-bar">
+      <div><b>برنامج الرحلة</b><span class="hint">صفحة فيها المحطات يوم بيوم — المعتمر بيشوف إحنا النهارده فين وبكرة عندنا إيه. ابعت اللينك أو ثبّته في الجروب.</span></div>
+      <div class="pl-acts">${hasPlan(t) ? `<button class="btn primary" data-trip="plMsg">${ic("chat")}نسخ رسالة البرنامج</button><button class="btn" data-trip="plLink">نسخ اللينك</button><a class="btn" href="${esc(planLink(t.id))}" target="_blank" rel="noopener">فتح صفحة البرنامج</a>` : ""}</div></div>
+    ${sup ? `<div class="pl-save" id="plSave"></div>` : ""}
+    ${!D.length ? `<div class="list"><div class="empty"><b>مفيش برنامج لسه</b>${sup ? `ابدأ ببرنامج مبدئي وعدّل عليه، أو ضيف الأيام واحد واحد.
+      <div class="pl-gen"><label>البداية في<select id="pg-first"><option>مكة المكرمة</option><option>المدينة المنورة</option></select></label>
+        <label>ليالي مكة<input id="pg-mk" type="number" min="0" max="30" value="7" inputmode="numeric"></label><label>ليالي المدينة<input id="pg-md" type="number" min="0" max="30" value="4" inputmode="numeric"></label>
+        <button class="btn primary" data-trip="plGen">عمل برنامج مبدئي</button></div>` : ""}</div></div>` : ""}
+    <ol class="pl-days">${plSorted(D).map(d => { const i = D.indexOf(d);
+      return `<li class="pl-day" data-i="${i}">
+        <div class="pl-dh"><span class="pl-dot"></span>
+          ${sup ? `<input type="date" data-pf="date" value="${esc(d.date || "")}" aria-label="التاريخ"><select data-pf="city" aria-label="المكان">${[...new Set([...PL_CITIES, d.city || ""])].filter(Boolean).map(c => `<option ${c === d.city ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
+            <input data-pf="title" placeholder="عنوان اليوم (مثلاً: أداء العمرة)" value="${esc(d.title || "")}" class="pl-title">
+            <button class="btn sm ghost" data-trip="plDelDay" data-i="${i}" aria-label="مسح اليوم">🗑</button>`
+          : `<b>${esc(plDayName(d.date))}</b><span class="tag c-umrah">${esc(d.city || "")}</span><span>${esc(d.title || "")}</span>`}</div>
+        <ul class="pl-items">${(d.items || []).map((it, j) => sup ? `<li><input type="time" data-pi="t" data-j="${j}" value="${esc(it.t || "")}" aria-label="الوقت"><input data-pi="x" data-j="${j}" value="${esc(it.x || "")}" placeholder="المحطة (مثلاً: التحرك إلى المطار)"><button class="btn sm ghost" data-trip="plDelIt" data-i="${i}" data-j="${j}" aria-label="مسح">✕</button></li>`
+          : `<li><span class="pl-t">${esc(plTime(it.t))}</span>${esc(it.x || "")}</li>`).join("")}
+          ${sup ? `<li class="pl-add"><button class="btn sm" data-trip="plAddIt" data-i="${i}">${ic("plus")}إضافة محطة</button></li>` : ""}</ul></li>`; }).join("")}</ol>
+    ${sup && D.length ? `<button class="btn" data-trip="plAddDay">${ic("plus")}إضافة يوم</button>` : sup && !D.length ? `<button class="btn" data-trip="plAddDay" style="margin-top:10px">${ic("plus")}أو ضيف أول يوم</button>` : ""}
+    <p class="hint" style="margin-top:8px">الأوقات بتوقيت مكة المكرمة. الأيام بتترتب بالتاريخ لوحدها.</p>`;
+  box.oninput = box.onchange = e => { const el = e.target, li = el.closest(".pl-day"); if (!li) return; const d = D[+li.dataset.i];
+    if (el.dataset.pf) d[el.dataset.pf] = el.value; else if (el.dataset.pi){ d.items[+el.dataset.j][el.dataset.pi] = el.value; } else return;
+    S.planDraft.dirty = true; plDirtyBar(); if (e.type === "change" && el.dataset.pf === "date") tripDrawPlan(true); };
+  plDirtyBar();
+}
+function plTime(v){ if (!v) return ""; const [h, m] = v.split(":").map(Number); const d = new Date(2000, 0, 1, h, m); return d.toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" }); }
+function plDirtyBar(){ const b = $("#plSave"); if (!b) return; const dirty = S.planDraft && S.planDraft.dirty;
+  b.innerHTML = dirty ? `<span>فيه تعديلات لسه ما اتحفظتش</span><button class="btn primary" data-trip="plSave">حفظ البرنامج</button><button class="btn ghost" data-trip="plReset">إلغاء التعديلات</button>` : "";
+  b.hidden = !dirty; }
+// برنامج مبدئي: يوم السفر والوصول ← ليالي المدينة الأولى ← يوم التنقل ← ليالي المدينة التانية ← يوم العودة
+function plTemplate(t, first, mk, md){
+  const start = t.date || dayKey(Date.now()), other = first === "مكة المكرمة" ? "المدينة المنورة" : "مكة المكرمة";
+  const n1 = first === "مكة المكرمة" ? mk : md, n2 = first === "مكة المكرمة" ? md : mk, it = (x, tm = "") => ({ t:tm, x });
+  const arrive = city => city === "مكة المكرمة" ? [it("الوصول إلى الفندق والتسكين"), it("التجمع في بهو الفندق للتوجه إلى الحرم"), it("أداء مناسك العمرة مع المشرف")]
+    : [it("الوصول إلى الفندق والتسكين"), it("زيارة المسجد النبوي الشريف والسلام على النبي ﷺ")];
+  const stay = (city, k) => city === "مكة المكرمة"
+    ? (k === 1 ? { title:"زيارة مزارات مكة المكرمة", items:[it("التجمع في بهو الفندق", "07:00"), it("جبل عرفات — مزدلفة — منى"), it("جبل النور (غار حراء)"), it("العودة إلى الفندق")] }
+      : { title:"يوم حر للعبادة", items:[it("الصلوات والطواف في المسجد الحرام")] })
+    : (k === 1 ? { title:"زيارة مزارات المدينة المنورة", items:[it("التجمع في بهو الفندق", "07:00"), it("مسجد قباء"), it("جبل أحد وشهداء أحد"), it("مسجد القبلتين"), it("العودة إلى الفندق")] }
+      : k === 2 ? { title:"زيارة الروضة الشريفة", items:[it("التوجه إلى المسجد النبوي حسب موعد التصريح"), it("زيارة الروضة الشريفة")] }
+      : { title:"يوم حر للعبادة", items:[it("الصلوات في المسجد النبوي الشريف")] });
+  const days = [{ city:first, title:"السفر والوصول إلى " + first, items:[it("التجمع أمام مقر الشركة"), it("التحرك إلى المطار"), it("إقلاع الطائرة"), ...arrive(first)] }];
+  for (let k = 1; k < n1; k++) days.push({ city:first, ...stay(first, k) });
+  if (n2){ days.push({ city:other, title:"التحرك إلى " + other, items:[it("تسليم الغرف والتجمع في بهو الفندق"), it("التحرك إلى " + other), ...arrive(other)] });
+    for (let k = 1; k < n2; k++) days.push({ city:other, ...stay(other, k) }); }
+  days.push({ city:"العودة", title:"العودة إلى أرض الوطن", items:[it("تسليم الغرف والتجمع في بهو الفندق"), it("التحرك إلى المطار"), it("إقلاع الطائرة"), it("الوصول بالسلامة إن شاء الله")] });
+  return days.map((d, i) => { const date = addDays(start, i);
+    if (new Date(date + "T12:00").getDay() === 5 && (d.city === "مكة المكرمة" || d.city === "المدينة المنورة")) d.items.unshift(it("صلاة الجمعة في " + (d.city === "مكة المكرمة" ? "المسجد الحرام" : "المسجد النبوي الشريف")));
+    return { id:rid(6), date, ...d }; });
+}
+async function planClick(b, t){
+  const k = b.dataset.trip, PD = S.planDraft, i = +b.dataset.i;
+  if (k === "plLink") return copyTxt(planLink(t.id), "لينك البرنامج اتنسخ");
+  if (k === "plMsg") return copyTxt(`السلام عليكم ورحمة الله وبركاته 🕋
+برنامج ${t.title || "الرحلة"} — برومس للسياحة
+
+تقدروا تتابعوا برنامج الرحلة يوم بيوم من اللينك ده (إحنا فين النهارده وبكرة عندنا إيه):
+${planLink(t.id)}
+
+البرنامج بيتحدث أول بأول. جزاكم الله خيرًا.`, "رسالة البرنامج اتنسخت — الزقها في الجروب وثبّتها 📌");
+  if (!tSup() || !PD) return;
+  const D = PD.days, mark = () => { PD.dirty = true; tripDrawPlan(true); };
+  if (k === "plGen"){ PD.days = plTemplate(t, $("#pg-first").value, Math.max(+$("#pg-mk").value || 0, 0), Math.max(+$("#pg-md").value || 0, 0)); PD.dirty = true; tripDrawPlan(true); return toast("البرنامج المبدئي جاهز — عدّل عليه ودوس «حفظ البرنامج»"); }
+  if (k === "plAddDay"){ const L = plSorted(D), last = L[L.length - 1]; D.push({ id:rid(6), date:last && last.date ? addDays(last.date, 1) : (t.date || dayKey(Date.now())), city:last ? last.city : "مكة المكرمة", title:"", items:[{ t:"", x:"" }] }); return mark(); }
+  if (k === "plDelDay"){ if (!tArm("plDel:" + i)) { b.textContent = "متأكد؟"; return; } D.splice(i, 1); return mark(); }
+  if (k === "plAddIt"){ (D[i].items ||= []).push({ t:"", x:"" }); mark(); const ins = $("#trPlan").querySelectorAll(`.pl-day[data-i="${i}"] [data-pi=x]`); ins.length && ins[ins.length - 1].focus(); return; }
+  if (k === "plDelIt"){ D[i].items.splice(+b.dataset.j, 1); return mark(); }
+  if (k === "plReset"){ S.planDraft = null; return tripDrawPlan(true); }
+  if (k === "plSave"){
+    const clean = plSorted(D).filter(d => d.date).map(d => ({ id:d.id || rid(6), date:d.date, city:String(d.city || "").slice(0, 40), title:String(d.title || "").trim().slice(0, 120),
+      items:(d.items || []).filter(x => (x.x || "").trim()).map(x => ({ t:/^\d\d:\d\d$/.test(x.t || "") ? x.t : "", x:String(x.x).trim().slice(0, 200) })).sort((a, b) => !a.t ? 1 : !b.t ? -1 : a.t < b.t ? -1 : 1) }));
+    b.disabled = true;
+    try { await api.tripPlan(t.id, clean); S.planDraft = { tid:t.id, days:JSON.parse(JSON.stringify(clean)), dirty:false }; tripDrawPlan(true); toast("البرنامج اتحفظ ✓ — بيظهر للمعتمرين على طول"); }
+    catch(e){ console.error(e); toast("الحفظ ما نجحش. اتأكد من النت."); b.disabled = false; }
+  }
 }
 
 if (DEMO) api.demoLogin("sup");

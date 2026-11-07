@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>برنامج الرحلة — برومس للسياحة</title>
+<meta name="description" content="برنامج الرحلة يوم بيوم — برومس للسياحة">
+<meta name="theme-color" content="#033735">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f3f1ea; --surface:#ffffff; --surface-2:#f7f5ef; --ink:#13262b; --muted:#5f6f72; --line:#e3ddcf;
+  --brand:#05403c; --brand-2:#0b5a54; --gold:#c8962a; --gold-soft:#f5ebd3; --ok:#1f7a49; --ok-soft:#e3f2e9; --now:#c8962a;
+  --shadow:0 18px 50px rgba(19,38,43,.12), 0 2px 6px rgba(19,38,43,.06);
+  --f-display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif; --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1517; --surface:#142125; --surface-2:#1a2a2f; --ink:#e7eeef; --muted:#93a5a9; --line:#26383d;
+  --brand:#0b3a40; --brand-2:#7fc5c9; --gold:#e2b14a; --gold-soft:#3a3018; --ok:#5fc68c; --ok-soft:#163626; --now:#e2b14a; --shadow:0 18px 50px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1517; --surface:#142125; --surface-2:#1a2a2f; --ink:#e7eeef; --muted:#93a5a9; --line:#26383d;
+  --brand:#0b3a40; --brand-2:#7fc5c9; --gold:#e2b14a; --gold-soft:#3a3018; --ok:#5fc68c; --ok-soft:#163626; --now:#e2b14a; --shadow:0 18px 50px rgba(0,0,0,.5); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 var(--f-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.35;text-wrap:balance}
+a{color:inherit}
+.band{background:#033735;color:#fff;padding:calc(20px + env(safe-area-inset-top,0px)) 16px 78px;text-align:center}
+.mark{display:block;width:140px;margin:0 auto}.mark img{display:block;width:100%;height:auto}
+.orn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+.orn::before,.orn::after{content:"";height:1px;width:56px;background:linear-gradient(90deg,transparent,#c8962a)}.orn::after{transform:scaleX(-1)}
+.orn i{width:7px;height:7px;transform:rotate(45deg);background:#c8962a}
+main{max-width:620px;margin:-58px auto 0;padding:0 16px calc(28px + env(safe-area-inset-bottom,0px));position:relative}
+.card{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden}
+.hero{padding:20px 20px 16px;text-align:center;background:linear-gradient(180deg,var(--gold-soft),transparent);border-bottom:1px solid var(--line)}
+.hero .k{font-size:12.5px;color:var(--gold);font-weight:600}
+.hero h2{font-size:21px;margin-top:2px}
+.hero p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.status{margin:14px 0 0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.status b{font:700 18px/1.4 var(--f-display);color:var(--brand-2)}
+.prog{width:100%;max-width:340px;height:9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#e2b14a);border-radius:99px}
+.status small{color:var(--muted);font-size:13px}
+
+/* بكرة / الجاي */
+.next{margin:14px 16px 0;padding:12px 14px;border-radius:16px;background:var(--brand);color:#fff;display:flex;gap:12px;align-items:center}
+.next .ico{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.12);display:grid;place-items:center;flex:none;color:#e2b14a}
+.next .ico svg{width:22px;height:22px}
+.next div{display:flex;flex-direction:column;min-width:0}.next small{font-size:12px;opacity:.8}.next b{font:600 15.5px/1.45 var(--f-display)}
+.next span{font-size:13px;opacity:.85}
+
+/* الخط الزمني */
+.tl{list-style:none;margin:0;padding:18px 18px 8px 16px;position:relative}
+.day{position:relative;padding:0 30px 18px 0}
+.day::before{content:"";position:absolute;right:9px;top:8px;bottom:-8px;width:3px;background:var(--line);border-radius:2px}
+.day:last-child::before{display:none}
+.day.past::before{background:color-mix(in srgb,var(--ok) 55%,var(--line))}
+.dot{position:absolute;right:0;top:4px;width:21px;height:21px;border-radius:50%;background:var(--surface);border:3px solid var(--line);display:grid;place-items:center;font-size:11px;color:#fff;z-index:1}
+.day.past .dot{background:var(--ok);border-color:var(--ok)}
+.day.today .dot{background:var(--now);border-color:var(--now);box-shadow:0 0 0 6px color-mix(in srgb,var(--now) 25%,transparent)}
+.dh{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.dn{font:600 12px/1 var(--f-display);color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:4px 9px}
+.dd{font-size:13px;color:var(--muted)}
+.city{font-size:12px;font-weight:600;border-radius:99px;padding:2px 9px;background:var(--gold-soft);color:var(--gold)}
+.city.mk{background:color-mix(in srgb,#05403c 12%,transparent);color:var(--brand-2)}
+.badge{font:700 11.5px/1 var(--f-display);border-radius:99px;padding:5px 10px;background:var(--now);color:#fff}
+.badge.tm{background:var(--brand-2)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .badge.tm{color:#033735}}
+.dt{display:block;font:600 17px/1.45 var(--f-display);margin-top:4px}
+.box{margin-top:8px;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.day.today .box{border-color:color-mix(in srgb,var(--now) 55%,var(--line));box-shadow:0 6px 22px color-mix(in srgb,var(--now) 18%,transparent)}
+.day.past .box{background:var(--surface-2)}
+.day.past .dt,.day.past .it{color:var(--muted)}
+.it{display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.it:last-child{border-bottom:0}
+.it .t{min-width:62px;font:600 13px/1.9 var(--f-display);color:var(--brand-2)}
+.it .t:empty::before{content:"•";color:var(--gold);padding-inline-start:6px}
+.it.done{color:var(--muted)}.it.done .x{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 50%,transparent)}
+.it.now{background:color-mix(in srgb,var(--now) 12%,var(--surface));font-weight:600}
+.it.now .x::after{content:"التالي";font:700 10.5px/1 var(--f-display);background:var(--now);color:#fff;border-radius:99px;padding:3px 7px;margin-inline-start:8px;vertical-align:2px}
+.tz{text-align:center;font-size:12.5px;color:var(--muted);margin:0;padding:0 16px 16px}
+.state{padding:36px 24px;text-align:center}.state h2{font-size:19px}.state p{color:var(--muted);margin:6px 0 0}
+.sk{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--surface-2),var(--line),var(--surface-2));background-size:200% 100%;animation:sh 1.2s infinite;margin:10px auto}
+@keyframes sh{to{background-position:-200% 0}}
+footer{text-align:center;font-size:12px;color:var(--muted);margin-top:16px}
+footer a{color:var(--brand-2)}
+.demo{background:#fff4d6;color:#5b4300;text-align:center;font-size:13px;padding:6px 12px}
+@media (prefers-reduced-motion:no-preference){ .day.today .dot{animation:pulse 2s infinite} @keyframes pulse{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--now) 10%,transparent)}} }
+@media (max-width:420px){ .tl{padding-inline:12px 10px} .it{font-size:14.5px} }
+</style>
+</head>
+<body>
+<div id="demo"></div>
+<header class="band">
+  <picture class="mark"><source srcset="logo.webp" type="image/webp"><img src="logo.png" width="140" height="152" alt="برومس للسياحة — Promise Travel"></picture>
+  <div class="orn" aria-hidden="true"><i></i></div>
+</header>
+<main>
+  <section class="card" id="card" aria-live="polite"><div class="state"><div class="sk" style="width:60%"></div><div class="sk" style="width:40%"></div><div class="sk" style="width:75%"></div></div></section>
+  <footer>برومس للسياحة — برنامج الرحلة · <a href="https://www.facebook.com/Promisetravil" target="_blank" rel="noopener">تابعنا على فيس بوك</a></footer>
+</main>
+<script type="module">
+/* نفس إعدادات Firebase اللي في index.html */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD-7latIkGl3vQ4dE8lapKDOIREBMkz-hg",
+  authDomain: "tasks-ops.firebaseapp.com",
+  projectId: "tasks-ops",
+  storageBucket: "tasks-ops.firebasestorage.app",
+  messagingSenderId: "773091705898",
+  appId: "1:773091705898:web:4ae08acc81d0067dd2ef53"
+};
+const Q1 = location.search.slice(1).split("&")[0];
+const TID = ((new URLSearchParams(location.search).get("t")) || (Q1.includes("=") ? "" : decodeURIComponent(Q1)) || "").trim().replace(/^[a-z0-9]{6}$/i, x => x.toUpperCase());
+const DEMO = TID === "demoTrip" || /claude|anthropic/.test(location.hostname) || location.protocol === "file:";
+const $ = s => document.querySelector(s), card = $("#card");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = n => Number(n).toLocaleString("ar-EG");
+// الوقت والتاريخ بتوقيت مكة المكرمة
+const RIY = "Asia/Riyadh";
+const riyDay = () => new Intl.DateTimeFormat("en-CA", { timeZone:RIY, year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
+const riyHM = () => new Intl.DateTimeFormat("en-GB", { timeZone:RIY, hour:"2-digit", minute:"2-digit", hour12:false }).format(new Date());
+const dayDiff = (a, b) => Math.round((new Date(a + "T12:00Z") - new Date(b + "T12:00Z")) / 864e5);
+const fmtDay = d => new Date(d + "T12:00").toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long" });
+const fmtT = v => { if (!v) return ""; const [h, m] = v.split(":").map(Number); return new Date(2000, 0, 1, h, m).toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" }); };
+const span = n => n === 1 ? "يوم" : n === 2 ? "يومين" : num(n) + (n <= 10 ? " أيام" : " يوم");
+const ICO = { cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>' };
+
+async function makeApi(){
+  if (DEMO){
+    $("#demo").innerHTML = `<div class="demo">نسخة تجريبية — بيانات أمثلة</div>`;
+    const d0 = riyDay(), at = n => { const x = new Date(d0 + "T12:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+    const plan = [
+      { date:at(-2), city:"مكة المكرمة", title:"السفر والوصول إلى مكة المكرمة", items:[{ t:"04:00", x:"التجمع أمام مقر الشركة" }, { t:"09:30", x:"إقلاع الطائرة" }, { t:"", x:"الوصول إلى الفندق والتسكين" }, { t:"", x:"أداء مناسك العمرة مع المشرف" }] },
+      { date:at(-1), city:"مكة المكرمة", title:"زيارة مزارات مكة المكرمة", items:[{ t:"07:00", x:"التجمع في بهو الفندق" }, { t:"", x:"جبل عرفات — مزدلفة — منى" }, { t:"", x:"جبل النور (غار حراء)" }] },
+      { date:at(0), city:"مكة المكرمة", title:"يوم حر للعبادة", items:[{ t:"05:00", x:"صلاة الفجر في المسجد الحرام" }, { t:"12:15", x:"صلاة الظهر في المسجد الحرام" }, { t:"21:00", x:"جلسة دينية في بهو الفندق" }] },
+      { date:at(1), city:"المدينة المنورة", title:"التحرك إلى المدينة المنورة", items:[{ t:"08:00", x:"تسليم الغرف والتجمع في بهو الفندق" }, { t:"09:00", x:"التحرك إلى المدينة المنورة" }, { t:"", x:"الوصول إلى الفندق والتسكين" }] },
+      { date:at(2), city:"المدينة المنورة", title:"زيارة الروضة الشريفة", items:[{ t:"", x:"زيارة الروضة الشريفة حسب موعد التصريح" }] },
+      { date:at(3), city:"العودة", title:"العودة إلى أرض الوطن", items:[{ t:"10:00", x:"التحرك إلى المطار" }, { t:"14:00", x:"إقلاع الطائرة" }] }];
+    return { watch(cb){ setTimeout(() => cb({ title:"رحلة عمرة ٩ نوفمبر", date:at(-2), plan }), 300); } };
+  }
+  const V = "10.12.2", base = "https://www.gstatic.com/firebasejs/" + V + "/";
+  const [AP, F] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-firestore.js")]);
+  const db = F.getFirestore(AP.initializeApp(FIREBASE_CONFIG));
+  return { watch(cb, err){ return F.onSnapshot(F.doc(db, "joinPub", TID), s => cb(s.exists() ? s.data() : null), err); } };
+}
+
+let T = null, scrolled = false;
+function render(){
+  const t = T, P = (t.plan || []).slice().sort((a, b) => a.date < b.date ? -1 : 1);
+  const today = riyDay(), hm = riyHM();
+  if (!P.length){ card.innerHTML = hero(t) + `<div class="state"><h2>سيتاح برنامج الرحلة قريبًا</h2><p>هيظهر هنا البرنامج يوم بيوم أول ما يتجهز.</p></div>`; return; }
+  const first = P[0].date, last = P[P.length - 1].date, idx = P.findIndex(d => d.date === today);
+  let status, pc;
+  if (today < first){ const n = dayDiff(first, today); status = `<b>${n === 1 ? "السفر بكرة إن شاء الله" : "باقي " + span(n) + " على السفر"}</b><small>${esc(fmtDay(first))}</small>`; pc = 0; }
+  else if (today > last){ status = `<b>انتهت الرحلة بحمد الله</b><small>تقبّل الله منا ومنكم</small>`; pc = 100; }
+  else { const n = dayDiff(today, first) + 1, tot = dayDiff(last, first) + 1; status = `<b>اليوم ${num(n)} من ${num(tot)}${idx >= 0 && P[idx].city && !/السفر|العودة/.test(P[idx].city) ? " — إحنا في " + esc(P[idx].city) : ""}</b><small>${esc(fmtDay(today))}</small>`; pc = Math.round(n / tot * 100); }
+  // المحطة الجاية: النهارده بعد الوقت الحالي، وإلا أول محطة في اليوم الجاي
+  let nextTxt = "";
+  const tdy = P.find(d => d.date === today), upcoming = tdy && (tdy.items || []).find(x => x.t && x.t > hm);
+  const tmr = P.find(d => d.date > today);
+  if (upcoming) nextTxt = `<div class="next"><span class="ico">${ICO.pin}</span><div><small>المحطة الجاية — النهارده ${esc(fmtT(upcoming.t))}</small><b>${esc(upcoming.x)}</b></div></div>`;
+  else if (tmr && today >= first) { const n = dayDiff(tmr.date, today), f = (tmr.items || [])[0];
+    nextTxt = `<div class="next"><span class="ico">${ICO.cal}</span><div><small>${n === 1 ? "بكرة" : "بعد " + span(n)} — ${esc(fmtDay(tmr.date))}</small><b>${esc(tmr.title || tmr.city || "")}</b>${f ? `<span>${f.t ? esc(fmtT(f.t)) + " — " : ""}${esc(f.x)}</span>` : ""}</div></div>`; }
+  card.innerHTML = hero(t, `<div class="status">${status}<i class="prog"><i style="width:${pc}%"></i></i></div>`) + nextTxt + `<ol class="tl">${P.map((d, i) => {
+    const st = d.date < today ? "past" : d.date === today ? "today" : "", n = dayDiff(d.date, first) + 1, isTm = dayDiff(d.date, today) === 1;
+    let nowMarked = false;
+    const items = (d.items || []).map(x => { let c = "";
+      if (st === "past") c = "done";
+      else if (st === "today" && x.t){ if (x.t <= hm) c = "done"; else if (!nowMarked){ c = "now"; nowMarked = true; } }
+      return `<li class="it ${c}"><span class="t">${esc(fmtT(x.t))}</span><span class="x">${esc(x.x)}</span></li>`; }).join("");
+    return `<li class="day ${st}" ${st === "today" ? 'id="today"' : ""}><span class="dot" aria-hidden="true">${st === "past" ? "✓" : ""}</span>
+      <div class="dh"><span class="dn">اليوم ${num(n)}</span><span class="dd">${esc(fmtDay(d.date))}</span>${d.city ? `<span class="city ${/مكة|المدينة/.test(d.city) ? "mk" : ""}">${esc(d.city)}</span>` : ""}${st === "today" ? `<span class="badge">إحنا هنا النهارده</span>` : isTm ? `<span class="badge tm">بكرة</span>` : ""}</div>
+      ${d.title ? `<span class="dt">${esc(d.title)}</span>` : ""}${items ? `<ul class="box" style="list-style:none;padding:0;margin-block:8px 0">${items}</ul>` : ""}</li>`; }).join("")}</ol>
+    <p class="tz">المواعيد بتوقيت مكة المكرمة · البرنامج بيتحدث أول بأول</p>`;
+  if (!scrolled){ scrolled = true; const el = $("#today"); if (el) setTimeout(() => el.scrollIntoView({ behavior:"smooth", block:"start" }), 400); }
+}
+function hero(t, extra = ""){ return `<div class="hero"><div class="k">برنامج الرحلة</div><h2>${esc(t.title || "")}</h2>${extra}</div>`; }
+function state(h, p){ card.innerHTML = `<div class="state"><h2>${h}</h2><p>${p}</p></div>`; }
+
+if (!TID || !/^[A-Za-z0-9]{6,40}$/.test(TID)) state("الرابط غير صحيح", "برجاء فتح رابط البرنامج كما هو من رسالة المجموعة.");
+else {
+  try {
+    const api = await makeApi();
+    api.watch(t => { if (!t) return state("الرابط غير صحيح", "برجاء التواصل مع مشرف الرحلة."); T = t; document.title = "برنامج " + (t.title || "الرحلة") + " — برومس للسياحة"; render(); },
+      () => state("تعذّر تحميل البرنامج", "تأكد من اتصالك بالإنترنت ثم أعد تحميل الصفحة."));
+    setInterval(() => T && render(), 60e3);   // بيتحدث كل دقيقة (المحطة الجاية / اليوم الجديد)
+  } catch(e){ console.error(e); state("تعذّر تحميل الصفحة", "تأكد من اتصالك بالإنترنت ثم أعد تحميل الصفحة."); }
+}
+</script>
+</body>
+</html>
