@@ -130,6 +130,7 @@ main{max-width:560px;margin:-64px auto 0;padding:0 16px calc(28px + env(safe-are
 .hotels h3{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--gold);margin-bottom:4px}.hotels h3 svg,.route svg{width:22px;height:22px}
 .ht{display:flex;flex-direction:column;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--gold) 25%,transparent)}.ht:last-child{border-bottom:0}
 .ht small{font-size:12.5px;color:var(--muted)}.ht b{font:600 16px/1.4 var(--f-display)}
+button.route{width:100%;border:0;cursor:pointer;font:inherit}button.route:hover{background:var(--brand-2)}
 .route{display:flex;align-items:center;gap:12px;margin:16px 0 0;padding:14px 16px;border-radius:16px;text-align:right;text-decoration:none;color:#fff;background:var(--brand)}
 .route svg{width:26px;height:26px;color:var(--gold);flex:none}
 .route span{display:flex;flex-direction:column;flex:1}.route b{font:600 16px/1.3 var(--f-display)}.route small{font-size:13px;opacity:.8}
@@ -198,7 +199,9 @@ const FIREBASE_CONFIG = {
 };
 
 // اللينك: join?K9X2QM (أو الشكل القديم join.html?t=…)
-const TID = ((new URLSearchParams(location.search).get("t")) || (location.search.slice(1).includes("=") ? "" : decodeURIComponent(location.search.slice(1))) || "").trim().replace(/^[a-z0-9]{6}$/i, x => x.toUpperCase());
+// join?CODE&route بيفتح مسار الرحلة على طول (اللينك اللي في رسالة الترحيب)
+const Q1 = location.search.slice(1).split("&")[0], WANT_ROUTE = /(^|&)route\b/.test(location.search.slice(1));
+const TID = ((new URLSearchParams(location.search).get("t")) || (Q1.includes("=") ? "" : decodeURIComponent(Q1)) || "").trim().replace(/^[a-z0-9]{6}$/i, x => x.toUpperCase());
 const DEMO = TID === "demoTrip" || !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("PASTE") || /claude|anthropic/.test(location.hostname) || location.protocol === "file:";
 const $ = s => document.querySelector(s);
 const card = $("#card");
@@ -247,11 +250,12 @@ async function makeApi(){
     const names = ["محمود عبد الله السيد","فاطمة محمد حسن","أحمد سمير عبد الفتاح","نادية حسن علي","كريم فؤاد إبراهيم","سامية رمضان محمود","عبد الرحمن خالد","هالة فتحي أحمد","يوسف محمد سعيد","منى عادل حسين","أحمد علي محمود","فاطمة الزهراء سعيد"].map((name, i) => ({ id:"p" + (i + 1), n:i + 1, name }));
     const d = new Date(Date.now() + 2 * 864e5), day = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
     const trip = { title:"رحلة عمرة ٩ نوفمبر", date:day, note:"التجمع يوم السفر الساعة ٦ صباحًا أمام مقر الشركة.\nبرجاء إحضار جواز السفر الأصلي.", open:true,
-      routeUrl:"", contacts:[{ label:"مشرف الرحلة", name:"أ. خالد الحديدي", phone:"01001234567" }, { label:"المشرف في مكة", name:"أ. عبد الله القحطاني", phone:"0551234567" }, { label:"خدمة العملاء", name:"برومس للسياحة", phone:"01112223344" }] };
+      routeUrl:"", routeFile:{ name:"مسار رحلة ٩ نوفمبر.pdf", size:245000, type:"application/pdf", parts:["x_0"] }, contacts:[{ label:"مشرف الرحلة", name:"أ. خالد الحديدي", phone:"01001234567" }, { label:"المشرف في مكة", name:"أ. عبد الله القحطاني", phone:"0551234567" }, { label:"خدمة العملاء", name:"برومس للسياحة", phone:"01112223344" }] };
     const demoDone = new Set(["p1"]);
     return {
       watch(cb){ setTimeout(() => cb(trip), 300); return () => {}; },
       lookup(key){ return new Promise(r => setTimeout(() => { const L = names.filter(p => firstKey(p.name) === key); r(L.length ? L : null); }, 150)); },
+      routeGet(){ return Promise.resolve([btoa("%PDF-1.1\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 144]>>endobj\ntrailer<</Root 1 0 R>>")]); },
       hotel(pid){ return new Promise(r => setTimeout(() => r(+pid.slice(1) % 3 ? { mk:"فندق دار التوحيد إنتركونتيننتال", md:"فندق دار الإيمان إنتركونتيننتال" } : null), 400)); },
       confirm(pid, passport){ return new Promise((res, rej) => setTimeout(() => passport.length < 6 || demoDone.has(pid) ? rej({ code:"mismatch" }) : (demoDone.add(pid), res()), 600)); }
     };
@@ -262,6 +266,7 @@ async function makeApi(){
   return {
     watch(cb, cbErr){ return F.onSnapshot(F.doc(db, "joinPub", TID), s => cb(s.exists() ? s.data() : null), e => cbErr(e)); },
     async lookup(key){ const s = await F.getDoc(F.doc(db, "joinPub", TID, "k", await nameHash(key))); return s.exists() ? (s.data().names || []) : null; },
+    async routeGet(meta){ const out = []; for (const k of meta.parts) out.push((await F.getDoc(F.doc(db, "joinPub", TID, "route", k))).data().d); return out; },
     // الفنادق: وثيقة لكل معتمر رقمها بصمة (الرحلة + المعتمر + رقم الجواز) — مايوصلهاش غير اللي معاه الجواز
     async hotel(pid, passport){ const s = await F.getDoc(F.doc(db, "joinPub", TID, "h", await sha(TID + "|h|" + pid + "|" + passport))); return s.exists() ? s.data() : null; },
     async confirm(pid, passport, phone){
@@ -382,7 +387,8 @@ function contactsOf(t){
 }
 const safeUrl = u => /^https?:\/\//i.test(String(u || "")) ? String(u) : "";
 function routeBox(t){
-  const u = safeUrl(t.routeUrl);
+  const u = safeUrl(t.routeUrl), f = t.routeFile;
+  if (f) return `<button type="button" class="route" data-route>${ICO.map}<span><b>مسار الرحلة</b><small>البرنامج والتنقلات يومًا بيوم — اضغط لفتح الملف</small></span><i aria-hidden="true">‹</i></button>`;
   return u ? `<a class="route" href="${esc(u)}" target="_blank" rel="noopener">${ICO.map}<span><b>مسار الرحلة</b><small>البرنامج والتنقلات يومًا بيوم</small></span><i aria-hidden="true">‹</i></a>`
     : `<div class="route soon">${ICO.map}<span><b>مسار الرحلة</b><small>سيتاح مسار الرحلة قريبًا</small></span></div>`;
 }
@@ -425,6 +431,23 @@ function drawHotel(){
     ${h.mk ? `<div class="ht"><small>فندق مكة المكرمة</small><b>${esc(h.mk)}</b></div>` : ""}
     ${h.md ? `<div class="ht"><small>فندق المدينة المنورة</small><b>${esc(h.md)}</b></div>` : ""}</section>`;
 }
+async function openRoute(btn){
+  const f = S.trip && S.trip.routeFile; if (!f) return;
+  // أندرويد: بينزل الملف باسمه ويفتح في عارض الـPDF — باقي الأجهزة: بيفتح في تاب جديد
+  const AND = /Android/i.test(navigator.userAgent), w = AND ? null : window.open("", "_blank"); if (w) w.document.write("<p style='font:16px Tahoma;text-align:center;margin-top:40px' dir='rtl'>جارٍ فتح مسار الرحلة…</p>");
+  const sm = btn && btn.querySelector("small"), old = sm && sm.textContent; if (sm) sm.textContent = "جارٍ التحميل…";
+  try { const parts = await api.routeGet(f), bin = atob(parts.join("")), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([u8], { type:f.type || "application/pdf" }));
+    if (w) w.location = url; else { const a = document.createElement("a"); a.href = url; a.download = f.name || "مسار الرحلة.pdf"; document.body.appendChild(a); a.click(); a.remove(); } }
+  catch(e){ console.error(e); if (w) w.close(); alert("تعذّر فتح الملف. تأكد من الإنترنت وحاول مرة أخرى."); }
+  finally { if (sm) sm.textContent = old; }
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-route]"); if (b) openRoute(b); });
+function renderRouteOnly(){
+  const t = S.trip;
+  card.innerHTML = head() + `<div class="body"><p class="lead">مسار رحلة ${esc(t.title || "")}</p>${t.routeFile ? routeBox(t) : `<div class="route soon">${ICO.map}<span><b>مسار الرحلة</b><small>سيتاح مسار الرحلة قريبًا</small></span></div>`}
+    <div class="row"><a class="btn" href="?${esc(TID)}">تأكيد الانضمام للمجموعة</a></div></div>`;
+}
 card.addEventListener("click", e => {
   const b = e.target.closest(".nm[data-pid]"); if (!b || !Array.isArray(S.res)) return;
   const p = S.res.find(x => x.id === b.dataset.pid); if (!p) return;
@@ -440,6 +463,7 @@ else {
     api.watch(t => {
       if (!t) return state("link", "الرابط غير صحيح أو انتهت صلاحيته", "برجاء التواصل مع مشرف الرحلة للحصول على الرابط الصحيح.");
       const first = !S.trip; S.trip = t;
+      if (WANT_ROUTE) return renderRouteOnly();
       // لو مدير التشغيل لغى تأكيد اسم بعد ما اتأكد من الجهاز ده → نشيله من «تم التأكيد» ويقدر يأكد تاني
       const R = t.resets || {}, kept = S.mine.filter(m => !(R[m.id] && R[m.id] > (m.at || 0)));
       if (kept.length !== S.mine.length){ S.mine = kept; store.set(KEY, kept); if (S.step !== "ok"){ render(); return; } }

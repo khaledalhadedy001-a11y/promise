@@ -488,6 +488,8 @@ main{padding-bottom:56px}
 .tr-st{display:flex;flex-direction:column;align-items:flex-start;gap:2px}.tr-st small{font-size:11.5px;color:var(--muted)}
 .tr-ops{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .btn.ok-o{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.rt-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-radius:9px;background:var(--surface-2);border:1px dashed var(--line)}
+.rt-up{align-self:flex-start;cursor:pointer}
 .ct-rows{display:flex;flex-direction:column;gap:6px}
 .ct-row{display:grid;grid-template-columns:1.2fr 1.2fr 1fr auto;gap:6px}
 .ct-row input{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:7px 10px;min-width:0;width:100%}
@@ -854,6 +856,13 @@ async function makeFirebase(){
     checkMark:(id, cid, pid, on, field) => F.updateDoc(F.doc(db,"trips",id,"checks",cid), { [field]:on ? F.arrayUnion(pid) : F.arrayRemove(pid), updatedAt:F.serverTimestamp() }),
     checkPatch:(id, cid, patch) => F.updateDoc(F.doc(db,"trips",id,"checks",cid), fix({ ...patch, updatedAt:NOW })),
     checkDelete:(id, cid) => F.deleteDoc(F.doc(db,"trips",id,"checks",cid)),
+    // ملف مسار الرحلة (PDF/صورة): متقسم أجزاء في joinPub/{id}/route — أي حد معاه لينك الرحلة يقدر يفتحه
+    async routeUpload(id, parts, old){
+      for (let i = 0; i < parts.length; i++) await F.setDoc(F.doc(db,"joinPub",id,"route",parts[i].id), { d:parts[i].d });
+      if (old) for (const k of old.parts || []) try { await F.deleteDoc(F.doc(db,"joinPub",id,"route",k)); } catch {}
+    },
+    async routeRemove(id, old){ for (const k of (old && old.parts) || []) try { await F.deleteDoc(F.doc(db,"joinPub",id,"route",k)); } catch {} },
+    async routeGet(id, meta){ const out = []; for (const k of meta.parts) out.push((await F.getDoc(F.doc(db,"joinPub",id,"route",k))).data().d); return out; },
     tripRooms:(id, rooms) => F.updateDoc(F.doc(db,"trips",id), { rooms, updatedAt:F.serverTimestamp() }),
     tripMarkWa:(id, pid) => F.updateDoc(F.doc(db,"trips",id,"joins",pid), { waSent:F.serverTimestamp() }),
     tripConfirm:(id, pid, passport, me) => F.setDoc(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name }),
@@ -864,6 +873,7 @@ async function makeFirebase(){
       const T0 = tripById(id) || {}, ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)].concat((T0.keys || []).map(h => F.doc(db,"joinPub",id,"k",h)), (T0.hkeys || []).map(h => F.doc(db,"joinPub",id,"h",h)));
       pids.forEach(pid => ops.push(F.doc(db,"trips",id,"people",pid), F.doc(db,"trips",id,"joins",pid), F.doc(db,"joinPub",id,"done",pid)));
       try { (await F.getDocs(F.collection(db,"trips",id,"checks"))).forEach(d => ops.push(d.ref)); } catch(e){ console.warn(e); }
+      ((T0.routeFile && T0.routeFile.parts) || []).forEach(k => ops.push(F.doc(db,"joinPub",id,"route",k)));
       for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(r => b.delete(r)); await b.commit(); }
     }
   };
@@ -983,7 +993,7 @@ function makeDemo(){
   vseed({ client:"عائلة رأفت", vtype:"سياحة", country:"الإمارات", count:3, travel:inD(9), stage:"back", stageH:1, status:"issued", result:"issued", issuedAt:now - HOUR, platform:"منصة التأشيرات", appRef:"AE-77120", reviewedAt:now - 90*HOUR, registeredAt:now - 80*HOUR },
     [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",92],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",90],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",80],["e2","event","صدرت التأشيرة ✓ — الملف رجع لمدير التشغيل",1]]);
   // رحلات تجريبية
-  const tChecks = {};
+  const tChecks = {}, demoRoute = {};
   const trips = [], tPeople = {}, tJoins = {}, trSubs = new Set(), trW = new Map();
   const trWatch = (k, cb, get) => { const f = () => cb(get()); if (!trW.has(k)) trW.set(k, new Set()); trW.get(k).add(f); f(); return () => trW.get(k).delete(f); };
   const trEmit = id => { trSubs.forEach(cb => cb(trips.map(t => ({ ...t })))); ["done:","people:","joins:","checks:"].forEach(p => (trW.get(p + id) || new Set()).forEach(f => f())); };
@@ -1060,6 +1070,9 @@ function makeDemo(){
     checkMark(id, cid, pid, on, field){ const c = (tChecks[id] || []).find(x => x.id === cid); if (c){ c[field] = c[field].filter(x => x !== pid); if (on) c[field].push(pid); } trEmit(id); return later(() => {}); },
     checkPatch(id, cid, patch){ return later(() => { const c = (tChecks[id] || []).find(x => x.id === cid); if (c) Object.assign(c, fix(patch)); trEmit(id); }); },
     checkDelete(id, cid){ return later(() => { tChecks[id] = (tChecks[id] || []).filter(x => x.id !== cid); trEmit(id); }); },
+    routeUpload(id, parts){ return later(() => { parts.forEach(x => demoRoute[x.id] = x.d); }); },
+    routeRemove(){ return later(() => {}); },
+    routeGet(id, meta){ return later(() => meta.parts.map(k => demoRoute[k])); },
     tripRooms(id, rooms){ return later(() => { const t = trips.find(x => x.id === id); if (t){ t.rooms = JSON.parse(JSON.stringify(rooms)); t.updatedAt = Date.now(); } trEmit(id); }); },
     tripMarkWa(id, pid){ return later(() => { const j = (tJoins[id] || {})[pid]; if (j) j.waSent = Date.now(); trEmit(id); }); },
     deleteTrip(id){ return later(() => { trips.splice(trips.findIndex(t => t.id === id), 1); delete tPeople[id]; delete tJoins[id]; trEmit(id); }); }
@@ -2708,9 +2721,20 @@ function tContacts(t){
   return [["مشرف الرحلة في مصر", t.supEg, t.supEgPhone], ["مشرف الرحلة في السعودية", t.supSa, t.supSaPhone]].filter(x => x[1] || x[2]).map(([label, name, phone]) => ({ label, name:name || "", phone:phone || "" }));
 }
 function fixUrl(u){ u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { return new URL(u).href; } catch { return ""; } }
-function tripPublic(t){ return { resets:t.resets || {}, title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false, routeUrl:fixUrl(t.routeUrl),
+function tripPublic(t){ return { resets:t.resets || {}, title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false, routeUrl:fixUrl(t.routeUrl), routeFile:t.routeFile || null,
   contacts:tContacts(t).map(c => ({ label:String(c.label || "").slice(0, 60), name:String(c.name || "").slice(0, 80), phone:String(c.phone || "").slice(0, 25) })) }; }
 const tFields = t => tripPublic(t);
+const ROUTE_MAX = 10 * 1024 * 1024, ROUTE_PART = 700000;
+const fmtSize = b => b >= 1048576 ? (b / 1048576).toLocaleString("ar-EG", { maximumFractionDigits:1 }) + " ميجا" : Math.max(1, Math.round(b / 1024)).toLocaleString("ar-EG") + " كيلو";
+const fileB64 = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(f); });
+async function openRouteFile(t){
+  const f = t.routeFile; if (!f) return;
+  const w = /Android/i.test(navigator.userAgent) ? null : window.open("", "_blank"); if (w) w.document.write("<p style='font:16px Tahoma;text-align:center;margin-top:40px'>جاري فتح الملف…</p>");
+  try { const parts = await api.routeGet(t.id, f), bin = atob(parts.join("")), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([u8], { type:f.type || "application/pdf" }));
+    if (w) w.location = url; else { const a = document.createElement("a"); a.href = url; a.download = f.name || "مسار الرحلة.pdf"; document.body.appendChild(a); a.click(); a.remove(); } }
+  catch(e){ console.error(e); if (w) w.close(); toast("مش قادر يفتح الملف"); }
+}
 // الاسم الأول (عبد/أبو بتتلزق في اللي بعدها): نفس الدالة بالظبط في join.html
 const normName = s => String(s || "").replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[^\u0621-\u064Aa-zA-Z ]/g, " ").replace(/\s+/g, " ").trim().toLowerCase().replace(/^(عبد|ابو) /, "$1");
 const firstKey = s => normName(s).split(" ")[0] || "";
@@ -2744,7 +2768,7 @@ function welcomeMsg(t, p){
   if (t.date) L.push(`📅 تاريخ السفر: ${tDate(t.date, { weekday:"long", day:"numeric", month:"long", year:"numeric" })}`);
   L.push(`🔖 رقم التأكيد: ${tRef(t, p)}`, "");
   if (p.mk || p.md){ L.push("🏨 الإقامة:"); if (p.mk) L.push(`• فندق مكة المكرمة: ${p.mk}`); if (p.md) L.push(`• فندق المدينة المنورة: ${p.md}`); L.push(""); }
-  const route = fixUrl(t.routeUrl); L.push(route ? `🗺️ مسار الرحلة:\n${route}` : `🗺️ مسار الرحلة: سيتاح قريبًا`, "");
+  const route = t.routeFile ? tripLink(t.id) + "&route" : fixUrl(t.routeUrl); L.push(route ? `🗺️ مسار الرحلة:\n${route}` : `🗺️ مسار الرحلة: سيتاح قريبًا`, "");
   const cs = tContacts(t); if (cs.length){ L.push("📞 أرقام تهمك:"); cs.forEach(c => L.push(`• ${c.label ? c.label + ": " : ""}${c.name || ""}${c.phone ? " — " + c.phone : ""}`)); L.push(""); }
   if (t.note) L.push("📌 تعليمات الرحلة:", t.note, "");
   L.push("🤍 أهلاً بيك في عيلة برومس — هنا بنشارك صور الرحلات وفعالياتها، ومواعيد رحلاتنا الجاية:", "https://www.facebook.com/Promisetravil", "");
@@ -2905,7 +2929,7 @@ function tripDrawDetail(){
   const P = S.tripPeople, done = tDone(t.id), sup = tSup();
   const tot = P ? P.length : (t.count || 0), n = P ? P.filter(p => done.has(p.id)).length : done.size, left = Math.max(tot - n, 0), pc = tot ? Math.round(n / tot * 100) : 0;
   $("#trHead").innerHTML = `<div class="vhead tr-h"><h2>${esc(t.title || "رحلة")}</h2><span class="pill ${t.open === false ? "tr-lock" : "tr-on"}">${t.open === false ? "التسجيل مقفول" : "التسجيل مفتوح"}</span></div>
-    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${tContacts(t).map(c => `<br><b>${esc(c.label || "رقم")}:</b> ${esc(c.name || "")} <bdi dir="ltr">${esc(c.phone || "")}</bdi>`).join("")}<br><b>مسار الرحلة:</b> ${t.routeUrl ? `<a href="${esc(fixUrl(t.routeUrl))}" target="_blank" rel="noopener" style="color:var(--accent)">فتح اللينك</a>` : `<span class="hint">لسه ما اترفعش — بيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</span>`}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !tContacts(t).length ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
+    <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${tContacts(t).map(c => `<br><b>${esc(c.label || "رقم")}:</b> ${esc(c.name || "")} <bdi dir="ltr">${esc(c.phone || "")}</bdi>`).join("")}<br><b>مسار الرحلة:</b> ${t.routeFile ? `<a href="#" data-trip="routeOpen" style="color:var(--accent)">📄 ${esc(t.routeFile.name || "ملف المسار")}</a> <small class="hint">(${esc(fmtSize(t.routeFile.size || 0))})</small>` : t.routeUrl ? `<a href="${esc(fixUrl(t.routeUrl))}" target="_blank" rel="noopener" style="color:var(--accent)">فتح اللينك</a>` : `<span class="hint">لسه ما اترفعش — بيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</span>`}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !tContacts(t).length ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
   let last = null; if (P) P.forEach(p => { const a = done.get(p.id); if (a && (!last || a > last.at)) last = { name:p.name, at:a }; });
   tripDrawViews();
   $("#trStats").innerHTML = `<div class="tr-stats">
@@ -2969,6 +2993,7 @@ async function tripClick(b){
   if (k === "back"){ tripClose(); return renderTrips(); }
   if (!t) return;
   if (k === "f"){ S.tripF = b.dataset.f; return tripDrawDetail(); }
+  if (k === "routeOpen") return openRouteFile(t);
   if (k === "view"){ S.tripView = b.dataset.v; if (S.tripView !== "checks"){ S.checkOpen = null; releaseWake(); } return tripDrawDetail(); }
   if (k.startsWith("ck")) return checkClick(b, t);
   if (k.startsWith("rm")) return roomClick(b, t);
@@ -3020,12 +3045,22 @@ function tripForm(t){
     <div class="field full"><span class="lbl">أرقام تهمك <small class="hint">— بتظهر للمعتمر بعد التأكيد. اكتب المسمى زي ما تحب (مشرف الرحلة، مشرف السكن، خدمة العملاء…)</small></span>
       <div class="ct-rows" id="tf-cts"></div>
       <button type="button" class="btn sm" id="tf-ctAdd" style="align-self:flex-start">${ic("plus")}إضافة رقم</button></div>
-    <div class="field full"><label for="tf-route">لينك مسار الرحلة <small class="hint">— لو سبته فاضي هيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</small></label><input id="tf-route" type="url" dir="ltr" inputmode="url" placeholder="https://…" value="${esc(t ? t.routeUrl || "" : "")}"></div>
+    <div class="field full"><span class="lbl">مسار الرحلة <small class="hint">— ارفع ملف PDF (أو صورة)، أو حط لينك. لو سبته فاضي هيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</small></span>
+      <div class="rt-box" id="tf-rtBox"></div>
+      <label class="btn sm rt-up">📄 رفع ملف PDF<input type="file" id="tf-rfile" accept="application/pdf,image/*" hidden></label>
+      <input id="tf-route" type="url" dir="ltr" inputmode="url" placeholder="أو لينك: https://…" value="${esc(t ? t.routeUrl || "" : "")}"></div>
     <div class="field full"><label for="tf-note">رسالة تظهر للمعتمر بعد ما يأكد <small class="hint">— اختياري، مثلاً ميعاد ومكان التجمع</small></label><textarea id="tf-note" rows="2" maxlength="600">${esc(t ? t.note || "" : "")}</textarea></div>
     ${isNew ? namesField("tf-names", []) : ""}
     <p class="err field full" id="tf-err" hidden></p></form>
     <div class="form-foot"><button class="btn primary" id="tfSave">${isNew ? "إنشاء الرحلة" : "حفظ"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
   const getRows = isNew ? bindNames("tf-names", []) : () => [];
+  let rFile = undefined;   // undefined = زي ما هو، null = اتشال، File = جديد
+  const rtDraw = () => { const cur = rFile === undefined ? (t && t.routeFile) : rFile ? { name:rFile.name, size:rFile.size } : null;
+    $("#tf-rtBox").innerHTML = cur ? `<span>📄 <b>${esc(cur.name)}</b> <small class="hint">(${esc(fmtSize(cur.size || 0))})${rFile ? " — هيترفع لما تدوس حفظ" : ""}</small></span><button type="button" class="btn sm ghost" id="tf-rdel">شيل الملف</button>` : `<span class="hint">مفيش ملف مرفوع</span>`;
+    const d = $("#tf-rdel"); if (d) d.onclick = () => { rFile = null; rtDraw(); }; };
+  rtDraw();
+  $("#tf-rfile").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    if (f.size > ROUTE_MAX) return toast("الملف أكبر من ١٠ ميجا — صغّره الأول"); rFile = f; rtDraw(); };
   const ctBox = $("#tf-cts"), ctRow = (c = {}) => { const d = document.createElement("div"); d.className = "ct-row";
     d.innerHTML = `<input data-c="label" placeholder="المسمى (مثلاً: مشرف الرحلة)" value="${esc(c.label || "")}" aria-label="المسمى"><input data-c="name" placeholder="الاسم" value="${esc(c.name || "")}" aria-label="الاسم"><input data-c="phone" type="tel" dir="ltr" placeholder="الرقم" value="${esc(c.phone || "")}" aria-label="الرقم"><button type="button" class="btn sm ghost" aria-label="مسح">✕</button>`;
     d.querySelector("button").onclick = () => d.remove(); ctBox.appendChild(d); return d; };
@@ -3040,17 +3075,28 @@ function tripForm(t){
     fields.contacts = [...m.querySelectorAll(".ct-row")].map(r => ({ label:r.querySelector("[data-c=label]").value.trim(), name:r.querySelector("[data-c=name]").value.trim(), phone:r.querySelector("[data-c=phone]").value.trim() })).filter(c => c.name || c.phone);
     const ru = $("#tf-route").value.trim(); fields.routeUrl = fixUrl(ru);
     if (ru && !fields.routeUrl){ er.textContent = "لينك مسار الرحلة مش صحيح."; er.hidden = false; return; }
-    $("#tfSave").disabled = true;
+    const oldRF = t && t.routeFile, sv = $("#tfSave");
+    // رفع ملف المسار الأول (أجزاء)، وبعدين حفظ الرحلة
+    const doFile = async id => {
+      if (rFile === undefined) return;
+      if (rFile === null){ fields.routeFile = null; await api.routeRemove(id, oldRF); return; }
+      sv.textContent = "بيرفع الملف…";
+      const b64 = await fileB64(rFile), v = rid(6), parts = [];
+      for (let i = 0; i * ROUTE_PART < b64.length; i++) parts.push({ id:v + "_" + i, d:b64.slice(i * ROUTE_PART, (i + 1) * ROUTE_PART) });
+      await api.routeUpload(id, parts, oldRF);
+      fields.routeFile = { name:rFile.name, size:rFile.size, type:rFile.type || "application/pdf", parts:parts.map(x => x.id), at:Date.now() };
+    };
+    sv.disabled = true;
     try {
       if (isNew){
-        const rows = getRows().filter(r => r.name), id = tripCode(), people = rows.map((r, i) => ({ id:rid(), n:i + 1, ...r }));
+        const rows = getRows().filter(r => r.name), id = tripCode(); await doFile(id); const people = rows.map((r, i) => ({ id:rid(), n:i + 1, ...r }));
         await api.tripWrite(id, { ...fields, createdBy:S.me.uid, createdByName:S.me.name }, people, [], people, true);
         m.remove(); toast("الرحلة اتعملت" + (people.length ? " بـ" + fmtNum(people.length) + " معتمر" : "")); S.view = "trips"; renderView(); tripOpen(id);
       } else {
         if (!S.tripPeople) throw new Error("not loaded");
-        await api.tripWrite(t.id, fields, [], [], S.tripPeople); m.remove(); toast("اتحفظ");
+        await doFile(t.id); await api.tripWrite(t.id, fields, [], [], S.tripPeople); m.remove(); toast("اتحفظ");
       }
-    } catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت وإن قواعد Firestore الجديدة اتنشرت."; er.hidden = false; $("#tfSave").disabled = false; }
+    } catch(x){ console.error(x); er.textContent = "الحفظ ما نجحش. اتأكد من النت وإن قواعد Firestore الجديدة اتنشرت."; er.hidden = false; sv.disabled = false; sv.textContent = isNew ? "إنشاء الرحلة" : "حفظ"; }
   };
   $("#tfSave").onclick = save;
   $("#tfForm").addEventListener("submit", e => { e.preventDefault(); save(); });

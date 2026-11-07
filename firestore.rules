@@ -227,6 +227,12 @@ service cloud.firestore {
         allow list: if false;
         allow write: if isSup();
       }
+      // ملف مسار الرحلة (أجزاء): أي حد معاه لينك الرحلة يفتحه، ومدير التشغيل بس يرفعه
+      match /route/{part} {
+        allow get: if true;
+        allow list: if false;
+        allow write: if isSup();
+      }
       // فنادق كل معتمر: رقم الوثيقة = بصمة (الرحلة + المعتمر + رقم الجواز)، فمحدش يوصلها غير اللي معاه الجواز
       match /h/{x} {
         allow get: if true;
