@@ -221,6 +221,11 @@ function intl(phone){ let d = String(phone || "").replace(/[٠-٩]/g, c => "٠١
   if (/^1\d{9}$/.test(d)) return "20" + d;
   if (d.startsWith("0")) return "20" + d.slice(1);
   return d; }
+// رقم الواتساب إجباري: موبايل مصري (01xxxxxxxxx) أو سعودي (05xxxxxxxx) أو رقم دولي كامل
+function okPhone(raw){ const s = String(raw || "").trim(), d = intl(s);
+  if (/^20(10|11|12|15)\d{8}$/.test(d) || /^9665\d{8}$/.test(d)) return d;
+  if (/^(\+|00|[٠]{2})/.test(s) && !/^(20|966)/.test(d) && /^[1-9]\d{7,14}$/.test(d)) return d;
+  return ""; }
 const ICO = {
   search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
   lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
@@ -259,8 +264,8 @@ async function makeApi(){
     async lookup(key){ const s = await F.getDoc(F.doc(db, "joinPub", TID, "k", await nameHash(key))); return s.exists() ? (s.data().names || []) : null; },
     // الفنادق: وثيقة لكل معتمر رقمها بصمة (الرحلة + المعتمر + رقم الجواز) — مايوصلهاش غير اللي معاه الجواز
     async hotel(pid, passport){ const s = await F.getDoc(F.doc(db, "joinPub", TID, "h", await sha(TID + "|h|" + pid + "|" + passport))); return s.exists() ? s.data() : null; },
-    async confirm(pid, passport){
-      try { await F.setDoc(F.doc(db, "trips", TID, "joins", pid), { passport, at:F.serverTimestamp() }); }
+    async confirm(pid, passport, phone){
+      try { await F.setDoc(F.doc(db, "trips", TID, "joins", pid), { passport, phone, at:F.serverTimestamp() }); }
       catch(e){ throw { code: e && e.code === "permission-denied" ? "mismatch" : "net" }; }
     }
   };
@@ -331,20 +336,28 @@ function renderPass(){
     <label class="lbl" for="pp">رقم جواز السفر</label>
     <input class="pass ${S.err ? "bad" : ""}" id="pp" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="A12345678" maxlength="20" aria-describedby="ph">
     <p class="help" id="ph">اكتب رقم الجواز كما هو مدوّن في جواز السفر للتحقق من هويتك.</p>
+    <label class="lbl" for="wa" style="margin-top:14px">رقم الواتساب <span style="color:var(--err)">*</span></label>
+    <input class="pass tel ${S.errPh ? "bad" : ""}" id="wa" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="01xxxxxxxxx" maxlength="20" required aria-describedby="wh">
+    <p class="help" id="wh">رقم الواتساب اللي هنتواصل معاك عليه أثناء الرحلة. لو رقم سعودي اكتبه 05xxxxxxxx، ولو من دولة تانية اكتبه بكود الدولة (+).</p>
     ${S.err ? `<div class="msg err" role="alert">${S.err}</div>` : ""}
     <div class="row"><button type="submit" class="btn primary" id="go">تأكيد الانضمام</button><button type="button" class="btn" id="back">ليس اسمي</button></div>`}
   </form>`;
-  $("#back").onclick = () => { S.step = "pick"; S.pick = null; S.err = ""; S.tries = 0; render(); };
-  const inp = $("#pp"); if (!inp) return;
-  inp.focus();
+  $("#back").onclick = () => { S.step = "pick"; S.pick = null; S.err = ""; S.errPh = false; S.tries = 0; render(); };
+  const inp = $("#pp"), wa = $("#wa"); if (!inp) return;
+  if (S.keep){ inp.value = S.keep.pp; wa.value = S.keep.wa; S.keep = null; }
+  (S.errPh ? wa : inp).focus();
+  wa.addEventListener("input", () => wa.classList.remove("bad"));
   inp.addEventListener("input", () => { const v = normPass(inp.value); if (v !== inp.value) inp.value = v; inp.classList.remove("bad"); });
   $("#pf").addEventListener("submit", async e => {
     e.preventDefault(); if (S.busy) return;
-    const v = normPass(inp.value);
-    if (v.length < 5){ S.err = "برجاء كتابة رقم الجواز كاملًا."; renderPass(); $("#pp").value = v; return; }
+    const v = normPass(inp.value), rawWa = wa.value.trim(), ph = okPhone(rawWa);
+    S.errPh = false;
+    if (v.length < 5){ S.err = "برجاء كتابة رقم الجواز كاملًا."; S.keep = { pp:v, wa:rawWa }; renderPass(); return; }
+    if (!rawWa){ S.err = "برجاء كتابة رقم الواتساب — مطلوب لإتمام التأكيد."; S.errPh = true; S.keep = { pp:v, wa:rawWa }; renderPass(); return; }
+    if (!ph){ S.err = "رقم الواتساب غير صحيح. اكتبه 01xxxxxxxxx (مصر) أو 05xxxxxxxx (السعودية)، أو بكود الدولة لأي رقم آخر."; S.errPh = true; S.keep = { pp:v, wa:rawWa }; renderPass(); return; }
     S.busy = true; const go = $("#go"); go.disabled = true; go.textContent = "جارٍ التحقق…";
     try {
-      await api.confirm(p.id, v);
+      await api.confirm(p.id, v, ph);
       S.last = { id:p.id, name:p.name, n:p.n, at:Date.now(), hotel:"loading" };
       api.hotel(p.id, v).then(h => { if (S.last && S.last.id === p.id){ S.last.hotel = h; drawHotel(); } }).catch(() => { if (S.last){ S.last.hotel = null; drawHotel(); } });
       S.mine = S.mine.filter(m => m.id !== p.id).concat({ id:p.id, name:p.name }); store.set(KEY, S.mine);
@@ -352,7 +365,7 @@ function renderPass(){
     } catch(x){
       if (x && x.code === "mismatch"){ S.tries++; S.err = S.tries >= 3 ? "تعذّر التأكيد. برجاء التواصل مع مشرف الرحلة للمساعدة." : "تعذّر التأكيد: إما أن رقم الجواز غير مطابق للبيانات المسجلة لهذا الاسم، أو أن هذا الاسم تم تأكيد انضمامه من قبل (التأكيد مرة واحدة فقط). راجع رقم الجواز وحاول مرة أخرى، أو تواصل مع مشرف الرحلة."; }
       else S.err = "تعذّر الاتصال. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.";
-      renderPass(); const i = $("#pp"); if (i) i.value = v;
+      S.keep = { pp:v, wa:rawWa }; renderPass();
     } finally { S.busy = false; }
   });
 }
@@ -413,7 +426,7 @@ function drawHotel(){
 card.addEventListener("click", e => {
   const b = e.target.closest(".nm[data-pid]"); if (!b || !Array.isArray(S.res)) return;
   const p = S.res.find(x => x.id === b.dataset.pid); if (!p) return;
-  S.pick = p; S.step = "pass"; S.err = ""; S.tries = 0; render(); window.scrollTo({ top:0, behavior:"smooth" });
+  S.pick = p; S.step = "pass"; S.err = ""; S.errPh = false; S.keep = null; S.tries = 0; render(); window.scrollTo({ top:0, behavior:"smooth" });
 });
 
 /* ---------- البداية ---------- */
