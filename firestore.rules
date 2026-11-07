@@ -193,6 +193,11 @@ service cloud.firestore {
         allow read: if isSup() || isMgr();
         allow write: if isSup();
       }
+      // التمام (جرد المعتمرين قبل التحرك)
+      match /checks/{cid} {
+        allow read: if isSup() || isMgr();
+        allow write: if isSup();
+      }
       match /joins/{pid} {
         allow read: if isSup() || isMgr();
         allow create, update, delete: if isSup();

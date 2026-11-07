@@ -496,7 +496,7 @@ main{padding-bottom:56px}
 .tr-views button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;border-radius:9px;padding:7px 14px;font-weight:500;color:var(--muted)}
 .tr-views button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.tr-views small{font-size:11.5px;color:var(--muted);font-weight:400}
 .tr-rm{color:var(--accent);font-weight:500}
-#trRooms{margin-top:12px}#trRooms[hidden],#trTools[hidden],#trTable[hidden]{display:none!important}
+#trRooms{margin-top:12px}#trRooms[hidden],#trTools[hidden],#trTable[hidden],#trChecks[hidden],#trStats[hidden],#trActs[hidden]{display:none!important}
 .rm-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
 .rm-sum{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}.rm-sum b{font:700 17px/1 var(--f-display);color:var(--ink);font-variant-numeric:tabular-nums}
 .rm-sum .wait b{color:var(--warn)}.rm-sum .ok b{color:var(--ok)}.rm-acts{display:flex;gap:6px;flex-wrap:wrap}
@@ -524,6 +524,38 @@ main{padding-bottom:56px}
 .rp-it{display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;cursor:pointer}.rp-it.on{border-color:var(--accent);background:var(--accent-soft)}
 .rp-it input{accent-color:var(--accent)}.rp-it:has(input:disabled){opacity:.5;cursor:default}
 @media (max-width:620px){ .rm-grid{grid-template-columns:1fr} }
+#trChecks{margin-top:12px}
+.ck-new{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.ck-new h3{display:flex;align-items:center;gap:8px;font-size:17px}.ck-new .hint{margin:4px 0 10px}
+.ck-presets{display:flex;flex-wrap:wrap;gap:6px}.ck-presets .chip{padding:7px 14px;font-size:14px}
+.ck-custom{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.ck-custom input{flex:1 1 220px;border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:8px 12px;min-width:0}
+.ck-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}.ck-row:last-child{border-bottom:0}
+.ck-open{flex:1;min-width:180px;display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;text-align:right;padding:0}.ck-open b{font-weight:600}.ck-open span{font-size:12.5px;color:var(--muted)}
+.ck-cnt{font:600 15px/1 var(--f-display);font-variant-numeric:tabular-nums}.ck-cnt small{font:400 12px var(--f-body);color:var(--muted)}
+.ck-run{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px 16px}
+.ck-head{display:flex;align-items:center;gap:8px}.ck-head h3{font-size:18px}
+.ck-big{display:flex;align-items:center;gap:16px;margin-top:10px;padding:14px 16px;border-radius:14px;background:color-mix(in srgb,var(--warn) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 30%,var(--line))}
+.ck-big > div:first-child{display:flex;flex-direction:column;align-items:center;min-width:92px}
+.ck-big > div:first-child b{font:700 54px/1 var(--f-display);color:var(--warn);font-variant-numeric:tabular-nums}.ck-big > div:first-child span{font-size:14px;color:var(--muted)}
+.ck-of{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}.ck-of > span{font-size:15px}
+.ck-bar{display:block;height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}.ck-bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .25s}
+.ck-big.ok{background:color-mix(in srgb,var(--ok) 12%,var(--surface));border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}.ck-big.ok > div:first-child b{color:var(--ok)}
+.ck-big.ok .ck-of > span:first-child{color:var(--ok);font-size:17px}.ck-big.ok .btn{align-self:flex-start}
+.ck-tools{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:3;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px -14px 0;padding:8px 14px;background:var(--surface)}
+.ck-tools input{flex:1 1 200px;min-width:0;border:1.5px solid var(--line);background:var(--surface-2);border-radius:11px;padding:10px 14px;font-size:16px}
+.ck-sort{display:flex;gap:2px;background:var(--surface-2);border-radius:10px;padding:3px}.ck-sort button{border:0;background:none;border-radius:8px;padding:6px 12px;font-size:13px;color:var(--muted)}.ck-sort button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.ck-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.ck-it{display:flex;gap:6px;align-items:stretch}
+.ck-tap{flex:1;min-width:0;display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:13px 14px;text-align:right;font-size:16px;font-weight:600;transition:transform .08s,background .15s}
+.ck-tap:hover:not(:disabled){border-color:var(--ok);background:color-mix(in srgb,var(--ok) 6%,var(--surface))}.ck-tap:active:not(:disabled){transform:scale(.98);background:color-mix(in srgb,var(--ok) 16%,var(--surface))}
+.ck-tap:disabled{cursor:default}
+.ck-nm{flex:1;min-width:0;overflow-wrap:anywhere}.ck-ok{width:30px;height:30px;border-radius:50%;border:2px solid color-mix(in srgb,var(--ok) 45%,var(--line));color:var(--ok);display:grid;place-items:center;font-size:15px;flex:none}
+.ck-call{display:grid;place-items:center;width:46px;border:1.5px solid var(--line);border-radius:12px;color:var(--accent);flex:none}.ck-call .ic{width:18px;height:18px}
+.ck-more{border:1.5px solid var(--line);background:var(--surface-2);border-radius:12px;padding:0 10px;font-size:12px;color:var(--muted);flex:none}.ck-more:hover{color:var(--warn);border-color:var(--warn)}
+.ck-grp h4{margin:10px 2px 4px;font-size:13.5px;color:var(--accent)}.ck-grp h4 small{color:var(--muted);font-weight:400}.ck-grp{display:flex;flex-direction:column;gap:6px}
+.ck-done{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}.ck-done summary{cursor:pointer;font-weight:600;color:var(--ok)}
+.ck-d{display:flex;align-items:center;gap:9px;padding:7px 4px;border-bottom:1px dashed var(--line)}.ck-d.ex .ck-nm{color:var(--muted)}
+@media (max-width:620px){ .ck-big > div:first-child b{font-size:46px} .ck-call{width:42px} .ck-more{padding:0 6px;font-size:11px} .ck-tap{padding:12px 10px;gap:8px} .ck-tools{top:calc(env(safe-area-inset-top,0px) + 100px)} }
 .np{background:var(--surface-2);border-radius:10px;padding:10px 12px;max-height:220px;overflow-y:auto}
 .np-sum{margin:0 0 4px;font-size:14px}.np-warn{margin:0 0 6px;padding-inline-start:18px;font-size:12.5px}.np-warn .w{color:var(--warn)}
 .np-list{margin:0;padding-inline-start:26px;font-size:13px;columns:2 220px;column-gap:20px}
@@ -816,6 +848,12 @@ async function makeFirebase(){
       ops.push(b => b.set(F.doc(db,"joinPub",id), tripPublic(trip)));
       for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(f => f(b)); await b.commit(); }
     },
+    // التمام (الجرد): trips/{id}/checks/{cid} — present = اللي اتأكد وجودهم، excused = مستثنى (مش معانا)
+    watchChecks(id, cb){ return F.onSnapshot(F.collection(db,"trips",id,"checks"), s => cb(s.docs.map(withId)), e => console.warn(e)); },
+    async checkCreate(id, data){ const r = F.doc(F.collection(db,"trips",id,"checks")); await F.setDoc(r, { ...data, present:[], excused:[], at:F.serverTimestamp(), updatedAt:F.serverTimestamp() }); return r.id; },
+    checkMark:(id, cid, pid, on, field) => F.updateDoc(F.doc(db,"trips",id,"checks",cid), { [field]:on ? F.arrayUnion(pid) : F.arrayRemove(pid), updatedAt:F.serverTimestamp() }),
+    checkPatch:(id, cid, patch) => F.updateDoc(F.doc(db,"trips",id,"checks",cid), fix({ ...patch, updatedAt:NOW })),
+    checkDelete:(id, cid) => F.deleteDoc(F.doc(db,"trips",id,"checks",cid)),
     tripRooms:(id, rooms) => F.updateDoc(F.doc(db,"trips",id), { rooms, updatedAt:F.serverTimestamp() }),
     tripMarkWa:(id, pid) => F.updateDoc(F.doc(db,"trips",id,"joins",pid), { waSent:F.serverTimestamp() }),
     tripConfirm:(id, pid, passport, me) => F.setDoc(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name }),
@@ -825,6 +863,7 @@ async function makeFirebase(){
     async deleteTrip(id, pids){
       const T0 = tripById(id) || {}, ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)].concat((T0.keys || []).map(h => F.doc(db,"joinPub",id,"k",h)), (T0.hkeys || []).map(h => F.doc(db,"joinPub",id,"h",h)));
       pids.forEach(pid => ops.push(F.doc(db,"trips",id,"people",pid), F.doc(db,"trips",id,"joins",pid), F.doc(db,"joinPub",id,"done",pid)));
+      try { (await F.getDocs(F.collection(db,"trips",id,"checks"))).forEach(d => ops.push(d.ref)); } catch(e){ console.warn(e); }
       for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(r => b.delete(r)); await b.commit(); }
     }
   };
@@ -944,13 +983,16 @@ function makeDemo(){
   vseed({ client:"عائلة رأفت", vtype:"سياحة", country:"الإمارات", count:3, travel:inD(9), stage:"back", stageH:1, status:"issued", result:"issued", issuedAt:now - HOUR, platform:"منصة التأشيرات", appRef:"AE-77120", reviewedAt:now - 90*HOUR, registeredAt:now - 80*HOUR },
     [["sup","event","فتح ملف التأشيرة — مستني مراجعة الجوازات والصور",92],["sup","event","راجع الجوازات والصور واعتمدها ✓ — الملف اتحول لـسارة للتسجيل على الشيت والحسابات",90],["e1","event","سجّل الملف على الشيت والحسابات ✓ — الملف اتحول لـمنى للتنفيذ",80],["e2","event","صدرت التأشيرة ✓ — الملف رجع لمدير التشغيل",1]]);
   // رحلات تجريبية
+  const tChecks = {};
   const trips = [], tPeople = {}, tJoins = {}, trSubs = new Set(), trW = new Map();
   const trWatch = (k, cb, get) => { const f = () => cb(get()); if (!trW.has(k)) trW.set(k, new Set()); trW.get(k).add(f); f(); return () => trW.get(k).delete(f); };
-  const trEmit = id => { trSubs.forEach(cb => cb(trips.map(t => ({ ...t })))); ["done:","people:","joins:"].forEach(p => (trW.get(p + id) || new Set()).forEach(f => f())); };
+  const trEmit = id => { trSubs.forEach(cb => cb(trips.map(t => ({ ...t })))); ["done:","people:","joins:","checks:"].forEach(p => (trW.get(p + id) || new Set()).forEach(f => f())); };
   { const id = "demoTrip", names = ["محمود عبد الله السيد","فاطمة محمد حسن","أحمد سمير عبد الفتاح","نادية حسن علي","كريم فؤاد إبراهيم","سامية رمضان محمود","عبد الرحمن خالد","هالة فتحي أحمد","يوسف محمد سعيد","منى عادل حسين","إبراهيم عبد العزيز","زينب مصطفى كامل","حسن علي حسن","سعاد إبراهيم","مصطفى جمال الدين","آمال عبد الحميد"];
     trips.push({ id, title:"رحلة عمرة ٩ نوفمبر", date:inD(2), note:"التجمع يوم السفر الساعة ٦ الصبح أمام مقر الشركة. برجاء إحضار جواز السفر الأصلي.", open:true, count:names.length, createdBy:"sup", createdAt:now - 30*HOUR, updatedAt:now - 30*HOUR });
     tPeople[id] = names.map((name, i) => ({ id:"p" + (i + 1), n:i + 1, name, passport:"A" + String(20456100 + i * 1371).padStart(8, "0"), phone:"",
       ...(i < 10 ? { mk:i % 2 ? "فندق دار التوحيد إنتركونتيننتال" : "فندق سويس أوتيل مكة", md:"فندق دار الإيمان إنتركونتيننتال" } : {}) }));
+    tChecks[id] = [{ id:"c1", title:"ركوب الباص من المطار", present:names.map((_, i) => "p" + (i + 1)), excused:[], at:now - 26*HOUR, completedAt:now - 25.8*HOUR, closedAt:now - 25.8*HOUR },
+      { id:"c2", title:"المغادرة من المزار", present:["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"], excused:["p12"], at:now - 3*HOUR, closedAt:now - 2.5*HOUR }];
     trips[0].rooms = [{ id:"r1", type:"عائلة", cap:2, label:"101 الأنصار + العليان", members:["p1","p2"] }, { id:"r2", type:"عائلة", cap:3, label:"102 الماسة + شذا", members:["p3","p4","p5"] },
       { id:"r3", type:"رباعي", cap:4, label:"103 سويس + هيلتون", members:["p6","p8"] }, { id:"r4", type:"ثنائي", cap:2, label:"", members:[] }];
     tJoins[id] = {}; [1,2,3,5,6,8,9,11,12,14].forEach((k, j) => tJoins[id]["p" + k] = { passport:tPeople[id][k - 1].passport, phone:"2010" + String(12345670 + k * 911).slice(0, 8), at:now - (20 - j * 2) * HOUR, ...(j < 4 ? { waSent:now - HOUR } : {}) }); }
@@ -1013,6 +1055,11 @@ function makeDemo(){
       trEmit(id); }); },
     tripConfirm(id, pid, passport, m){ return later(() => { (tJoins[id] ||= {})[pid] = { passport, at:Date.now(), manual:true, by:m.name }; trEmit(id); }); },
     tripUnconfirm(id, pid){ return later(() => { delete (tJoins[id] || {})[pid]; trEmit(id); }); },
+    watchChecks(id, cb){ return trWatch("checks:" + id, cb, () => (tChecks[id] || []).map(c => JSON.parse(JSON.stringify(c)))); },
+    checkCreate(id, data){ return later(() => { const c = { id:"c" + Date.now(), ...fix(data), present:[], excused:[], at:Date.now() }; (tChecks[id] ||= []).push(c); trEmit(id); return c.id; }); },
+    checkMark(id, cid, pid, on, field){ const c = (tChecks[id] || []).find(x => x.id === cid); if (c){ c[field] = c[field].filter(x => x !== pid); if (on) c[field].push(pid); } trEmit(id); return later(() => {}); },
+    checkPatch(id, cid, patch){ return later(() => { const c = (tChecks[id] || []).find(x => x.id === cid); if (c) Object.assign(c, fix(patch)); trEmit(id); }); },
+    checkDelete(id, cid){ return later(() => { tChecks[id] = (tChecks[id] || []).filter(x => x.id !== cid); trEmit(id); }); },
     tripRooms(id, rooms){ return later(() => { const t = trips.find(x => x.id === id); if (t){ t.rooms = JSON.parse(JSON.stringify(rooms)); t.updatedAt = Date.now(); } trEmit(id); }); },
     tripMarkWa(id, pid){ return later(() => { const j = (tJoins[id] || {})[pid]; if (j) j.waSent = Date.now(); trEmit(id); }); },
     deleteTrip(id){ return later(() => { trips.splice(trips.findIndex(t => t.id === id), 1); delete tPeople[id]; delete tJoins[id]; trEmit(id); }); }
@@ -2815,7 +2862,9 @@ function tripOpen(id){
   const a = api.watchTripPeople(id, L => { S.tripPeople = L; tripRedraw();
     const t = tripById(id); if (!mig && t && t.pubV !== 2 && tSup() && !api.demo){ mig = true; api.tripWrite(id, tFields(t), [], [], L).catch(e => console.warn(e)); } });
   const b = api.watchTripJoins(id, L => { S.tripJoins = Object.fromEntries(L.map(j => [j.id, j])); tripRedraw(); });
-  S.tripUnsub = () => { a(); b(); };
+  S.tripChecks = null; S.checkOpen = null; S.ckQ = "";
+  const c = api.watchChecks(id, L => { S.tripChecks = L; if (S.tripView === "checks") tripDrawChecks(); else tripDrawViews(); });
+  S.tripUnsub = () => { a(); b(); c(); releaseWake(); };
   renderTrips(); window.scrollTo(0, 0);
 }
 function tripClose(){ if (S.tripUnsub){ S.tripUnsub(); S.tripUnsub = null; } S.tripOpen = null; S.tripPeople = null; }
@@ -2828,7 +2877,7 @@ function renderTrips(soft){
       main.innerHTML = `<div class="tr-back"><button class="btn ghost sm" data-trip="back">${ic("prev")}كل الرحلات</button></div>
         <div id="trHead"></div><div id="trStats"></div><div class="tr-acts" id="trActs"></div>
         <nav class="tr-views" id="trViews" aria-label="عرض الرحلة"></nav>
-        <div id="trRooms" hidden></div>
+        <div id="trRooms" hidden></div><div id="trChecks" hidden></div>
         <div class="toolbar tr-tools" id="trTools"><div class="tr-chips" id="trChips"></div><input id="trq" type="search" placeholder="دوّر بالاسم أو رقم الجواز…" value="${esc(S.tripQ || "")}" aria-label="بحث في أسماء الرحلة"></div>
         <div id="trTable"></div>`;
       $("#trq").addEventListener("input", e => { S.tripQ = e.target.value; tripDrawTable(); });
@@ -2858,9 +2907,7 @@ function tripDrawDetail(){
   $("#trHead").innerHTML = `<div class="vhead tr-h"><h2>${esc(t.title || "رحلة")}</h2><span class="pill ${t.open === false ? "tr-lock" : "tr-on"}">${t.open === false ? "التسجيل مقفول" : "التسجيل مفتوح"}</span></div>
     <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${tContacts(t).map(c => `<br><b>${esc(c.label || "رقم")}:</b> ${esc(c.name || "")} <bdi dir="ltr">${esc(c.phone || "")}</bdi>`).join("")}<br><b>مسار الرحلة:</b> ${t.routeUrl ? `<a href="${esc(fixUrl(t.routeUrl))}" target="_blank" rel="noopener" style="color:var(--accent)">فتح اللينك</a>` : `<span class="hint">لسه ما اترفعش — بيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</span>`}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !tContacts(t).length ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
   let last = null; if (P) P.forEach(p => { const a = done.get(p.id); if (a && (!last || a > last.at)) last = { name:p.name, at:a }; });
-  { const R = roomsOf(t), inR = R.reduce((x, r) => x + r.members.length, 0);
-    $("#trViews").innerHTML = `<button class="${S.tripView !== "rooms" ? "on" : ""}" data-trip="view" data-v="names">${ic("list")}الأسماء والتأكيد</button><button class="${S.tripView === "rooms" ? "on" : ""}" data-trip="view" data-v="rooms">${ic("users")}التسكين <small>(${fmtNum(R.length)} ${R.length >= 3 && R.length <= 10 ? "غرف" : "غرفة"}، ${fmtNum(inR)} من ${fmtNum(tot)})</small></button>`;
-    const rv = S.tripView === "rooms"; $("#trRooms").hidden = !rv; $("#trTools").hidden = rv; $("#trTable").hidden = rv; }
+  tripDrawViews();
   $("#trStats").innerHTML = `<div class="tr-stats">
     <div class="tr-ring" style="--p:${pc}"><b>${fmtNum(pc)}٪</b><span>أكدوا</span></div>
     <div class="tr-nums"><div class="ok"><b>${fmtNum(n)}</b><span>أكدوا الانضمام</span></div><div class="${left ? "wait" : "ok"}"><b>${fmtNum(left)}</b><span>لسه ما أكدوش</span></div><div><b>${fmtNum(tot)}</b><span>إجمالي المعتمرين</span></div></div>
@@ -2878,7 +2925,16 @@ function tripDrawDetail(){
     <button class="btn danger ${armDel ? "armed" : ""}" data-trip="del">${armDel ? "متأكد؟ اضغط تاني للمسح" : "مسح الرحلة"}</button>` : ""}`;
   $("#trChips").innerHTML = [["all","الكل",tot],["in","أكدوا",n],["out","لسه",left]].map(([k,l,c]) => `<button class="chip ${S.tripF === k ? "on" : ""}" data-trip="f" data-f="${k}">${l} <b>${fmtNum(c)}</b></button>`).join("")
     + `<button class="btn sm" data-trip="copyLeft" ${left ? "" : "disabled"}>نسخ أسماء اللي لسه</button><button class="btn sm" data-trip="csv" ${tot ? "" : "disabled"}>تحميل الشيت (Excel)</button><button class="btn sm" data-trip="print" ${tot ? "" : "disabled"}>طباعة الكشف</button>`;
-  if (S.tripView === "rooms") tripDrawRooms(); else tripDrawTable();
+  if (S.tripView === "rooms") tripDrawRooms(); else if (S.tripView === "checks") tripDrawChecks(); else tripDrawTable();
+}
+function tripDrawViews(){
+  const t = tripById(S.tripOpen); if (!t || !$("#trViews")) return;
+  const tot = S.tripPeople ? S.tripPeople.length : (t.count || 0), R = roomsOf(t), inR = R.reduce((x, r) => x + r.members.length, 0), v = S.tripView || "names";
+  const nC = (S.tripChecks || []).length, run = S.checkOpen && v === "checks";
+  $("#trViews").innerHTML = `<button class="${v === "names" ? "on" : ""}" data-trip="view" data-v="names">${ic("list")}الأسماء والتأكيد</button><button class="${v === "rooms" ? "on" : ""}" data-trip="view" data-v="rooms">${ic("users")}التسكين <small>(${fmtNum(R.length)} ${R.length >= 3 && R.length <= 10 ? "غرف" : "غرفة"}، ${fmtNum(inR)} من ${fmtNum(tot)})</small></button><button class="${v === "checks" ? "on" : ""}" data-trip="view" data-v="checks">${ic("star")}التمام${nC ? ` <small>(${fmtNum(nC)})</small>` : ""}</button>`;
+  $("#trRooms").hidden = v !== "rooms"; $("#trChecks").hidden = v !== "checks"; $("#trTools").hidden = v !== "names"; $("#trTable").hidden = v !== "names";
+  // وقت الجرد: الشاشة كلها للجرد
+  ["#trStats","#trActs"].forEach(q => { const el = $(q); if (el) el.hidden = run; }); const hd = $("#trHead .vpath"); if (hd) hd.hidden = run;
 }
 function tripRows(){
   const P = S.tripPeople || [], done = tDone(S.tripOpen), q = (S.tripQ || "").trim().toLowerCase(), qp = normPass(S.tripQ);
@@ -2913,7 +2969,8 @@ async function tripClick(b){
   if (k === "back"){ tripClose(); return renderTrips(); }
   if (!t) return;
   if (k === "f"){ S.tripF = b.dataset.f; return tripDrawDetail(); }
-  if (k === "view"){ S.tripView = b.dataset.v; return tripDrawDetail(); }
+  if (k === "view"){ S.tripView = b.dataset.v; if (S.tripView !== "checks"){ S.checkOpen = null; releaseWake(); } return tripDrawDetail(); }
+  if (k.startsWith("ck")) return checkClick(b, t);
   if (k.startsWith("rm")) return roomClick(b, t);
   if (k === "link") return copyTxt(tripLink(t.id), "اللينك اتنسخ");
   if (k === "msg") return copyTxt(`السلام عليكم ورحمة الله وبركاته 🕋
@@ -3239,6 +3296,118 @@ function roomCsv(t, R){
   const blob = new Blob(["﻿" + rows.map(r => r.map(q).join(",")).join("\r\n")], { type:"text/csv;charset=utf-8" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = (t.title || "الرحلة").replace(/[\\/:*?"<>|]/g, "-") + " — التسكين.csv";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("شيت التسكين اتحمّل");
+}
+
+/* ---------- التمام (جرد المعتمرين قبل التحرك) ---------- */
+const CK_PRESETS = ["ركوب الباص","الطيارة","الخروج من المطار","المغادرة من المزار","المغادرة من الفندق","المدينة ← مكة","مكة ← المدينة"];
+let wakeLock = null;
+async function keepAwake(){ try { if ("wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => wakeLock = null); } } catch {} }
+function releaseWake(){ try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && S.checkOpen) keepAwake(); });
+const ckById = id => (S.tripChecks || []).find(c => c.id === id);
+function ckStats(c){
+  const P = S.tripPeople || [], ids = new Set(P.map(p => p.id)), pr = new Set((c.present || []).filter(x => ids.has(x))), ex = new Set((c.excused || []).filter(x => ids.has(x) && !pr.has(x)));
+  const total = P.length - ex.size, left = P.filter(p => !pr.has(p.id) && !ex.has(p.id));
+  return { pr, ex, total, n:pr.size, left };
+}
+const ckTime = t => new Date(ms(t)).toLocaleString("ar-EG", { weekday:"short", day:"numeric", month:"short", hour:"numeric", minute:"2-digit" });
+
+function tripDrawChecks(){
+  const box = $("#trChecks"), t = tripById(S.tripOpen); if (!box || !t) return;
+  tripDrawViews();
+  if (!S.tripPeople || !S.tripChecks){ box.innerHTML = `<div class="list"><div class="empty">بيحمّل…</div></div>`; box.dataset.k = ""; return; }
+  const c = S.checkOpen && ckById(S.checkOpen);
+  if (S.checkOpen && !c){ S.checkOpen = null; releaseWake(); }
+  if (c) return ckRunner(box, t, c);
+  box.dataset.k = "list";
+  const L = S.tripChecks.slice().sort((a, b) => ms(b.at) - ms(a.at)), sup = tSup();
+  box.innerHTML = `${sup ? `<section class="ck-new">
+      <h3>${ic("star")}تمام جديد</h3>
+      <p class="hint">اختار هتعمل التمام على إيه، ونادي على المعتمرين ودوس على اسم كل واحد موجود — العدد بيقل لحد ما يخلص.</p>
+      <div class="ck-presets">${CK_PRESETS.map(x => `<button class="chip" data-trip="ckStart" data-title="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+      <form class="ck-custom" id="ckForm"><input id="ck-title" placeholder="أو اكتب اسم تاني… (مثلاً: زيارة جبل أحد)" aria-label="اسم التمام"><button class="btn primary" type="submit">ابدأ التمام</button></form>
+    </section>` : ""}
+    <h3 class="tr-sub">سجل التمام</h3>
+    ${L.length ? `<div class="list">${L.map(c => { const st = ckStats(c), done = !st.left.length, arm = S.tripArm === "ckDel:" + c.id;
+      return `<div class="ck-row ${done ? "ok" : ""}">
+        <button class="ck-open" data-trip="ckOpen" data-id="${c.id}"><b>${esc(c.title || "تمام")}</b><span>${ckTime(c.at)}${c.byName ? " — " + esc(c.byName) : ""}</span></button>
+        <span class="pill ${done ? "tr-in" : "tr-out"}">${done ? "✓ اكتمل" : "ناقص " + fmtNum(st.left.length)}</span>
+        <span class="ck-cnt">${fmtNum(st.n)} / ${fmtNum(st.total)}${st.ex.size ? ` <small>(مستثنى ${fmtNum(st.ex.size)})</small>` : ""}</span>
+        ${sup ? `<button class="btn sm ${arm ? "danger armed" : "ghost"}" data-trip="ckDel" data-id="${c.id}">${arm ? "متأكد؟" : "مسح"}</button>` : ""}</div>`; }).join("")}</div>`
+      : `<div class="list"><div class="empty">مفيش تمام اتعمل في الرحلة دي لسه.</div></div>`}`;
+  const f = $("#ckForm"); if (f) f.addEventListener("submit", e => { e.preventDefault(); ckStart(t, $("#ck-title").value.trim() || "تمام " + new Date().toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" })); });
+}
+async function ckStart(t, title){
+  if (!S.tripPeople || !S.tripPeople.length) return toast("مفيش أسماء في الرحلة");
+  try { const id = await api.checkCreate(t.id, { title, by:S.me.uid, byName:S.me.name }); S.checkOpen = id; S.ckQ = ""; S.ckSort = S.ckSort || "n"; keepAwake(); tripDrawChecks(); window.scrollTo(0, 0); }
+  catch(e){ console.error(e); toast("مش قادر يبدأ التمام. اتأكد من النت وإن القواعد الجديدة اتنشرت."); }
+}
+function ckRunner(box, t, c){
+  const key = "run:" + c.id;
+  if (box.dataset.k !== key){
+    box.dataset.k = key;
+    box.innerHTML = `<div class="ck-run">
+      <div class="ck-head"><button class="btn ghost sm" data-trip="ckBack">${ic("prev")}رجوع</button><h3>${esc(c.title || "تمام")}</h3></div>
+      <div id="ckTop"></div>
+      <div class="ck-tools"><input id="ck-q" type="search" placeholder="اكتب أول حروف الاسم…" autocomplete="off" aria-label="بحث بالاسم" value="${esc(S.ckQ || "")}">
+        <div class="ck-sort"><button data-trip="ckSort" data-s="n" class="${S.ckSort !== "room" ? "on" : ""}">بالترتيب</button><button data-trip="ckSort" data-s="room" class="${S.ckSort === "room" ? "on" : ""}">بالغرف</button></div></div>
+      <div id="ckLeft"></div>
+      <details class="ck-done" id="ckDoneBox"><summary id="ckDoneSum"></summary><div id="ckDone"></div></details>
+    </div>`;
+    $("#ck-q").addEventListener("input", e => { S.ckQ = e.target.value; ckDraw(t, ckById(S.checkOpen)); });
+  }
+  ckDraw(t, c);
+}
+function ckDraw(t, c){
+  if (!c || !$("#ckTop")) return;
+  const st = ckStats(c), left = st.left.length, pc = st.total ? Math.round(st.n / st.total * 100) : 100, sup = tSup(), q = normName(S.ckQ || "");
+  $("#ckTop").innerHTML = left ? `<div class="ck-big"><div><b>${fmtNum(left)}</b><span>باقي</span></div><div class="ck-of"><span>حضر <b>${fmtNum(st.n)}</b> من <b>${fmtNum(st.total)}</b>${st.ex.size ? `، مستثنى ${fmtNum(st.ex.size)}` : ""}</span><i class="ck-bar"><i style="width:${pc}%"></i></i></div></div>`
+    : `<div class="ck-big ok"><div><b>✓</b><span>اكتمل</span></div><div class="ck-of"><span><b>اكتمل العدد — ${fmtNum(st.n)} من ${fmtNum(st.total)}</b>${st.ex.size ? `، مستثنى ${fmtNum(st.ex.size)}` : ""}</span><span class="hint">الكل موجود، تقدر تتحرك.</span>
+        ${sup && !c.closedAt ? `<button class="btn ok" data-trip="ckClose">إنهاء التمام</button>` : c.closedAt ? `<span class="hint">اتقفل ${esc(ago(c.closedAt))}</span>` : ""}</div></div>`;
+  const P = S.tripPeople, match = p => !q || normName(p.name).includes(q);
+  const row = p => { const ph = tPhone(p);
+    return `<div class="ck-it"><button class="ck-tap" data-trip="ckYes" data-id="${p.id}" ${sup ? "" : "disabled"}><span class="rm-n">${fmtNum(p.n)}</span><span class="ck-nm">${esc(p.name)}</span><span class="ck-ok" aria-hidden="true">✓</span></button>
+      ${ph ? `<a class="ck-call" href="tel:+${esc(ph)}" aria-label="اتصال بـ${esc(p.name)}">${ic("phone")}</a>` : ""}${sup ? `<button class="ck-more" data-trip="ckEx" data-id="${p.id}" title="مستثنى — مش معانا في التحرك ده">مستثنى</button>` : ""}</div>`; };
+  let html = "";
+  const L = st.left.filter(match);
+  if (!left) html = "";
+  else if (!L.length) html = `<div class="empty">مفيش اسم باقي بالبحث ده.</div>`;
+  else if (S.ckSort === "room"){
+    const R = roomsOf(t), byRoom = new Map(); L.forEach(p => { const r = R.find(x => x.members.includes(p.id)); const k = r ? r.id : ""; if (!byRoom.has(k)) byRoom.set(k, []); byRoom.get(k).push(p); });
+    html = [...R.filter(r => byRoom.has(r.id)).map(r => [r.label || roomType(r), byRoom.get(r.id)]), ...(byRoom.has("") ? [["من غير غرفة", byRoom.get("")]] : [])]
+      .map(([h, ps]) => `<div class="ck-grp"><h4>${esc(h)} <small>(باقي ${fmtNum(ps.length)})</small></h4>${ps.sort((a, b) => a.n - b.n).map(row).join("")}</div>`).join("");
+  } else html = L.sort((a, b) => a.n - b.n).map(row).join("");
+  $("#ckLeft").innerHTML = html ? `<div class="ck-list">${html}</div>` : "";
+  const D = P.filter(p => st.pr.has(p.id) || st.ex.has(p.id)).sort((a, b) => a.n - b.n);
+  $("#ckDoneSum").textContent = `حضروا (${fmtNum(st.n)})${st.ex.size ? ` ومستثنى (${fmtNum(st.ex.size)})` : ""}`;
+  $("#ckDoneBox").hidden = !D.length;
+  $("#ckDone").innerHTML = D.map(p => { const ex = st.ex.has(p.id); return `<div class="ck-d ${ex ? "ex" : ""}"><span class="rm-n">${fmtNum(p.n)}</span><span class="ck-nm">${esc(p.name)}</span>${ex ? `<span class="pill tr-out">مستثنى</span>` : `<span class="pill tr-in">✓ حضر</span>`}${sup ? `<button class="btn sm ghost" data-trip="ckUndo" data-id="${p.id}" data-f="${ex ? "excused" : "present"}">رجوع</button>` : ""}</div>`; }).join("");
+  if (!left && !ckDraw.celebrated?.[c.id]){ (ckDraw.celebrated ||= {})[c.id] = true; try { navigator.vibrate && navigator.vibrate([60, 60, 120]); } catch {} beep(); }
+  if (left) (ckDraw.celebrated ||= {})[c.id] = false;
+}
+async function checkClick(b, t){
+  const k = b.dataset.trip, c = S.checkOpen && ckById(S.checkOpen), id = b.dataset.id;
+  if (k === "ckOpen"){ S.checkOpen = id; S.ckQ = ""; S.ckSort = S.ckSort || "n"; const x = ckById(id); if (x && !x.closedAt) keepAwake(); tripDrawChecks(); return window.scrollTo(0, 0); }
+  if (k === "ckBack"){ S.checkOpen = null; S.ckQ = ""; releaseWake(); return tripDrawChecks(); }
+  if (k === "ckSort"){ S.ckSort = b.dataset.s; document.querySelectorAll("[data-trip=ckSort]").forEach(x => x.classList.toggle("on", x === b)); return ckDraw(t, c); }
+  if (!tSup()) return;
+  if (k === "ckStart") return ckStart(t, b.dataset.title);
+  if (k === "ckDel"){ if (!tArm("ckDel:" + id)) return tripDrawChecks(); try { await api.checkDelete(t.id, id); toast("اتمسح"); } catch(e){ console.error(e); toast("المسح ما نجحش"); } return; }
+  if (!c) return;
+  try {
+    if (k === "ckYes" || k === "ckEx"){
+      const f = k === "ckYes" ? "present" : "excused", q = $("#ck-q");
+      // يظهر على طول من غير ما يستنى النت
+      c[f] = [...new Set([...(c[f] || []), id])]; ckDraw(t, c);
+      try { navigator.vibrate && navigator.vibrate(25); } catch {}
+      if (q && q.value){ q.value = ""; S.ckQ = ""; ckDraw(t, c); q.focus(); }
+      await api.checkMark(t.id, c.id, id, true, f);
+      if (!ckStats(c).left.length && !c.completedAt) api.checkPatch(t.id, c.id, { completedAt:NOW }).catch(() => {});
+      return;
+    }
+    if (k === "ckUndo"){ const f = b.dataset.f; c[f] = (c[f] || []).filter(x => x !== id); ckDraw(t, c); await api.checkMark(t.id, c.id, id, false, f); return; }
+    if (k === "ckClose"){ b.disabled = true; await api.checkPatch(t.id, c.id, { closedAt:NOW }); S.checkOpen = null; releaseWake(); toast("التمام اتقفل ✓"); return tripDrawChecks(); }
+  } catch(e){ console.error(e); toast("ما اتحفظش — اتأكد من النت"); }
 }
 
 if (DEMO) api.demoLogin("sup");
