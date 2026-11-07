@@ -2662,6 +2662,7 @@ function welcomeMsg(t, p){
   const route = fixUrl(t.routeUrl); L.push(route ? `🗺️ مسار الرحلة:\n${route}` : `🗺️ مسار الرحلة: سيتاح قريبًا`, "");
   const cs = tContacts(t); if (cs.length){ L.push("📞 أرقام تهمك:"); cs.forEach(c => L.push(`• ${c.label ? c.label + ": " : ""}${c.name || ""}${c.phone ? " — " + c.phone : ""}`)); L.push(""); }
   if (t.note) L.push("📌 تعليمات الرحلة:", t.note, "");
+  L.push("🤍 أهلاً بيك في عيلة برومس — هنا بنشارك صور الرحلات وفعالياتها، ومواعيد رحلاتنا الجاية:", "https://www.facebook.com/Promisetravil", "");
   L.push("نسأل الله لكم عمرةً مقبولة وسعيًا مشكورًا وذنبًا مغفورًا 🤍", "فريق برومس للسياحة");
   return L.join("\n");
 }
