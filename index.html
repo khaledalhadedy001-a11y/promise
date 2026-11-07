@@ -533,14 +533,14 @@ main{padding-bottom:56px}
 .ck-open{flex:1;min-width:180px;display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;text-align:right;padding:0}.ck-open b{font-weight:600}.ck-open span{font-size:12.5px;color:var(--muted)}
 .ck-cnt{font:600 15px/1 var(--f-display);font-variant-numeric:tabular-nums}.ck-cnt small{font:400 12px var(--f-body);color:var(--muted)}
 .ck-run{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px 16px}
-.ck-head{display:flex;align-items:center;gap:8px}.ck-head h3{font-size:18px}
+.ck-head{display:flex;align-items:center;gap:8px}.ck-rep{margin-inline-start:auto}.ck-endacts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ck-head h3{font-size:18px}
 .ck-big{display:flex;align-items:center;gap:16px;margin-top:10px;padding:14px 16px;border-radius:14px;background:color-mix(in srgb,var(--warn) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 30%,var(--line))}
 .ck-big > div:first-child{display:flex;flex-direction:column;align-items:center;min-width:92px}
 .ck-big > div:first-child b{font:700 54px/1 var(--f-display);color:var(--warn);font-variant-numeric:tabular-nums}.ck-big > div:first-child span{font-size:14px;color:var(--muted)}
 .ck-of{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0}.ck-of > span{font-size:15px}
 .ck-bar{display:block;height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}.ck-bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .25s}
 .ck-big.ok{background:color-mix(in srgb,var(--ok) 12%,var(--surface));border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}.ck-big.ok > div:first-child b{color:var(--ok)}
-.ck-big.ok .ck-of > span:first-child{color:var(--ok);font-size:17px}.ck-big.ok .btn{align-self:flex-start}
+.ck-big.ok .ck-of > span:first-child{color:var(--ok);font-size:17px}.ck-big.ok .btn{align-self:flex-start}.ck-big.ok .btn.ok-o{background:var(--surface)}
 .ck-tools{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:3;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px -14px 0;padding:8px 14px;background:var(--surface)}
 .ck-tools input{flex:1 1 200px;min-width:0;border:1.5px solid var(--line);background:var(--surface-2);border-radius:11px;padding:10px 14px;font-size:16px}
 .ck-sort{display:flex;gap:2px;background:var(--surface-2);border-radius:10px;padding:3px}.ck-sort button{border:0;background:none;border-radius:8px;padding:6px 12px;font-size:13px;color:var(--muted)}.ck-sort button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
@@ -3333,9 +3333,35 @@ function tripDrawChecks(){
         <button class="ck-open" data-trip="ckOpen" data-id="${c.id}"><b>${esc(c.title || "تمام")}</b><span>${ckTime(c.at)}${c.byName ? " — " + esc(c.byName) : ""}</span></button>
         <span class="pill ${done ? "tr-in" : "tr-out"}">${done ? "✓ اكتمل" : "ناقص " + fmtNum(st.left.length)}</span>
         <span class="ck-cnt">${fmtNum(st.n)} / ${fmtNum(st.total)}${st.ex.size ? ` <small>(مستثنى ${fmtNum(st.ex.size)})</small>` : ""}</span>
-        ${sup ? `<button class="btn sm ${arm ? "danger armed" : "ghost"}" data-trip="ckDel" data-id="${c.id}">${arm ? "متأكد؟" : "مسح"}</button>` : ""}</div>`; }).join("")}</div>`
+        ${sup ? `<button class="btn sm ${c.reportedAt ? "ghost" : "ok-o"}" data-trip="ckReport" data-id="${c.id}" title="إرسال التقرير لجروب العمليات">${ic("chat")}${c.reportedAt ? "اتبعت ✓" : "التقرير"}</button><button class="btn sm ${arm ? "danger armed" : "ghost"}" data-trip="ckDel" data-id="${c.id}">${arm ? "متأكد؟" : "مسح"}</button>` : ""}</div>`; }).join("")}</div>`
       : `<div class="list"><div class="empty">مفيش تمام اتعمل في الرحلة دي لسه.</div></div>`}`;
   const f = $("#ckForm"); if (f) f.addEventListener("submit", e => { e.preventDefault(); ckStart(t, $("#ck-title").value.trim() || "تمام " + new Date().toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" })); });
+}
+// تقرير التمام لجروب عمليات الشركة
+function ckReport(t, c){
+  const st = ckStats(c), P = S.tripPeople || [], when = c.completedAt || c.closedAt || c.updatedAt || Date.now(), ok = !st.left.length;
+  const dt = new Date(ms(when)), day = dt.toLocaleDateString("ar-EG", { weekday:"long", day:"numeric", month:"long", year:"numeric" }), tm = dt.toLocaleTimeString("ar-EG", { hour:"numeric", minute:"2-digit" });
+  const L = ["*برومس للسياحة — تقرير تمام*", "━━━━━━━━━━━━", `▪️ الرحلة: ${t.title || ""}`, `▪️ التحرك: ${c.title || "تمام"}`, `▪️ التاريخ: ${day}`, `▪️ وقت التمام: ${tm}`, "",
+    ok ? `✅ *تم التمام — العدد مكتمل*` : `⚠️ *التمام غير مكتمل*`,
+    `▪️ الحضور: ${fmtNum(st.n)} من ${fmtNum(st.total)}`];
+  if (!ok){ L.push(`▪️ المتبقي: ${fmtNum(st.left.length)}`); st.left.sort((a, b) => a.n - b.n).forEach((p, i) => L.push(`   ${fmtNum(i + 1)}- ${p.name}`)); }
+  if (st.ex.size){ L.push(`▪️ مستثنى من التحرك: ${fmtNum(st.ex.size)}`); P.filter(p => st.ex.has(p.id)).sort((a, b) => a.n - b.n).forEach((p, i) => L.push(`   ${fmtNum(i + 1)}- ${p.name}`)); }
+  L.push(`▪️ إجمالي المجموعة: ${fmtNum(P.length)}`, "", `المسؤول: ${S.me.name}${S.me.role === "supervisor" ? " — مدير التشغيل" : ""}`);
+  return L.join("\n");
+}
+function ckSend(t, c){
+  const txt = ckReport(t, c);
+  const m = modal("إرسال تقرير التمام لجروب العمليات", `<div class="form">
+    <div class="field full"><label for="ckr-txt">الرسالة <small class="hint">— تقدر تعدّل فيها قبل الإرسال</small></label><textarea id="ckr-txt" rows="14" dir="rtl">${esc(txt)}</textarea></div>
+    <p class="hint field full">«إرسال على الواتساب» بيفتح الواتساب والرسالة جاهزة — اختار جروب عمليات الشركة ودوس إرسال.</p></div>
+    <div class="form-foot"><button class="btn primary" id="ckrWa">${ic("chat")}إرسال على الواتساب</button><button class="btn" id="ckrCopy">نسخ الرسالة</button><button class="btn ghost" data-x>إغلاق</button></div>`);
+  const val = () => $("#ckr-txt").value;
+  $("#ckrWa").onclick = async () => {
+    const w = window.open("https://wa.me/?text=" + encodeURIComponent(val()), "_blank");
+    if (!w){ try { await navigator.share({ text:val() }); } catch { toast("المتصفح منع فتح الواتساب — استخدم «نسخ الرسالة»"); } }
+    api.checkPatch(t.id, c.id, { reportedAt:NOW }).catch(() => {});
+  };
+  $("#ckrCopy").onclick = () => copyTxt(val(), "الرسالة اتنسخت — الزقها في جروب العمليات");
 }
 async function ckStart(t, title){
   if (!S.tripPeople || !S.tripPeople.length) return toast("مفيش أسماء في الرحلة");
@@ -3347,7 +3373,7 @@ function ckRunner(box, t, c){
   if (box.dataset.k !== key){
     box.dataset.k = key;
     box.innerHTML = `<div class="ck-run">
-      <div class="ck-head"><button class="btn ghost sm" data-trip="ckBack">${ic("prev")}رجوع</button><h3>${esc(c.title || "تمام")}</h3></div>
+      <div class="ck-head"><button class="btn ghost sm" data-trip="ckBack">${ic("prev")}رجوع</button><h3>${esc(c.title || "تمام")}</h3>${tSup() ? `<button class="btn sm ghost ck-rep" data-trip="ckReport" data-id="${c.id}" title="إرسال تقرير بالموقف الحالي">${ic("chat")}تقرير</button>` : ""}</div>
       <div id="ckTop"></div>
       <div class="ck-tools"><input id="ck-q" type="search" placeholder="اكتب أول حروف الاسم…" autocomplete="off" aria-label="بحث بالاسم" value="${esc(S.ckQ || "")}">
         <div class="ck-sort"><button data-trip="ckSort" data-s="n" class="${S.ckSort !== "room" ? "on" : ""}">بالترتيب</button><button data-trip="ckSort" data-s="room" class="${S.ckSort === "room" ? "on" : ""}">بالغرف</button></div></div>
@@ -3363,7 +3389,7 @@ function ckDraw(t, c){
   const st = ckStats(c), left = st.left.length, pc = st.total ? Math.round(st.n / st.total * 100) : 100, sup = tSup(), q = normName(S.ckQ || "");
   $("#ckTop").innerHTML = left ? `<div class="ck-big"><div><b>${fmtNum(left)}</b><span>باقي</span></div><div class="ck-of"><span>حضر <b>${fmtNum(st.n)}</b> من <b>${fmtNum(st.total)}</b>${st.ex.size ? `، مستثنى ${fmtNum(st.ex.size)}` : ""}</span><i class="ck-bar"><i style="width:${pc}%"></i></i></div></div>`
     : `<div class="ck-big ok"><div><b>✓</b><span>اكتمل</span></div><div class="ck-of"><span><b>اكتمل العدد — ${fmtNum(st.n)} من ${fmtNum(st.total)}</b>${st.ex.size ? `، مستثنى ${fmtNum(st.ex.size)}` : ""}</span><span class="hint">الكل موجود، تقدر تتحرك.</span>
-        ${sup && !c.closedAt ? `<button class="btn ok" data-trip="ckClose">إنهاء التمام</button>` : c.closedAt ? `<span class="hint">اتقفل ${esc(ago(c.closedAt))}</span>` : ""}</div></div>`;
+        <div class="ck-endacts">${sup && !c.closedAt ? `<button class="btn ok" data-trip="ckClose">إنهاء التمام وإرسال التقرير</button>` : `${c.closedAt ? `<span class="hint">اتقفل ${esc(ago(c.closedAt))}</span>` : ""}<button class="btn ok-o" data-trip="ckReport">${ic("chat")}${c.reportedAt ? "إرسال التقرير تاني" : "إرسال التقرير لجروب العمليات"}</button>`}</div></div></div>`;
   const P = S.tripPeople, match = p => !q || normName(p.name).includes(q);
   const row = p => { const ph = tPhone(p);
     return `<div class="ck-it"><button class="ck-tap" data-trip="ckYes" data-id="${p.id}" ${sup ? "" : "disabled"}><span class="rm-n">${fmtNum(p.n)}</span><span class="ck-nm">${esc(p.name)}</span><span class="ck-ok" aria-hidden="true">✓</span></button>
@@ -3392,6 +3418,7 @@ async function checkClick(b, t){
   if (k === "ckSort"){ S.ckSort = b.dataset.s; document.querySelectorAll("[data-trip=ckSort]").forEach(x => x.classList.toggle("on", x === b)); return ckDraw(t, c); }
   if (!tSup()) return;
   if (k === "ckStart") return ckStart(t, b.dataset.title);
+  if (k === "ckReport"){ const x = ckById(id) || c; return x && ckSend(t, x); }
   if (k === "ckDel"){ if (!tArm("ckDel:" + id)) return tripDrawChecks(); try { await api.checkDelete(t.id, id); toast("اتمسح"); } catch(e){ console.error(e); toast("المسح ما نجحش"); } return; }
   if (!c) return;
   try {
@@ -3406,7 +3433,7 @@ async function checkClick(b, t){
       return;
     }
     if (k === "ckUndo"){ const f = b.dataset.f; c[f] = (c[f] || []).filter(x => x !== id); ckDraw(t, c); await api.checkMark(t.id, c.id, id, false, f); return; }
-    if (k === "ckClose"){ b.disabled = true; await api.checkPatch(t.id, c.id, { closedAt:NOW }); S.checkOpen = null; releaseWake(); toast("التمام اتقفل ✓"); return tripDrawChecks(); }
+    if (k === "ckClose"){ b.disabled = true; await api.checkPatch(t.id, c.id, { closedAt:NOW }); const cc = { ...c, closedAt:Date.now() }; S.checkOpen = null; releaseWake(); tripDrawChecks(); return ckSend(t, cc); }
   } catch(e){ console.error(e); toast("ما اتحفظش — اتأكد من النت"); }
 }
 
