@@ -330,8 +330,9 @@ function renderPass(){
   const p = S.pick;
   card.innerHTML = head() + steps("pass") + `<form class="body" id="pf" novalidate>
     <div class="who"><span class="av" aria-hidden="true">${esc(p.name.trim().charAt(0))}</span><div><small>الاسم المختار</small><b>${esc(p.name)}</b></div></div>
-    ${S.mine.some(m => m.id === p.id) ? `<div class="msg ok-msg">تم تأكيد انضمام هذا الاسم من قبل من هذا الجهاز ✓<br>التأكيد يتم مرة واحدة فقط، ولا حاجة لإعادته.</div>
-      <div class="row"><button type="button" class="btn" id="back">رجوع</button></div>` : p.np ? `<div class="msg err">بيانات جواز السفر الخاصة بك لم تُسجَّل بعد. برجاء التواصل مع مشرف الرحلة لإتمام التأكيد.</div>
+    ${S.mine.some(m => m.id === p.id) && !S.redo ? `<div class="msg ok-msg">تم تأكيد انضمام هذا الاسم من قبل من هذا الجهاز ✓<br>التأكيد يتم مرة واحدة فقط، ولا حاجة لإعادته.</div>
+      <div class="row"><button type="button" class="btn" id="back">رجوع</button></div>
+      <p class="help" style="text-align:center;margin-top:12px">طلب منك مشرف الرحلة التأكيد مرة أخرى؟ <button type="button" id="redo" style="all:unset;cursor:pointer;color:var(--brand-2);text-decoration:underline;font-weight:600">اضغط هنا</button></p>` : p.np ? `<div class="msg err">بيانات جواز السفر الخاصة بك لم تُسجَّل بعد. برجاء التواصل مع مشرف الرحلة لإتمام التأكيد.</div>
       <div class="row"><button type="button" class="btn" id="back">رجوع</button></div>` : `
     <label class="lbl" for="pp">رقم جواز السفر</label>
     <input class="pass ${S.err ? "bad" : ""}" id="pp" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="A12345678" maxlength="20" aria-describedby="ph">
@@ -342,7 +343,8 @@ function renderPass(){
     ${S.err ? `<div class="msg err" role="alert">${S.err}</div>` : ""}
     <div class="row"><button type="submit" class="btn primary" id="go">تأكيد الانضمام</button><button type="button" class="btn" id="back">ليس اسمي</button></div>`}
   </form>`;
-  $("#back").onclick = () => { S.step = "pick"; S.pick = null; S.err = ""; S.errPh = false; S.tries = 0; render(); };
+  const rd = $("#redo"); if (rd) rd.onclick = () => { S.redo = true; renderPass(); };
+  $("#back").onclick = () => { S.redo = false; S.step = "pick"; S.pick = null; S.err = ""; S.errPh = false; S.tries = 0; render(); };
   const inp = $("#pp"), wa = $("#wa"); if (!inp) return;
   if (S.keep){ inp.value = S.keep.pp; wa.value = S.keep.wa; S.keep = null; }
   (S.errPh ? wa : inp).focus();
@@ -360,8 +362,8 @@ function renderPass(){
       await api.confirm(p.id, v, ph);
       S.last = { id:p.id, name:p.name, n:p.n, at:Date.now(), hotel:"loading" };
       api.hotel(p.id, v).then(h => { if (S.last && S.last.id === p.id){ S.last.hotel = h; drawHotel(); } }).catch(() => { if (S.last){ S.last.hotel = null; drawHotel(); } });
-      S.mine = S.mine.filter(m => m.id !== p.id).concat({ id:p.id, name:p.name }); store.set(KEY, S.mine);
-      S.step = "ok"; S.err = ""; S.tries = 0; S.q = ""; S.res = null; render(); window.scrollTo({ top:0, behavior:"smooth" });
+      S.mine = S.mine.filter(m => m.id !== p.id).concat({ id:p.id, name:p.name, at:Date.now() }); store.set(KEY, S.mine);
+      S.step = "ok"; S.err = ""; S.redo = false; S.tries = 0; S.q = ""; S.res = null; render(); window.scrollTo({ top:0, behavior:"smooth" });
     } catch(x){
       if (x && x.code === "mismatch"){ S.tries++; S.err = S.tries >= 3 ? "تعذّر التأكيد. برجاء التواصل مع مشرف الرحلة للمساعدة." : "تعذّر التأكيد: إما أن رقم الجواز غير مطابق للبيانات المسجلة لهذا الاسم، أو أن هذا الاسم تم تأكيد انضمامه من قبل (التأكيد مرة واحدة فقط). راجع رقم الجواز وحاول مرة أخرى، أو تواصل مع مشرف الرحلة."; }
       else S.err = "تعذّر الاتصال. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.";
@@ -426,7 +428,7 @@ function drawHotel(){
 card.addEventListener("click", e => {
   const b = e.target.closest(".nm[data-pid]"); if (!b || !Array.isArray(S.res)) return;
   const p = S.res.find(x => x.id === b.dataset.pid); if (!p) return;
-  S.pick = p; S.step = "pass"; S.err = ""; S.errPh = false; S.keep = null; S.tries = 0; render(); window.scrollTo({ top:0, behavior:"smooth" });
+  S.pick = p; S.step = "pass"; S.err = ""; S.errPh = false; S.keep = null; S.redo = false; S.tries = 0; render(); window.scrollTo({ top:0, behavior:"smooth" });
 });
 
 /* ---------- البداية ---------- */
@@ -438,6 +440,9 @@ else {
     api.watch(t => {
       if (!t) return state("link", "الرابط غير صحيح أو انتهت صلاحيته", "برجاء التواصل مع مشرف الرحلة للحصول على الرابط الصحيح.");
       const first = !S.trip; S.trip = t;
+      // لو مدير التشغيل لغى تأكيد اسم بعد ما اتأكد من الجهاز ده → نشيله من «تم التأكيد» ويقدر يأكد تاني
+      const R = t.resets || {}, kept = S.mine.filter(m => !(R[m.id] && R[m.id] > (m.at || 0)));
+      if (kept.length !== S.mine.length){ S.mine = kept; store.set(KEY, kept); if (S.step !== "ok"){ render(); return; } }
       if (first || S.step === "ok" || t.open === false) render();
     }, () => state("link", "تعذّر تحميل البيانات", "تأكد من اتصالك بالإنترنت ثم أعد تحميل الصفحة."));
   } catch(e){ console.error(e); state("link", "تعذّر تحميل الصفحة", "تأكد من اتصالك بالإنترنت ثم أعد تحميل الصفحة."); }

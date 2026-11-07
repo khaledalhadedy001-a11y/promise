@@ -786,7 +786,9 @@ async function makeFirebase(){
     },
     tripMarkWa:(id, pid) => F.updateDoc(F.doc(db,"trips",id,"joins",pid), { waSent:F.serverTimestamp() }),
     tripConfirm:(id, pid, passport, me) => F.setDoc(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name }),
-    async tripUnconfirm(id, pid){ const b = F.writeBatch(db); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid)); await b.commit(); },
+    async tripUnconfirm(id, pid){ const b = F.writeBatch(db), at = Date.now(); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid));
+      // علامة «اتلغى» عشان جهاز المعتمر يمسح «تم التأكيد من هذا الجهاز» ويقدر يأكد تاني
+      b.update(F.doc(db,"trips",id), { ["resets." + pid]:at }); b.update(F.doc(db,"joinPub",id), { ["resets." + pid]:at }); await b.commit(); },
     async deleteTrip(id, pids){
       const T0 = tripById(id) || {}, ops = [F.doc(db,"trips",id), F.doc(db,"joinPub",id)].concat((T0.keys || []).map(h => F.doc(db,"joinPub",id,"k",h)), (T0.hkeys || []).map(h => F.doc(db,"joinPub",id,"h",h)));
       pids.forEach(pid => ops.push(F.doc(db,"trips",id,"people",pid), F.doc(db,"trips",id,"joins",pid), F.doc(db,"joinPub",id,"done",pid)));
@@ -2623,7 +2625,7 @@ function tContacts(t){
   return [["مشرف الرحلة في مصر", t.supEg, t.supEgPhone], ["مشرف الرحلة في السعودية", t.supSa, t.supSaPhone]].filter(x => x[1] || x[2]).map(([label, name, phone]) => ({ label, name:name || "", phone:phone || "" }));
 }
 function fixUrl(u){ u = String(u || "").trim(); if (!u) return ""; if (!/^https?:\/\//i.test(u)) u = "https://" + u; try { return new URL(u).href; } catch { return ""; } }
-function tripPublic(t){ return { title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false, routeUrl:fixUrl(t.routeUrl),
+function tripPublic(t){ return { resets:t.resets || {}, title:t.title || "", date:t.date || "", note:t.note || "", open:t.open !== false, routeUrl:fixUrl(t.routeUrl),
   contacts:tContacts(t).map(c => ({ label:String(c.label || "").slice(0, 60), name:String(c.name || "").slice(0, 80), phone:String(c.phone || "").slice(0, 25) })) }; }
 const tFields = t => tripPublic(t);
 // الاسم الأول (عبد/أبو بتتلزق في اللي بعدها): نفس الدالة بالظبط في join.html
