@@ -492,6 +492,34 @@ main{padding-bottom:56px}
 .ct-row{display:grid;grid-template-columns:1.2fr 1.2fr 1fr auto;gap:6px}
 .ct-row input{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:7px 10px;min-width:0;width:100%}
 @media (max-width:620px){ .ct-row{grid-template-columns:1fr 1fr auto} .ct-row [data-c=phone]{grid-column:1/3} }
+.tr-views{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-top:14px;width:fit-content;max-width:100%;flex-wrap:wrap}
+.tr-views button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;border-radius:9px;padding:7px 14px;font-weight:500;color:var(--muted)}
+.tr-views button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}.tr-views small{font-size:11.5px;color:var(--muted);font-weight:400}
+.tr-rm{color:var(--accent);font-weight:500}
+#trRooms{margin-top:12px}#trRooms[hidden],#trTools[hidden],#trTable[hidden]{display:none!important}
+.rm-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.rm-sum{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}.rm-sum b{font:700 17px/1 var(--f-display);color:var(--ink);font-variant-numeric:tabular-nums}
+.rm-sum .wait b{color:var(--warn)}.rm-sum .ok b{color:var(--ok)}.rm-acts{display:flex;gap:6px;flex-wrap:wrap}
+.rm-un{margin-top:10px;background:color-mix(in srgb,var(--warn) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 30%,var(--line));border-radius:12px;padding:8px 12px}
+.rm-un summary{cursor:pointer;font-weight:600;color:var(--warn)}.rm-un div{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.rm-un .chip{cursor:default}
+.rm-allok{margin:10px 2px 0;color:var(--ok);font-weight:600}
+.rm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
+.rm-card{background:var(--surface);border:1.5px solid #0e5e55;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.rm-card header{display:flex;gap:10px;align-items:center;background:#0e5e55;color:#fff;padding:8px 12px}
+.rm-card header > div:not(.rm-hops){display:flex;flex-direction:column;flex:1;min-width:0}.rm-card header > div + div:not(.rm-hops){border-inline-start:1px solid rgba(255,255,255,.3);padding-inline-start:10px}
+.rm-card header small{font-size:11px;opacity:.8}.rm-card header b{font:600 15px/1.35 var(--f-display);overflow-wrap:anywhere}
+.rm-hops{display:flex;gap:2px}.rm-ib{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:7px;padding:3px 8px;font-size:13px}.rm-ib:hover{background:rgba(255,255,255,.25)}.rm-ib.armed{background:var(--p-urgent)}
+.rm-card ol{list-style:none;margin:0;padding:4px 10px 8px;flex:1}
+.rm-card li{display:flex;align-items:center;gap:9px;padding:7px 2px;border-bottom:1px solid var(--line);font-weight:600}.rm-card li:last-child{border-bottom:0}
+.rm-n{width:22px;height:22px;border-radius:50%;border:1.5px solid color-mix(in srgb,#0e5e55 40%,transparent);background:color-mix(in srgb,#0e5e55 10%,transparent);color:var(--accent);display:grid;place-items:center;font-size:11.5px;flex:none;font-variant-numeric:tabular-nums}
+.rm-nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.rm-x{border:0;background:none;color:var(--muted);border-radius:6px;padding:2px 7px}.rm-x:hover{color:var(--p-urgent);background:color-mix(in srgb,var(--p-urgent) 10%,transparent)}
+.rm-empty button{display:inline-flex;align-items:center;gap:6px;width:100%;border:1.5px dashed var(--line);background:var(--surface-2);border-radius:9px;padding:6px 10px;color:var(--accent);font-weight:500}
+.rm-empty button:hover{border-color:var(--accent)}.rm-empty .ic{width:15px;height:15px}
+.rp-list{max-height:min(50vh,380px);overflow-y:auto;gap:4px}
+.rp-it{display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;cursor:pointer}.rp-it.on{border-color:var(--accent);background:var(--accent-soft)}
+.rp-it input{accent-color:var(--accent)}.rp-it:has(input:disabled){opacity:.5;cursor:default}
+@media (max-width:620px){ .rm-grid{grid-template-columns:1fr} }
 .np{background:var(--surface-2);border-radius:10px;padding:10px 12px;max-height:220px;overflow-y:auto}
 .np-sum{margin:0 0 4px;font-size:14px}.np-warn{margin:0 0 6px;padding-inline-start:18px;font-size:12.5px}.np-warn .w{color:var(--warn)}
 .np-list{margin:0;padding-inline-start:26px;font-size:13px;columns:2 220px;column-gap:20px}
@@ -784,6 +812,7 @@ async function makeFirebase(){
       ops.push(b => b.set(F.doc(db,"joinPub",id), tripPublic(trip)));
       for (let i = 0; i < ops.length; i += 450){ const b = F.writeBatch(db); ops.slice(i, i + 450).forEach(f => f(b)); await b.commit(); }
     },
+    tripRooms:(id, rooms) => F.updateDoc(F.doc(db,"trips",id), { rooms, updatedAt:F.serverTimestamp() }),
     tripMarkWa:(id, pid) => F.updateDoc(F.doc(db,"trips",id,"joins",pid), { waSent:F.serverTimestamp() }),
     tripConfirm:(id, pid, passport, me) => F.setDoc(F.doc(db,"trips",id,"joins",pid), { passport, at:F.serverTimestamp(), manual:true, by:me.name }),
     async tripUnconfirm(id, pid){ const b = F.writeBatch(db), at = Date.now(); b.delete(F.doc(db,"trips",id,"joins",pid)); b.delete(F.doc(db,"joinPub",id,"done",pid));
@@ -918,6 +947,8 @@ function makeDemo(){
     trips.push({ id, title:"رحلة عمرة ٩ نوفمبر", date:inD(2), note:"التجمع يوم السفر الساعة ٦ الصبح أمام مقر الشركة. برجاء إحضار جواز السفر الأصلي.", open:true, count:names.length, createdBy:"sup", createdAt:now - 30*HOUR, updatedAt:now - 30*HOUR });
     tPeople[id] = names.map((name, i) => ({ id:"p" + (i + 1), n:i + 1, name, passport:"A" + String(20456100 + i * 1371).padStart(8, "0"), phone:"",
       ...(i < 10 ? { mk:i % 2 ? "فندق دار التوحيد إنتركونتيننتال" : "فندق سويس أوتيل مكة", md:"فندق دار الإيمان إنتركونتيننتال" } : {}) }));
+    trips[0].rooms = [{ id:"r1", type:"عائلة", cap:2, label:"101 الأنصار + العليان", members:["p1","p2"] }, { id:"r2", type:"عائلة", cap:3, label:"102 الماسة + شذا", members:["p3","p4","p5"] },
+      { id:"r3", type:"رباعي", cap:4, label:"103 سويس + هيلتون", members:["p6","p8"] }, { id:"r4", type:"ثنائي", cap:2, label:"", members:[] }];
     tJoins[id] = {}; [1,2,3,5,6,8,9,11,12,14].forEach((k, j) => tJoins[id]["p" + k] = { passport:tPeople[id][k - 1].passport, phone:"2010" + String(12345670 + k * 911).slice(0, 8), at:now - (20 - j * 2) * HOUR, ...(j < 4 ? { waSent:now - HOUR } : {}) }); }
   return {
     demo:true, users,
@@ -978,6 +1009,7 @@ function makeDemo(){
       trEmit(id); }); },
     tripConfirm(id, pid, passport, m){ return later(() => { (tJoins[id] ||= {})[pid] = { passport, at:Date.now(), manual:true, by:m.name }; trEmit(id); }); },
     tripUnconfirm(id, pid){ return later(() => { delete (tJoins[id] || {})[pid]; trEmit(id); }); },
+    tripRooms(id, rooms){ return later(() => { const t = trips.find(x => x.id === id); if (t){ t.rooms = JSON.parse(JSON.stringify(rooms)); t.updatedAt = Date.now(); } trEmit(id); }); },
     tripMarkWa(id, pid){ return later(() => { const j = (tJoins[id] || {})[pid]; if (j) j.waSent = Date.now(); trEmit(id); }); },
     deleteTrip(id){ return later(() => { trips.splice(trips.findIndex(t => t.id === id), 1); delete tPeople[id]; delete tJoins[id]; trEmit(id); }); }
   };
@@ -2774,7 +2806,7 @@ function tripsStart(){
 }
 function tripRedraw(){ if (S.view === "trips") renderTrips(true); }
 function tripOpen(id){
-  tripClose(); S.tripOpen = id; S.tripPeople = null; S.tripJoins = {}; S.tripF = "all"; S.tripQ = ""; S.tripArm = "";
+  tripClose(); S.tripOpen = id; S.tripPeople = null; S.tripJoins = {}; S.tripF = "all"; S.tripQ = ""; S.tripArm = ""; S.tripView = S.tripView || "names";
   let mig = false;
   const a = api.watchTripPeople(id, L => { S.tripPeople = L; tripRedraw();
     const t = tripById(id); if (!mig && t && t.pubV !== 2 && tSup() && !api.demo){ mig = true; api.tripWrite(id, tFields(t), [], [], L).catch(e => console.warn(e)); } });
@@ -2791,7 +2823,9 @@ function renderTrips(soft){
     if (!$("#trTable") || !soft){
       main.innerHTML = `<div class="tr-back"><button class="btn ghost sm" data-trip="back">${ic("prev")}كل الرحلات</button></div>
         <div id="trHead"></div><div id="trStats"></div><div class="tr-acts" id="trActs"></div>
-        <div class="toolbar tr-tools"><div class="tr-chips" id="trChips"></div><input id="trq" type="search" placeholder="دوّر بالاسم أو رقم الجواز…" value="${esc(S.tripQ || "")}" aria-label="بحث في أسماء الرحلة"></div>
+        <nav class="tr-views" id="trViews" aria-label="عرض الرحلة"></nav>
+        <div id="trRooms" hidden></div>
+        <div class="toolbar tr-tools" id="trTools"><div class="tr-chips" id="trChips"></div><input id="trq" type="search" placeholder="دوّر بالاسم أو رقم الجواز…" value="${esc(S.tripQ || "")}" aria-label="بحث في أسماء الرحلة"></div>
         <div id="trTable"></div>`;
       $("#trq").addEventListener("input", e => { S.tripQ = e.target.value; tripDrawTable(); });
     }
@@ -2820,6 +2854,9 @@ function tripDrawDetail(){
   $("#trHead").innerHTML = `<div class="vhead tr-h"><h2>${esc(t.title || "رحلة")}</h2><span class="pill ${t.open === false ? "tr-lock" : "tr-on"}">${t.open === false ? "التسجيل مقفول" : "التسجيل مفتوح"}</span></div>
     <p class="vpath">${t.date ? `${ic("cal")} السفر ${esc(tDate(t.date))} <small>(${esc(tRel(t.date))})</small>` : "من غير ميعاد سفر"}${tContacts(t).map(c => `<br><b>${esc(c.label || "رقم")}:</b> ${esc(c.name || "")} <bdi dir="ltr">${esc(c.phone || "")}</bdi>`).join("")}<br><b>مسار الرحلة:</b> ${t.routeUrl ? `<a href="${esc(fixUrl(t.routeUrl))}" target="_blank" rel="noopener" style="color:var(--accent)">فتح اللينك</a>` : `<span class="hint">لسه ما اترفعش — بيظهر للمعتمر «سيتاح مسار الرحلة قريبًا»</span>`}${t.note ? `<br><b>رسالة بعد التأكيد:</b> ${esc(t.note)}` : ""}${tSup() && !tContacts(t).length ? `<br><span class="miss">مفيش أرقام مشرفين — ضيفها من «تعديل الرحلة» عشان تظهر للمعتمر بعد التأكيد.</span>` : ""}</p>`;
   let last = null; if (P) P.forEach(p => { const a = done.get(p.id); if (a && (!last || a > last.at)) last = { name:p.name, at:a }; });
+  { const R = roomsOf(t), inR = R.reduce((x, r) => x + r.members.length, 0);
+    $("#trViews").innerHTML = `<button class="${S.tripView !== "rooms" ? "on" : ""}" data-trip="view" data-v="names">${ic("list")}الأسماء والتأكيد</button><button class="${S.tripView === "rooms" ? "on" : ""}" data-trip="view" data-v="rooms">${ic("users")}التسكين <small>${fmtNum(R.length)} غرفة · ${fmtNum(inR)} من ${fmtNum(tot)}</small></button>`;
+    const rv = S.tripView === "rooms"; $("#trRooms").hidden = !rv; $("#trTools").hidden = rv; $("#trTable").hidden = rv; }
   $("#trStats").innerHTML = `<div class="tr-stats">
     <div class="tr-ring" style="--p:${pc}"><b>${fmtNum(pc)}٪</b><span>أكدوا</span></div>
     <div class="tr-nums"><div class="ok"><b>${fmtNum(n)}</b><span>أكدوا الانضمام</span></div><div class="${left ? "wait" : "ok"}"><b>${fmtNum(left)}</b><span>لسه ما أكدوش</span></div><div><b>${fmtNum(tot)}</b><span>إجمالي المعتمرين</span></div></div>
@@ -2837,7 +2874,7 @@ function tripDrawDetail(){
     <button class="btn danger ${armDel ? "armed" : ""}" data-trip="del">${armDel ? "متأكد؟ اضغط تاني للمسح" : "مسح الرحلة"}</button>` : ""}`;
   $("#trChips").innerHTML = [["all","الكل",tot],["in","أكدوا",n],["out","لسه",left]].map(([k,l,c]) => `<button class="chip ${S.tripF === k ? "on" : ""}" data-trip="f" data-f="${k}">${l} <b>${fmtNum(c)}</b></button>`).join("")
     + `<button class="btn sm" data-trip="copyLeft" ${left ? "" : "disabled"}>نسخ أسماء اللي لسه</button><button class="btn sm" data-trip="csv" ${tot ? "" : "disabled"}>تحميل الشيت (Excel)</button><button class="btn sm" data-trip="print" ${tot ? "" : "disabled"}>طباعة الكشف</button>`;
-  tripDrawTable();
+  if (S.tripView === "rooms") tripDrawRooms(); else tripDrawTable();
 }
 function tripRows(){
   const P = S.tripPeople || [], done = tDone(S.tripOpen), q = (S.tripQ || "").trim().toLowerCase(), qp = normPass(S.tripQ);
@@ -2853,7 +2890,7 @@ function tripDrawTable(){
   box.innerHTML = `<div class="list tr-list">${L.map(p => { const at = done.get(p.id), j = S.tripJoins[p.id], arm = S.tripArm;
     return `<div class="tr-row ${at ? "in" : ""}">
       <span class="tr-n">${fmtNum(p.n)}</span>
-      <div class="tr-who"><b>${esc(p.name)}</b><span><bdi dir="ltr" class="${p.passport ? "" : "miss"}">${esc(p.passport || "مفيش رقم جواز")}</bdi>${p.mk || p.md ? `<br><span class="tr-ht">🏨 ${esc(p.mk || "—")} · ${esc(p.md || "—")}</span>` : ""}${tPhone(p) ? ` · <a href="https://wa.me/${esc(tPhone(p))}" target="_blank" rel="noopener"><bdi dir="ltr">${esc(fmtPhone(tPhone(p)))}</bdi></a>` : ""}</span></div>
+      <div class="tr-who"><b>${esc(p.name)}</b><span><bdi dir="ltr" class="${p.passport ? "" : "miss"}">${esc(p.passport || "مفيش رقم جواز")}</bdi>${(() => { const r = roomOfPerson(p.id); return r ? ` · <span class="tr-rm">🛏 ${esc(r.label || roomType(r))}</span>` : ""; })()}${p.mk || p.md ? `<br><span class="tr-ht">🏨 ${esc(p.mk || "—")} · ${esc(p.md || "—")}</span>` : ""}${tPhone(p) ? ` · <a href="https://wa.me/${esc(tPhone(p))}" target="_blank" rel="noopener"><bdi dir="ltr">${esc(fmtPhone(tPhone(p)))}</bdi></a>` : ""}</span></div>
       <div class="tr-st">${at ? `<span class="pill tr-in">✓ أكد الانضمام</span><small>${esc(ago(at))}${j && j.manual ? " · يدوي" + (j.by ? " (" + esc(j.by) + ")" : "") : ""}${j && j.waSent ? " · الترحيب اتبعت ✓" : ""}</small>` : `<span class="pill tr-out">لسه</span>`}</div>
       ${sup ? `<div class="tr-ops">${at && tPhone(p) ? `<button class="btn sm ${j && j.waSent ? "ghost" : "ok-o"}" data-trip="wa" data-id="${p.id}">${j && j.waSent ? "إرسال تاني" : "إرسال الترحيب"}</button>` : ""}${at ? `<button class="btn sm ${arm === "undo:" + p.id ? "danger armed" : "ghost"}" data-trip="undo" data-id="${p.id}">${arm === "undo:" + p.id ? "متأكد؟" : "إلغاء التأكيد"}</button>`
         : `<button class="btn sm ok-o" data-trip="manual" data-id="${p.id}">تأكيد يدوي</button>`}
@@ -2872,6 +2909,8 @@ async function tripClick(b){
   if (k === "back"){ tripClose(); return renderTrips(); }
   if (!t) return;
   if (k === "f"){ S.tripF = b.dataset.f; return tripDrawDetail(); }
+  if (k === "view"){ S.tripView = b.dataset.v; return tripDrawDetail(); }
+  if (k.startsWith("rm")) return roomClick(b, t);
   if (k === "link") return copyTxt(tripLink(t.id), "اللينك اتنسخ");
   if (k === "msg") return copyTxt(`السلام عليكم ورحمة الله وبركاته 🕋
 أهلاً بحضراتكم في جروب ${t.title || "الرحلة"}${t.date ? " (السفر " + tDate(t.date) + ")" : ""} مع برومس للسياحة.
@@ -3064,6 +3103,129 @@ function tripImport(t){
     try { await api.tripWrite(t.id, tFields(t), ups, [], S.tripPeople.map(x => map.get(x.id) || x)); m.remove(); toast("اتحدّث " + fmtNum(ups.length) + " معتمر"); }
     catch(x){ console.error(x); const er = $("#im-err"); er.textContent = "الحفظ ما نجحش. اتأكد من النت."; er.hidden = false; $("#imSave").disabled = false; }
   };
+}
+
+/* ---------- التسكين: غرف كل رحلة ومين في كل غرفة ---------- */
+const RTYPES = [["ثنائي",2],["ثلاثي",3],["رباعي",4],["خماسي",5],["عائلة",0],["مفرد",1]];
+const roomType = r => r.type === "عائلة" ? "عائلة - " + fmtNum(r.cap) : r.type || ("غرفة " + fmtNum(r.cap));
+// الغرف بعد تنضيف: يشيل الأفراد اللي اتمسحوا من الرحلة، ومايكررش حد في غرفتين
+function roomsOf(t){
+  const ok = S.tripPeople ? new Set(S.tripPeople.map(p => p.id)) : null, seen = new Set();
+  return (t.rooms || []).map(r => ({ ...r, cap:Math.max(+r.cap || 1, 1), members:(r.members || []).filter(id => (!ok || ok.has(id)) && !seen.has(id) && seen.add(id)) }));
+}
+const roomOfPerson = pid => { const t = tripById(S.tripOpen); return t ? roomsOf(t).find(r => r.members.includes(pid)) : null; };
+const pById = id => (S.tripPeople || []).find(p => p.id === id);
+const unroomed = t => { const R = new Set(roomsOf(t).flatMap(r => r.members)); return (S.tripPeople || []).filter(p => !R.has(p.id)).sort((a,b) => a.n - b.n); };
+async function saveRooms(t, R, msg){
+  try { await api.tripRooms(t.id, R.map(({ id, type, cap, label, members }) => ({ id, type, cap, label:label || "", members }))); if (msg) toast(msg); }
+  catch(e){ console.error(e); toast("الحفظ ما نجحش. اتأكد من النت."); }
+}
+
+function tripDrawRooms(){
+  const box = $("#trRooms"), t = tripById(S.tripOpen); if (!box || !t) return;
+  if (!S.tripPeople){ box.innerHTML = `<div class="list"><div class="empty">بيحمّل…</div></div>`; return; }
+  const R = roomsOf(t), U = unroomed(t), sup = tSup();
+  const beds = R.reduce((x, r) => x + r.cap, 0), inR = R.reduce((x, r) => x + r.members.length, 0), used = R.filter(r => r.members.length).length;
+  box.innerHTML = `<div class="rm-bar">
+      <div class="rm-sum"><span><b>${fmtNum(R.length)}</b> ${R.length >= 3 && R.length <= 10 ? "غرف" : "غرفة"}</span><span><b>${fmtNum(beds)}</b> سرير</span><span><b>${fmtNum(inR)}</b> متسكّن</span><span class="${U.length ? "wait" : "ok"}"><b>${fmtNum(U.length)}</b> من غير تسكين</span><span><b>${fmtNum(Math.max(beds - inR, 0))}</b> سرير فاضي</span></div>
+      <div class="rm-acts">${sup ? `<button class="btn primary" data-trip="rmAdd">${ic("plus")}إضافة غرف</button>` : ""}<button class="btn" data-trip="rmPrint" ${used ? "" : "disabled"}>طباعة شيت التسكين</button><button class="btn" data-trip="rmCsv" ${used ? "" : "disabled"}>تحميل التسكين (Excel)</button></div></div>
+    ${U.length ? `<details class="rm-un" ${U.length <= 12 ? "open" : ""}><summary>لسه من غير تسكين (${fmtNum(U.length)})</summary><div>${U.map(p => `<span class="chip">${esc(p.name)}</span>`).join("")}</div></details>` : R.length ? `<p class="rm-allok">✓ كل المعتمرين اتسكّنوا</p>` : ""}
+    ${!R.length ? `<div class="list"><div class="empty"><b>مفيش غرف لسه</b>${sup ? "دوس «إضافة غرف» واختار نوع الغرفة وعددها، وبعدين ضيف الأفراد في كل غرفة." : ""}</div></div>`
+    : `<div class="rm-grid">${R.map((r, i) => { const free = r.cap - r.members.length, arm = S.tripArm === "rmDel:" + r.id;
+      return `<article class="rm-card ${free ? "" : "full"}">
+        <header><div><small>نوع الغرفة</small><b>${esc(roomType(r))}</b></div><div><small>رقم الغرفة الحقيقي</small><b>${esc(r.label || "—")}</b></div>
+          ${sup ? `<div class="rm-hops"><button class="rm-ib" data-trip="rmEdit" data-r="${r.id}" aria-label="تعديل الغرفة">✎</button><button class="rm-ib ${arm ? "armed" : ""}" data-trip="rmDel" data-r="${r.id}" aria-label="مسح الغرفة">${arm ? "متأكد؟" : "🗑"}</button></div>` : ""}</header>
+        <ol>${r.members.map((id, k) => { const p = pById(id); return `<li><span class="rm-n">${fmtNum(k + 1)}</span><span class="rm-nm">${esc(p ? p.name : "؟")}</span>${sup ? `<button class="rm-x" data-trip="rmOut" data-r="${r.id}" data-id="${id}" aria-label="شيل ${esc(p ? p.name : "")} من الغرفة">✕</button>` : ""}</li>`; }).join("")}
+          ${sup && free > 0 ? `<li class="rm-empty"><button data-trip="rmPick" data-r="${r.id}">${ic("plus")}إضافة ${free > 1 ? "أفراد (فاضي " + fmtNum(free) + ")" : "فرد (فاضي ١)"}</button></li>` : ""}</ol>
+      </article>`; }).join("")}</div>`}`;
+}
+
+async function roomClick(b, t){
+  const k = b.dataset.trip, R = roomsOf(t), r = R.find(x => x.id === b.dataset.r);
+  if (k === "rmPrint") return roomPrint(t, R);
+  if (k === "rmCsv") return roomCsv(t, R);
+  if (!tSup() || !S.tripPeople) return;
+  if (k === "rmAdd") return roomForm(t, null);
+  if (!r) return;
+  if (k === "rmEdit") return roomForm(t, r);
+  if (k === "rmPick") return roomPick(t, r);
+  if (k === "rmOut"){ r.members = r.members.filter(id => id !== b.dataset.id); return saveRooms(t, R); }
+  if (k === "rmDel"){ if (r.members.length && !tArm("rmDel:" + r.id)) return; return saveRooms(t, R.filter(x => x.id !== r.id), "الغرفة اتمسحت"); }
+}
+function roomForm(t, r){
+  const isNew = !r; let type = r ? r.type : "ثنائي";
+  const m = modal(isNew ? "إضافة غرف" : "تعديل الغرفة", `<div class="form">
+    <div class="field full"><span class="lbl">نوع الغرفة</span><div class="type-pick" id="rf-type">${RTYPES.map(([n, c]) => `<button type="button" class="c-umrah ${n === type ? "on" : ""}" data-rt="${n}" data-c="${c}">${n}${c ? " (" + fmtNum(c) + ")" : ""}</button>`).join("")}</div></div>
+    <div class="field"><label for="rf-cap">سعة الغرفة (عدد الأفراد)</label><input id="rf-cap" type="number" min="1" max="12" inputmode="numeric" value="${r ? r.cap : 2}"></div>
+    ${isNew ? `<div class="field"><label for="rf-n">عدد الغرف</label><input id="rf-n" type="number" min="1" max="100" inputmode="numeric" value="1"></div>` : ""}
+    <div class="field full"><label for="rf-label">رقم الغرفة الحقيقي <small class="hint">— اختياري، مثلاً «101 الأنصار + العليان». ${isNew ? "لو بتضيف أكتر من غرفة اكتب أول رقم والباقي بيكمّل لوحده (101، 102…)" : ""}</small></label><input id="rf-label" value="${esc(r ? r.label || "" : "")}"></div>
+    <p class="err field full" id="rf-err" hidden></p></div>
+    <div class="form-foot"><button class="btn primary" id="rfSave">${isNew ? "إضافة" : "حفظ"}</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  const cap = $("#rf-cap");
+  m.addEventListener("click", e => { const x = e.target.closest("[data-rt]"); if (!x) return; type = x.dataset.rt; m.querySelectorAll("[data-rt]").forEach(y => y.classList.toggle("on", y === x)); if (+x.dataset.c) cap.value = x.dataset.c; else cap.focus(); });
+  $("#rfSave").onclick = async () => {
+    const c = Math.min(Math.max(parseInt(cap.value) || 0, 1), 12), er = $("#rf-err"), label = $("#rf-label").value.trim(), R = roomsOf(t);
+    if (!parseInt(cap.value)){ er.textContent = "اكتب سعة الغرفة."; er.hidden = false; return; }
+    if (r){ const x = R.find(y => y.id === r.id); if (x.members.length > c){ er.textContent = `الغرفة فيها ${fmtNum(x.members.length)} أفراد — شيل حد الأول قبل ما تقلل السعة.`; er.hidden = false; return; }
+      Object.assign(x, { type, cap:c, label }); $("#rfSave").disabled = true; await saveRooms(t, R, "اتحفظ"); return m.remove(); }
+    const n = Math.min(Math.max(parseInt($("#rf-n").value) || 1, 1), 100);
+    // ترقيم تلقائي: لو الرقم بيبدأ برقم، كل غرفة بعدها بتاخد الرقم اللي بعده
+    const mm = label.match(/^(\d+)(.*)$/s);
+    const add = Array.from({ length:n }, (_, i) => ({ id:rid(8), type, cap:c, label: !label ? "" : mm ? (+mm[1] + i) + mm[2] : i ? label + " (" + fmtNum(i + 1) + ")" : label, members:[] }));
+    $("#rfSave").disabled = true; await saveRooms(t, R.concat(add), "اتضاف " + fmtNum(n) + (n > 1 ? " غرف" : " غرفة")); m.remove();
+  };
+}
+function roomPick(t, r){
+  const R0 = roomsOf(t), room = R0.find(x => x.id === r.id), free = room.cap - room.members.length, U = unroomed(t);
+  if (!U.length) return toast("كل المعتمرين متسكّنين");
+  const sel = new Set();
+  const m = modal("إضافة أفراد — " + (room.label || roomType(room)), `<div class="form">
+    <p class="hint field full">اختار لحد ${fmtNum(free)} ${free > 1 ? "أفراد" : "فرد"} (اللي لسه من غير تسكين بس).</p>
+    <div class="field full"><input id="rp-q" type="search" placeholder="دوّر بالاسم…" aria-label="بحث"></div>
+    <div class="field full rp-list" id="rp-list"></div></div>
+    <div class="form-foot"><button class="btn primary" id="rpSave" disabled>إضافة</button><button class="btn ghost" data-x>إلغاء</button></div>`);
+  const draw = () => { const q = normName($("#rp-q").value);
+    $("#rp-list").innerHTML = U.filter(p => !q || normName(p.name).includes(q)).map(p => `<label class="rp-it ${sel.has(p.id) ? "on" : ""}"><input type="checkbox" data-p="${p.id}" ${sel.has(p.id) ? "checked" : ""} ${!sel.has(p.id) && sel.size >= free ? "disabled" : ""}><span class="rm-n">${fmtNum(p.n)}</span>${esc(p.name)}</label>`).join("") || `<p class="hint">مفيش اسم بالبحث ده.</p>`;
+    $("#rpSave").disabled = !sel.size; $("#rpSave").textContent = sel.size ? "إضافة " + fmtNum(sel.size) : "إضافة"; };
+  $("#rp-q").addEventListener("input", draw);
+  $("#rp-list").addEventListener("change", e => { const id = e.target.dataset.p; if (!id) return; e.target.checked ? sel.add(id) : sel.delete(id); draw(); });
+  draw(); $("#rp-q").focus();
+  $("#rpSave").onclick = async () => {
+    const R = roomsOf(t), x = R.find(y => y.id === r.id), ids = U.filter(p => sel.has(p.id)).map(p => p.id).slice(0, x.cap - x.members.length);
+    x.members = x.members.concat(ids); $("#rpSave").disabled = true; await saveRooms(t, R); m.remove();
+  };
+}
+function roomPrint(t, R){
+  const L = R.filter(r => r.members.length), n = L.reduce((x, r) => x + r.members.length, 0);
+  const w = window.open("", "_blank"); if (!w) return toast("المتصفح منع فتح صفحة الطباعة");
+  const logo = new URL("logo.png", location.href).href;
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>شيت التسكين حسب الغرف — ${esc(t.title || "")}</title>
+  <style>@page{size:A4;margin:10mm}*{box-sizing:border-box}body{margin:0;font:13px/1.5 "IBM Plex Sans Arabic",Tahoma,sans-serif;color:#13262b;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .hd{display:flex;align-items:center;gap:14px;border-bottom:3px solid #0e5e55;padding-bottom:10px;margin-bottom:14px}.hd img{width:58px;border-radius:9px}
+  .hd h1{margin:0;font-size:24px;color:#0e5e55}.hd p{margin:2px 0 0;color:#6a7a7c;font-size:13px}
+  .badge{margin-inline-start:auto;border:1.5px solid #9fd0c6;background:#e9f6f2;color:#0e5e55;border-radius:10px;padding:7px 14px;font-weight:700;white-space:nowrap}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{border:1.5px solid #0e5e55;border-radius:10px;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
+  .card header{display:flex;background:#0e5e55;color:#fff;padding:7px 12px;gap:10px}
+  .card header div{display:flex;flex-direction:column;flex:1}.card header div + div{border-inline-start:1px solid rgba(255,255,255,.35);padding-inline-start:10px}
+  .card small{font-size:10.5px;opacity:.85}.card b{font-size:15px}
+  ol{list-style:none;margin:0;padding:6px 10px 8px}li{display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid #e3e9e8;font-weight:600}li:last-child{border-bottom:0}
+  .n{width:20px;height:20px;border-radius:50%;border:1.5px solid #9fd0c6;background:#e9f6f2;color:#0e5e55;display:grid;place-items:center;font-size:11px;flex:none}
+  </style></head><body>
+  <div class="hd"><img src="${logo}" alt=""><div><h1>شيت التسكين حسب الغرف</h1><p>برومس للسياحة — ${esc(t.title || "")}${t.date ? " — " + esc(tDate(t.date, { day:"numeric", month:"long", year:"numeric" })) : ""}</p></div>
+  <div class="badge">${fmtNum(L.length)} ${L.length >= 3 && L.length <= 10 ? "غرف مسكنة" : "غرفة مسكنة"} · ${fmtNum(n)} ${n >= 3 && n <= 10 ? "أشخاص" : "شخص"}</div></div>
+  <div class="grid">${L.map(r => `<section class="card"><header><div><small>نوع الغرفة</small><b>${esc(roomType(r))}</b></div><div><small>رقم الغرفة الحقيقي</small><b>${esc(r.label || "—")}</b></div></header>
+    <ol>${r.members.map((id, k) => `<li><span class="n">${k + 1}</span>${esc((pById(id) || {}).name || "")}</li>`).join("")}</ol></section>`).join("")}</div>
+  <script>window.onload = () => setTimeout(() => print(), 300)<\/script></body></html>`);
+  w.document.close();
+}
+function roomCsv(t, R){
+  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"', rows = [["رقم الغرفة الحقيقي","نوع الغرفة","السعة","م","الاسم","رقم الجواز","فندق مكة","فندق المدينة"]];
+  R.forEach(r => r.members.forEach((id, k) => { const p = pById(id) || {}; rows.push([r.label || "", roomType(r), r.cap, k + 1, p.name || "", p.passport ? `="${p.passport}"` : "", p.mk || "", p.md || ""]); }));
+  unroomed(t).forEach(p => rows.push(["من غير تسكين", "", "", "", p.name, p.passport ? `="${p.passport}"` : "", p.mk || "", p.md || ""]));
+  const blob = new Blob(["﻿" + rows.map(r => r.map(q).join(",")).join("\r\n")], { type:"text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = (t.title || "الرحلة").replace(/[\\/:*?"<>|]/g, "-") + " — التسكين.csv";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("شيت التسكين اتحمّل");
 }
 
 if (DEMO) api.demoLogin("sup");
