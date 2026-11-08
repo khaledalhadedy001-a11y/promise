@@ -3519,7 +3519,7 @@ function tripDrawPlan(force){
   const D = S.planDraft.days, sup = tSup();
   box.innerHTML = `<div class="pl-bar">
       <div><b>برنامج الرحلة</b><span class="hint">صفحة فيها المحطات يوم بيوم — المعتمر بيشوف إحنا النهارده فين وبكرة عندنا إيه. ابعت اللينك أو ثبّته في الجروب.</span></div>
-      <div class="pl-acts">${sup ? `<label class="btn ${D.length ? "" : "primary"}">📄 استيراد من PDF<input type="file" id="pl-pdf" accept="application/pdf" hidden></label>` : ""}${hasPlan(t) ? `<button class="btn primary" data-trip="plMsg">${ic("chat")}نسخ رسالة البرنامج</button><button class="btn" data-trip="plLink">نسخ اللينك</button><a class="btn" href="${esc(planLink(t.id))}" target="_blank" rel="noopener">فتح صفحة البرنامج</a>` : ""}</div></div>
+      <div class="pl-acts">${sup ? `<label class="btn ${D.length ? "" : "primary"}">📄 استيراد من PDF / ملف برنامج<input type="file" id="pl-pdf" accept="application/pdf,application/json,.json" hidden></label>` : ""}${hasPlan(t) ? `<button class="btn primary" data-trip="plMsg">${ic("chat")}نسخ رسالة البرنامج</button><button class="btn" data-trip="plLink">نسخ اللينك</button><a class="btn" href="${esc(planLink(t.id))}" target="_blank" rel="noopener">فتح صفحة البرنامج</a>` : ""}</div></div>
     ${sup ? `<div class="pl-save" id="plSave"></div>` : ""}
     ${!D.length ? `<div class="list"><div class="empty"><b>مفيش برنامج لسه</b>${sup ? `ابدأ ببرنامج مبدئي وعدّل عليه، أو ضيف الأيام واحد واحد.
       <div class="pl-gen"><label>البداية في<select id="pg-first"><option>مكة المكرمة</option><option>المدينة المنورة</option></select></label>
@@ -3568,7 +3568,20 @@ function plTemplate(t, first, mk, md){
     if (new Date(date + "T12:00").getDay() === 5 && (d.city === "مكة المكرمة" || d.city === "المدينة المنورة")) d.items.unshift(it("صلاة الجمعة في " + (d.city === "مكة المكرمة" ? "المسجد الحرام" : "المسجد النبوي الشريف")));
     return { id:rid(6), date, ...d }; });
 }
+// ملف برنامج جاهز (.json): { "plan":[{ date, city, title, items:[{ t, x }] }] }
+async function planFromJson(t, file){
+  try {
+    const o = JSON.parse(await file.text()), P = Array.isArray(o) ? o : o.plan;
+    if (!Array.isArray(P) || !P.length) throw 0;
+    const days = P.filter(d => /^\d{4}-\d\d-\d\d$/.test(d.date || "")).map(d => ({ id:rid(6), date:d.date, city:String(d.city || "").slice(0, 40), title:String(d.title || "").slice(0, 120),
+      items:(d.items || []).map(x => ({ t:/^\d\d:\d\d$/.test(x.t || "") ? x.t : "", x:String(x.x || "").slice(0, 200) })).filter(x => x.x) }));
+    if (!days.length) throw 0;
+    S.planDraft = { tid:t.id, days, dirty:true }; tripDrawPlan(true);
+    toast(`اتقرا ${fmtNum(days.length)} ${days.length >= 3 && days.length <= 10 ? "أيام" : "يوم"} — راجع ودوس «حفظ البرنامج»`);
+  } catch { toast("الملف ده مش ملف برنامج صحيح"); }
+}
 async function planFromPdf(t, file){
+  if (/\.json$/i.test(file.name) || /json/.test(file.type)) return planFromJson(t, file);
   if (file.size > 15 * 1024 * 1024) return toast("الملف أكبر من ١٥ ميجا");
   toast("بيقرا الملف…");
   try {
