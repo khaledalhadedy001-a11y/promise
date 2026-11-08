@@ -562,7 +562,7 @@ main{padding-bottom:56px}
 .pl-bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .pl-bar > div:first-child{display:flex;flex-direction:column;gap:2px;min-width:220px;flex:1}.pl-bar b{font:600 16px var(--f-display)}.pl-acts{display:flex;gap:6px;flex-wrap:wrap}
 .pl-save{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--gold) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 45%,var(--line))}
-.pl-save span{flex:1;font-weight:600;font-size:14px}
+.pl-save[hidden]{display:none}.pl-save span{flex:1;font-weight:600;font-size:14px}
 .pl-gen{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:flex-end;margin-top:14px}
 .pl-gen label{display:flex;flex-direction:column;gap:4px;font-size:13px;text-align:right}.pl-gen input,.pl-gen select{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:7px 10px;width:110px}
 .pl-days{list-style:none;margin:14px 0 10px;padding:0 18px 0 0;border-inline-start:3px solid color-mix(in srgb,var(--t-umrah) 50%,var(--line));display:flex;flex-direction:column;gap:12px}
@@ -3519,7 +3519,7 @@ function tripDrawPlan(force){
   const D = S.planDraft.days, sup = tSup();
   box.innerHTML = `<div class="pl-bar">
       <div><b>برنامج الرحلة</b><span class="hint">صفحة فيها المحطات يوم بيوم — المعتمر بيشوف إحنا النهارده فين وبكرة عندنا إيه. ابعت اللينك أو ثبّته في الجروب.</span></div>
-      <div class="pl-acts">${hasPlan(t) ? `<button class="btn primary" data-trip="plMsg">${ic("chat")}نسخ رسالة البرنامج</button><button class="btn" data-trip="plLink">نسخ اللينك</button><a class="btn" href="${esc(planLink(t.id))}" target="_blank" rel="noopener">فتح صفحة البرنامج</a>` : ""}</div></div>
+      <div class="pl-acts">${sup ? `<label class="btn ${D.length ? "" : "primary"}">📄 استيراد من PDF<input type="file" id="pl-pdf" accept="application/pdf" hidden></label>` : ""}${hasPlan(t) ? `<button class="btn primary" data-trip="plMsg">${ic("chat")}نسخ رسالة البرنامج</button><button class="btn" data-trip="plLink">نسخ اللينك</button><a class="btn" href="${esc(planLink(t.id))}" target="_blank" rel="noopener">فتح صفحة البرنامج</a>` : ""}</div></div>
     ${sup ? `<div class="pl-save" id="plSave"></div>` : ""}
     ${!D.length ? `<div class="list"><div class="empty"><b>مفيش برنامج لسه</b>${sup ? `ابدأ ببرنامج مبدئي وعدّل عليه، أو ضيف الأيام واحد واحد.
       <div class="pl-gen"><label>البداية في<select id="pg-first"><option>مكة المكرمة</option><option>المدينة المنورة</option></select></label>
@@ -3537,8 +3537,9 @@ function tripDrawPlan(force){
           ${sup ? `<li class="pl-add"><button class="btn sm" data-trip="plAddIt" data-i="${i}">${ic("plus")}إضافة محطة</button></li>` : ""}</ul></li>`; }).join("")}</ol>
     ${sup && D.length ? `<button class="btn" data-trip="plAddDay">${ic("plus")}إضافة يوم</button>` : sup && !D.length ? `<button class="btn" data-trip="plAddDay" style="margin-top:10px">${ic("plus")}أو ضيف أول يوم</button>` : ""}
     <p class="hint" style="margin-top:8px">الأوقات بتوقيت مكة المكرمة. الأيام بتترتب بالتاريخ لوحدها.</p>`;
+  const pf = $("#pl-pdf"); if (pf) pf.onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (f) planFromPdf(t, f); };
   box.oninput = box.onchange = e => { const el = e.target, li = el.closest(".pl-day"); if (!li) return; const d = D[+li.dataset.i];
-    if (el.dataset.pf) d[el.dataset.pf] = el.value; else if (el.dataset.pi){ d.items[+el.dataset.j][el.dataset.pi] = el.value; } else return;
+    if (!d) return; if (el.dataset.pf) d[el.dataset.pf] = el.value; else if (el.dataset.pi){ d.items[+el.dataset.j][el.dataset.pi] = el.value; } else return;
     S.planDraft.dirty = true; plDirtyBar(); if (e.type === "change" && el.dataset.pf === "date") tripDrawPlan(true); };
   plDirtyBar();
 }
@@ -3567,6 +3568,21 @@ function plTemplate(t, first, mk, md){
     if (new Date(date + "T12:00").getDay() === 5 && (d.city === "مكة المكرمة" || d.city === "المدينة المنورة")) d.items.unshift(it("صلاة الجمعة في " + (d.city === "مكة المكرمة" ? "المسجد الحرام" : "المسجد النبوي الشريف")));
     return { id:rid(6), date, ...d }; });
 }
+async function planFromPdf(t, file){
+  if (file.size > 15 * 1024 * 1024) return toast("الملف أكبر من ١٥ ميجا");
+  toast("بيقرا الملف…");
+  try {
+    const lines = await pdfLines(file);
+    if (!lines.length) return toast("الملف ده صورة (سكان) مش كلام مكتوب — مش هقدر أقراه. جرّب نسخة PDF متصدّرة من وورد.");
+    const days = pdfPlan(lines, t.date || "");
+    if (!days.length) return toast("ما لقيتش أيام في الملف ده — لازم كل يوم يبدأ بـ«اليوم الأول…» أو بتاريخ.");
+    S.planDraft = { tid:t.id, days, dirty:true }; tripDrawPlan(true);
+    const n = days.reduce((x, d) => x + d.items.length, 0);
+    modal("اتقرا البرنامج من الملف", `<div class="form"><p class="field full" style="display:block">لقيت <b>${fmtNum(days.length)}</b> ${days.length >= 3 && days.length <= 10 ? "أيام" : "يوم"} و<b>${fmtNum(n)}</b> محطة — من ${esc(plDayName(days[0].date))} لـ${esc(plDayName(days[days.length - 1].date))}.</p>
+      <p class="hint field full">راجع الأيام والمواعيد والأماكن تحت وعدّل اللي محتاج، وبعدين دوس «حفظ البرنامج». لو مش مظبوط دوس «إلغاء التعديلات» يرجعك للبرنامج القديم.</p></div>
+      <div class="form-foot"><button class="btn primary" data-x>تمام، هراجع</button></div>`);
+  } catch(e){ console.error(e); toast("مش قادر يقرا الملف ده"); }
+}
 async function planClick(b, t){
   const k = b.dataset.trip, PD = S.planDraft, i = +b.dataset.i;
   if (k === "plLink") return copyTxt(planLink(t.id), "لينك البرنامج اتنسخ");
@@ -3587,11 +3603,102 @@ ${planLink(t.id)}
   if (k === "plReset"){ S.planDraft = null; return tripDrawPlan(true); }
   if (k === "plSave"){
     const clean = plSorted(D).filter(d => d.date).map(d => ({ id:d.id || rid(6), date:d.date, city:String(d.city || "").slice(0, 40), title:String(d.title || "").trim().slice(0, 120),
-      items:(d.items || []).filter(x => (x.x || "").trim()).map(x => ({ t:/^\d\d:\d\d$/.test(x.t || "") ? x.t : "", x:String(x.x).trim().slice(0, 200) })).sort((a, b) => !a.t ? 1 : !b.t ? -1 : a.t < b.t ? -1 : 1) }));
+      items:(d.items || []).filter(x => (x.x || "").trim()).map(x => ({ t:/^\d\d:\d\d$/.test(x.t || "") ? x.t : "", x:String(x.x).trim().slice(0, 200) })) }));
     b.disabled = true;
     try { await api.tripPlan(t.id, clean); S.planDraft = { tid:t.id, days:JSON.parse(JSON.stringify(clean)), dirty:false }; tripDrawPlan(true); toast("البرنامج اتحفظ ✓ — بيظهر للمعتمرين على طول"); }
     catch(e){ console.error(e); toast("الحفظ ما نجحش. اتأكد من النت."); b.disabled = false; }
   }
+}
+
+/* ---------- قراءة برنامج الرحلة من ملف PDF ---------- */
+// ١) استخراج السطور: بيجمع الكلام حسب السطر، ويرتب من اليمين للشمال، ويعدل الأرقام والحروف الإنجليزي (اتجاهها شمال ← يمين)
+async function pdfLines(file){
+  if (!window.pdfjsLib) await new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "vendor/pdf.min.js"; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("vendor/pdf.worker.min.js", location.href).href;
+  const doc = await pdfjsLib.getDocument({ data:new Uint8Array(await file.arrayBuffer()) }).promise, out = [];
+  const ltr = s => /^[\s0-9٠-٩:.\/\-–,A-Za-z()%+]+$/.test(s) && /[0-9٠-٩A-Za-z]/.test(s);
+  for (let i = 1; i <= doc.numPages; i++){
+    const tc = await (await doc.getPage(i)).getTextContent(), rows = [];
+    for (const it of tc.items){ if (!it.str || !it.str.trim()) continue; const y = it.transform[5], h = Math.abs(it.transform[3]) || it.height || 10;
+      let r = rows.find(r => Math.abs(r.y - y) < Math.max(2.5, h * .45)); if (!r){ r = { y, h, items:[] }; rows.push(r); } r.items.push({ x:it.transform[4], w:it.width || 0, s:it.str }); }
+    rows.sort((a, b) => b.y - a.y).forEach(r => {
+      const I = r.items.sort((a, b) => b.x - a.x), segs = [];
+      // الأجزاء اللي اتجاهها شمال ← يمين (أرقام/مواعيد/تواريخ) بتترتب عكس الباقي
+      I.forEach(it => { const last = segs[segs.length - 1], isL = ltr(it.s.trim()) || (/^\s*[:.\/]\s*$/.test(it.s));
+        if (last && last.l === isL && isL) last.a.push(it); else segs.push({ l:isL, a:[it] }); });
+      let line = "", prev = null;
+      segs.forEach(sg => { const A = sg.l ? sg.a.slice().reverse() : sg.a;
+        A.forEach(it => { if (prev){ const gap = sg.l && prev.l ? it.x - (prev.x + prev.w) : prev.x - (it.x + it.w); line += gap > r.h * .18 ? " " : ""; }
+          line += it.s; prev = { ...it, l:sg.l }; }); });
+      line = line.normalize("NFKC").replace(/\s+/g, " ").trim(); if (line) out.push(line);
+    });
+  }
+  return out;
+}
+// ٢) تصليح «لا» اللي بتتكسر في ملفات وورد، والأرقام العربي ← إنجليزي
+const PDF_FIX = [["اال","الا"],["األ","الأ"],["اإل","الإ"],["اآل","الآ"],["الثالثاء","الثلاثاء"],["الصالة","الصلاة"],["صالة","صلاة"],["إقالع","إقلاع"],["اقالع","اقلاع"],["السالم","السلام"],["إسالم","إسلام"],["الهالل","الهلال"],["جالل","جلال"],["خالل","خلال"],["الالزم","اللازم"],["مسا 0ء","مساءً"],["مسا0ء","مساءً"]];
+function pdfNorm(s){ s = String(s).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)); PDF_FIX.forEach(([a, b]) => s = s.split(a).join(b)); s = s.replace(/([^\s\d])ا\s?0(?=\s|$|[،,.])/g, "$1اً");
+  return s.replace(/\s+([:.،,])/g, "$1").replace(/(\d)\s*:\s*(\d)/g, "$1:$2").replace(/\s+/g, " ").trim(); }
+// ٣) فهم البرنامج: عناوين الأيام (اليوم الأول / تاريخ / يوم الأسبوع) والمحطات بالمواعيد
+const PDF_ORD = ["الأول","الثاني","الثالث","الرابع","الخامس","السادس","السابع","الثامن","التاسع","العاشر","الحادي عشر","الثاني عشر","الثالث عشر","الرابع عشر","الخامس عشر","السادس عشر","السابع عشر","الثامن عشر","التاسع عشر","العشرون"];
+const PDF_MON = { "يناير":1,"فبراير":2,"مارس":3,"أبريل":4,"ابريل":4,"إبريل":4,"مايو":5,"يونيو":6,"يوليو":7,"أغسطس":8,"اغسطس":8,"سبتمبر":9,"أكتوبر":10,"اكتوبر":10,"نوفمبر":11,"ديسمبر":12 };
+const PDF_WD = "(?:يوم\\s+)?(?:السبت|الأحد|الاحد|الإثنين|الاثنين|الثلاثاء|الأربعاء|الاربعاء|الخميس|الجمعة)";
+function pdfPlan(rawLines, startDate){
+  const L = rawLines.map(pdfNorm).filter(Boolean), ordRe = PDF_ORD.slice().sort((a, b) => b.length - a.length).map(x => x.replace(/^ال/, "(?:ال)?")).join("|");
+  const reDayWord = new RegExp(`^[\\-•*▪◄►]?\\s*(?:ال)?يوم\\s*(?:رقم\\s*)?(?:(${ordRe})|(\\d{1,2}))(?=\\s|$|[:\\-–—.)])\\s*[:\\-–—.)]?`);
+  const reOrdStart = new RegExp(`^(${ordRe})(?=\\s|$)`);
+  const reDate = new RegExp(`(\\d{4})[\\/\\-.](\\d{1,2})[\\/\\-.](\\d{1,2})|(\\d{1,2})[\\/\\-.](\\d{1,2})(?:[\\/\\-.](\\d{2,4}))?|(\\d{1,2})\\s*(?:من\\s*)?(${Object.keys(PDF_MON).join("|")})(?:\\s*(\\d{4}))?`);
+  const reWd = new RegExp(PDF_WD);
+  const y0 = startDate ? +startDate.slice(0, 4) : new Date().getFullYear(), m0 = startDate ? +startDate.slice(5, 7) : new Date().getMonth() + 1;
+  const mkDate = (d, m, y) => { if (!(d >= 1 && d <= 31 && m >= 1 && m <= 12)) return ""; if (!y) y = m < m0 - 6 ? y0 + 1 : y0; else if (y < 100) y += 2000; return y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"); };
+  const getDate = s => { const m = s.match(reDate); if (!m) return null;
+    const date = m[1] ? mkDate(+m[3], +m[2], +m[1]) : m[4] ? mkDate(+m[4], +m[5], m[6] ? +m[6] : 0) : mkDate(+m[7], PDF_MON[m[8]], m[9] ? +m[9] : 0);
+    return date ? { date, raw:m[0] } : null; };
+  const timeOf = s => {   // بيرجع { t:"HH:MM", rest }
+    let m = s.match(/(?:الساعة\s*)?(\d{1,2})[:.](\d{2})\s*(ص|م|صباح\S*|مساء\S*|ظهر\S*|عصر\S*|فجر\S*|ليل\S*|am|pm|AM|PM|a\.m\.|p\.m\.)?(?=\s|$|[،,.)\-–—])/);
+    if (!m) m = s.match(/الساعة\s*(\d{1,2})()\s*(ص|م|صباح\S*|مساء\S*|ظهر\S*|عصر\S*|فجر\S*|ليل\S*)?(?=\s|$|[،,.)])/);
+    if (!m) return { t:"", rest:s };
+    let h = +m[1], mi = m[2] ? +m[2] : 0; const ap = (m[3] || "").toLowerCase();
+    if (h > 23 || mi > 59) return { t:"", rest:s };
+    if (/^(م|مساء|عصر|ليل|pm|p\.m\.)/.test(ap) && h < 12) h += 12;
+    if (/^ظهر/.test(ap) && h < 7) h += 12;
+    if (/^(ص|صباح|فجر|am|a\.m\.)/.test(ap) && h === 12) h = 0;
+    return { t:String(h).padStart(2, "0") + ":" + String(mi).padStart(2, "0"), rest:(s.slice(0, m.index) + " " + s.slice(m.index + m[0].length)) };
+  };
+  const clean = s => s.replace(/^[\s\-–—•*▪◄►:،,.)(]+|[\s\-–—•*▪◄►:،,(]+$/g, "").replace(/\s+/g, " ").trim();
+  const items = s => s.split(/\s[—–]\s|\s-\s|؛|\s\|\s/).map(x => { const tm = timeOf(x); return { t:tm.t, x:clean(tm.rest.replace(/\bالساعة\b/g, "")) }; }).filter(x => x.x.length > 1);
+  const days = []; let cur = null;
+  for (const line of L){
+    const dw = line.match(reDayWord), os = !dw && line.match(reOrdStart), dt = getDate(line), wd = line.match(reWd);
+    const isHead = dw || (os && (dt || line.length < 60)) || (dt && wd && line.indexOf(dt.raw) < 40) || (dt && line.indexOf(dt.raw) === 0 && line.length < 50);
+    if (isHead){
+      let rest = line; if (dw) rest = rest.replace(dw[0], " "); else if (os) rest = rest.replace(os[0], " ");
+      if (dt) rest = rest.replace(dt.raw, " "); if (wd && rest.indexOf(wd[0]) >= 0 && rest.indexOf(wd[0]) < 12) rest = rest.replace(wd[0], " ");
+      rest = clean(rest.replace(/^\s*(?:الموافق|الموافق:|بتاريخ)\s*/, ""));
+      cur = { date:dt ? dt.date : "", title:"", items:[] }; days.push(cur);
+      if (rest){ const its = items(rest); if (its.length > 1 || (its[0] && its[0].t)) cur.items.push(...its); else cur.title = rest; }
+      continue;
+    }
+    if (!cur) continue;   // كلام قبل أول يوم (عنوان البرنامج)
+    if (!cur.date && !cur.items.length && dt && line.indexOf(dt.raw) < 3){ cur.date = dt.date; const r = clean(line.replace(dt.raw, "").replace(reWd, "")); if (r) cur.items.push(...items(r)); continue; }
+    cur.items.push(...items(line));
+  }
+  // التواريخ الناقصة: اللي قبله + ١ (أو ميعاد السفر)
+  let base = startDate || dayKey(Date.now());
+  days.forEach((d, i) => { if (!d.date){ const prev = days[i - 1]; d.date = prev ? addDays(prev.date, 1) : base; } });
+  // المكان: آخر مدينة اتذكرت في اليوم (التحرك إلى المدينة = المدينة)، وإلا اللي قبله
+  let city = "";
+  days.forEach((d, i) => { const txt = [d.title, ...d.items.map(x => x.x)].join(" "), hits = [];
+    const re = /(مكة|المسجد الحرام|الحرم المكي|الكعبة|عرفات|منى|مزدلفة|جبل النور|غار حراء)|(المدينة|المسجد النبوي|النبوي|الروضة|قباء|أحد|احد|القبلتين)/g; let m;
+    while ((m = re.exec(txt))) hits.push(m[1] ? "مكة المكرمة" : "المدينة المنورة");
+    const toCity = txt.match(/(?:التحرك|السفر|التوجه|الانتقال|الذهاب)\s+(?:إلى|الى|ل)\s*(مكة|المدينة)/);
+    let c = toCity ? (toCity[1] === "مكة" ? "مكة المكرمة" : "المدينة المنورة") : hits.length ? hits[hits.length - 1] : city;
+    if (i === days.length - 1 && i > 0 && /العودة|الوطن|عودة|الرجوع/.test(txt)) c = "العودة";
+    else if (i === 0 && !c && /مطار|إقلاع|اقلاع|الطائرة|السفر/.test(txt)) c = "السفر";
+    d.city = c || "مكة المكرمة"; if (c && c !== "السفر" && c !== "العودة") city = c;
+    if (!d.title) d.title = d.items.length && !d.items[0].t && d.items.length > 1 ? "" : "";
+  });
+  return days.filter(d => d.items.length || d.title).map(d => ({ id:rid(6), date:d.date, city:d.city, title:d.title.slice(0, 120), items:d.items.map(x => ({ t:x.t, x:x.x.slice(0, 200) })).slice(0, 40) }));
 }
 
 if (DEMO) api.demoLogin("sup");
